@@ -20,24 +20,24 @@ FFBCLIStatus printUsage()
 {
     debug(0, "Usage: openffb haptic_name\n\n");
     debug(0, "Options:\n");
-    debug(0, "  --help                         Displays this text\n");
-    debug(0, "  --version                      Displays OpenFFB Version\n");
-    debug(0, "  --configuration                Displays OpenFFB Configuration\n");
-    debug(0, "  --availableHaptics             Displays list of haptics\n");
-    debug(0, "  --supportedEffects             Displays supported effects\n");
-    debug(0, "  --triggerSDLEffect:[TYPE]      Activate 1 of these SDL effects:\n");
-    debug(0, "                                  - SDL_HAPTIC_SINE\n");
-    debug(0, "                                  - SDL_HAPTIC_LEFTRIGHT\n");
-    debug(0, "                                  - SDL_HAPTIC_TRIANGLE\n");
-    debug(0, "                                  - SDL_HAPTIC_SAWTOOTHUP\n");        
-    debug(0, "                                  - SDL_HAPTIC_SAWTOOTHDOWN\n");
-    debug(0, "                                  - SDL_HAPTIC_CONSTANT\n");
-    debug(0, "                                  - SDL_HAPTIC_SPRING\n"); 
-    debug(0, "                                  - SDL_HAPTIC_DAMPER\n");
-    debug(0, "                                  - SDL_HAPTIC_INERTIA\n");
-    debug(0, "                                  - SDL_HAPTIC_FRICTION\n"); 
-    debug(0, "                                  - SDL_HAPTIC_RAMP\n"); 
-    debug(0, "                                  - SDL_HAPTIC_AUTOCENTER\n"); 
+    debug(0, "  --help                                Displays this text\n");
+    debug(0, "  --version                             Displays OpenFFB Version\n");
+    debug(0, "  --configuration                       Displays OpenFFB Configuration\n");
+    debug(0, "  --availableHaptics                    Displays list of haptics\n");
+    debug(0, "  --supportedEffects                    Displays supported effects\n");
+    debug(0, "  --triggerSDLEffect:[TYPE]:[1-100]     Activate 1 of these SDL effects with strength:\n");
+    debug(0, "                                         - SDL_HAPTIC_SINE\n");
+    debug(0, "                                         - SDL_HAPTIC_LEFTRIGHT\n");
+    debug(0, "                                         - SDL_HAPTIC_TRIANGLE\n");
+    debug(0, "                                         - SDL_HAPTIC_SAWTOOTHUP\n");        
+    debug(0, "                                         - SDL_HAPTIC_SAWTOOTHDOWN\n");
+    debug(0, "                                         - SDL_HAPTIC_CONSTANT\n");
+    debug(0, "                                         - SDL_HAPTIC_SPRING\n"); 
+    debug(0, "                                         - SDL_HAPTIC_DAMPER\n");
+    debug(0, "                                         - SDL_HAPTIC_INERTIA\n");
+    debug(0, "                                         - SDL_HAPTIC_FRICTION\n"); 
+    debug(0, "                                         - SDL_HAPTIC_RAMP\n"); 
+    debug(0, "                                         - SDL_HAPTIC_AUTOCENTER\n"); 
     debug(0, "\n");    
     debug(0, "   --- NEXT IS FOR DEBUGGING PURPOSE !!!! --- \n");
     debug(0, "\n"); 
@@ -93,7 +93,7 @@ unsigned int hapticEffectFromString(char *effectString)
  * @param game Pointer to a char array holding the game setting file name
  * @returns The status of the action performed
  **/
-FFBCLIStatus parseArguments(int argc, char **argv, char *haptic, unsigned int effect, char* segaRawRequest)
+FFBCLIStatus parseArguments(int argc, char **argv, char *haptic, unsigned int effect, double strengh, char* segaRawRequest)
 {
     // If there are no arguments simply continue
     if (argc <= 1)
@@ -133,6 +133,12 @@ FFBCLIStatus parseArguments(int argc, char **argv, char *haptic, unsigned int ef
             if (effect==-1)
                 return FFB_CLI_STATUS_ERROR;
             else
+            {
+                token=strtok(NULL, ":");
+                if(token!=NULL)
+                    strengh=((double)atoi(token))/100;
+
+            }
                 return FFB_CLI_STATUS_SUCCESS_CONTINUE;
         }
 

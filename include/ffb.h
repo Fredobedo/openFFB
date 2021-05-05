@@ -24,10 +24,12 @@
 
 typedef struct
 {
+    unsigned char startByte;            // Start byte
     unsigned char spring;               // from 0x00 to 0x7F -> 128 levels
     unsigned char friction;             // from 0x00 to 0x7F -> 128 levels
     unsigned char torqueDirection;      // 0x00 = Left, 0x01  = Right
     unsigned char torquePower;          // from 0x00 to 0xFF -> 128 levels
+    unsigned char crc;                  // (D1 ^ D2 ^ D3 ^ D4) & 0x7F
 } FFBPacket;
 
 typedef enum
@@ -42,8 +44,7 @@ typedef enum
 int initFFB(char *devicePath);
 int disconnectFFB();
 
-FFBStatus processPacket();
-
-FFBStatus readPacket(FFBPacket *packet);
+FFBStatus readPacket();
+FFBStatus processPacket(unsigned char* packet);
 
 #endif //FFB_H_

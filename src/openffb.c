@@ -34,8 +34,9 @@ int main(int argc, char **argv)
 
   char rawRequest[6];
   unsigned int effect=0;
+  double stength = 0.5;
   /* Get the correct game output mapping */
-  FFBCLIStatus argumentsStatus = parseArguments(argc, argv, localConfig->hapticName, effect, rawRequest);
+  FFBCLIStatus argumentsStatus = parseArguments(argc, argv, localConfig->hapticName, effect, stength, rawRequest);
   switch (argumentsStatus)
   {
   case FFB_CLI_STATUS_ERROR:
@@ -54,13 +55,13 @@ int main(int argc, char **argv)
 
 
 
-if(initHaptic(localConfig->hapticName))
-{
-  if(effect)
-    TriggerEffect(effect, 500);
-  else if(strlen(rawRequest)==7)
-      processPacket();
-}
+  if(initHaptic(localConfig->hapticName))
+  {
+    if(effect)
+      TriggerEffect(effect, 1);
+    else if(strlen(rawRequest)==6)
+        processPacket(rawRequest);
+  }
 return 0;
 
 /*
@@ -78,7 +79,7 @@ return 0;
   /* Setup the Aganyte's Sega FFB Controller with Serial over USB connection */
   if (!initFFB(localConfig->segaFFBControllerPath))
   {
-    debug(0, "Error: Could not initialise JVS\n");
+    debug(0, "Error: Could not initialise FFB\n");
     return EXIT_FAILURE;
   }
 
@@ -89,17 +90,17 @@ return 0;
   FFBStatus processingStatus;
   while (running)
   {
-    processingStatus = processPacket();
+    processingStatus = readPacket();
     switch (processingStatus)
     {
-    case FFB_STATUS_ERROR_CHECKSUM:
-      debug(0, "Error: A checksum error occoured\n");
-      break;
-    case FFB_STATUS_ERROR_TIMEOUT:
-      break;
-    default:
-      break;
-    }
+      case FFB_STATUS_ERROR_CHECKSUM:
+        debug(0, "Error: A checksum error occoured\n");
+        break;
+      case FFB_STATUS_ERROR_TIMEOUT:
+        break;
+      default:
+        break;
+      }
   }
 
   /* Close the file pointer */

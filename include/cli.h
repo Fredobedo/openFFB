@@ -30,7 +30,7 @@ static const struct
     {"SDL_HAPTIC_AUTOCENTER", SDL_HAPTIC_AUTOCENTER},
 };
 
-FFBCLIStatus parseArguments(int argc, char **argv, char *haptic, unsigned int effect, char* segaRawRequest);
+FFBCLIStatus parseArguments(int argc, char **argv, char *haptic, unsigned int effect, double strength, char* segaRawRequest);
 FFBCLIStatus printVersion();
 
 unsigned int hapticEffectFromString(char *effectString);

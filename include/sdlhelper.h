@@ -44,8 +44,9 @@
 // All calls to SDL_HapticSetGain() will scale linearly using SDL_HAPTIC_GAIN_MAX as the maximum.
 #define CONFIG_GLOBAL_GAIN 0
 
-
+#define SDL_USED_SUBSYSTEMS SDL_INIT_TIMER|SDL_INIT_JOYSTICK|SDL_INIT_HAPTIC
 SDL_Haptic* haptic;
+unsigned int supported;
 
 /* --- structure holding effect addresses --- */
 struct effects_t {
@@ -92,7 +93,7 @@ void TriggerFrictionEffectWithDefaultOption(double strength, bool isDefault);
 void TriggerRampEffect(double start, double end);
 void TriggerAutoCenterEffect(double strength);
 
-/* --- generic test function --- */
+/* --- generic function for testing --- */
 void TriggerEffect(unsigned int effect,double strength);
 /* --- This will stop the effect if it's running. Effects are automatically destroyed when the device is closed. --- */
 void clearEffect(int effect);
