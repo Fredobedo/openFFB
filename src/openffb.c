@@ -24,12 +24,7 @@ int main(int argc, char **argv)
   }
   FFBConfig *localConfig = getConfig();
 
-DumpAvailableHaptics();
 
-if(initHaptic("test"))
-  dumpSupportedFeatures();
-
-return 0;
 
   /* Initialise the debug output */
   if (!initDebug(localConfig->debugLevel))
@@ -37,8 +32,10 @@ return 0;
     printf("Failed to initialise debug output\n");
   }
 
+  char rawRequest[6];
+  unsigned int effect=0;
   /* Get the correct game output mapping */
-  FFBCLIStatus argumentsStatus = parseArguments(argc, argv, localConfig->gameSettingPath);
+  FFBCLIStatus argumentsStatus = parseArguments(argc, argv, localConfig->hapticName, effect, rawRequest);
   switch (argumentsStatus)
   {
   case FFB_CLI_STATUS_ERROR:
@@ -54,6 +51,17 @@ return 0;
   }
 
   debug(0, "OpenFFB Version "); printVersion();
+
+
+
+if(initHaptic(localConfig->hapticName))
+{
+  if(effect)
+    TriggerEffect(effect, 500);
+  else if(strlen(rawRequest)==7)
+      processPacket();
+}
+return 0;
 
 /*
   if (initInputs(localConfig->defaultGamePath))
@@ -73,6 +81,9 @@ return 0;
     debug(0, "Error: Could not initialise JVS\n");
     return EXIT_FAILURE;
   }
+
+
+
 
   /* Process packets forever */
   FFBStatus processingStatus;
@@ -105,7 +116,7 @@ void handleSignal(int signal)
 {
   if (signal == 2)
   {
-    debug(0, "\nClosing down OpenJVS...\n");
+    debug(0, "\nClosing down OpenFFB...\n");
     running = 0;
   }
 }

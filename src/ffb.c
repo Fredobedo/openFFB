@@ -10,8 +10,6 @@ int initFFB(char *devicePath)
 	if (!initDevice(devicePath))
 		return 0;
 
-
-
 	return 1;
 }
 
