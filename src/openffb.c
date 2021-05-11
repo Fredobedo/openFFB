@@ -19,11 +19,13 @@ int main(int argc, char **argv)
 
   /* Read the initial config */
   if (parseConfig(DEFAULT_CONFIG_PATH) != FFB_CONFIG_STATUS_SUCCESS)
-  {
-    printf("Warning: No valid config file found, a default is being used\n");
-  }
-  FFBConfig *localConfig = getConfig();
+    printf("Warning: No valid openffb config file found, a default is being used\n");
 
+  /* reading game profile settings */
+  if (parseConfig(DEFAULT_GAME_SETTING_PATH) != FFB_CONFIG_STATUS_SUCCESS)
+    printf("Warning: No valid game config file found, default FFB settings will be used\n");
+
+  FFBConfig *localConfig = getConfig();
 
 
   /* Initialise the debug output */
@@ -33,17 +35,8 @@ int main(int argc, char **argv)
   }
 
   /* Parsing arguments */
-  char triggerSegaRawRequest[6];
-  unsigned int triggerSDLeffect=0;
-  double SDLStength = 0.5;
-  int dumpSupportedEffects=0;
+  FFBCLIStatus argumentsStatus = parseArguments(argc, argv);
 
-  FFBCLIStatus argumentsStatus = parseArguments(argc, argv, 
-                                                localConfig->hapticName,
-                                                &dumpSupportedEffects, 
-                                                &triggerSDLeffect, 
-                                                &SDLStength, 
-                                                triggerSegaRawRequest);
   switch (argumentsStatus)
   {
   case FFB_CLI_STATUS_ERROR:
@@ -52,56 +45,33 @@ int main(int argc, char **argv)
   case FFB_CLI_STATUS_SUCCESS_CLOSE:
     return EXIT_SUCCESS;
     break;
-  case FFB_CLI_STATUS_SUCCESS_CONTINUE:
-    break;
-  default:
-    break;
   }
 
   debug(0, "OpenFFB Version "); printVersion();
-
-  /* dispatch to requested function */
-  if(initHaptic(localConfig->hapticName))
-  {
-    if(dumpSupportedEffects){
-      debug(0, "D3\n");
-      dumpSupportedFeatures();
-    }
-    else
-    {
-      debug(0, "D4\n");
-    }
-
-    /* SDL Effect requested */
-    if(triggerSDLeffect)
-      TriggerEffect(triggerSDLeffect, SDLStength);
-
-    /* Effect based on raw request */  
-    else if(strlen(triggerSegaRawRequest)==6)
-      processPacket(triggerSegaRawRequest);
-      
-  }
-return 0;
-
-/*
-  if (initInputs(localConfig->defaultGamePath))
-  {
-    debug(0, "Error: Could not initialise the inputs - make sure you are root\n");
-    debug(0, "Try running `sudo openjvs --list` to see the devices\n");
-    return EXIT_FAILURE;
-  }
-
-  */
   debug(0, "  Sega FFB Controller:\t\t%s\n", localConfig->segaFFBControllerPath);
   debug(0, "\nDebug messages will appear below, you are in debug mode %d.\n\n", localConfig->debugLevel);
 
-  /* Setup the Aganyte's Sega FFB Controller with Serial over USB connection */
-  if (!initFFB(localConfig->segaFFBControllerPath))
-  {
-    debug(0, "Error: Could not initialise FFB\n");
+  strcpy(localConfig->hapticName, arguments.haptic_name);
+
+  /* dispatch to requested function */
+  if(!initHaptic(localConfig->hapticName))
     return EXIT_FAILURE;
+
+  if(containArgument(GET_SUPPORTED_EFFECTS))
+    dumpSupportedFeatures();
+
+  if(containArgument(TRIGGER_SDL_EFFECT)){
+    double SDLStrength = 0.5;
+    if(containArgument(SET_FORCE))
+      SDLStrength=((double)atoi(getArgumentValue(TRIGGER_SDL_EFFECT)))/100;
+    
+    TriggerEffect(hapticEffectFromString(getArgumentValue(TRIGGER_SDL_EFFECT)), SDLStrength);
   }
 
+  if(containArgument(TRIGGER_SEGA_FFB_RAW_REQUEST))
+    processPacket(getArgumentValue(TRIGGER_SEGA_FFB_RAW_REQUEST));
+
+return 0;
 
 
 

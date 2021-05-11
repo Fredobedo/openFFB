@@ -3,8 +3,8 @@
 
 //#include "input.h"
 
-#define DEFAULT_CONFIG_PATH "/etc/openjvs/config"
-#define DEFAULT_GAME_SETTING_PATH "/etc/openjvs/games/"
+#define DEFAULT_CONFIG_PATH "/etc/openffb/config"
+#define DEFAULT_GAME_SETTING_PATH "/etc/openffb/games/"
 
 #define MAX_PATH_LENGTH 1024
 #define MAX_LINE_LENGTH 1024
