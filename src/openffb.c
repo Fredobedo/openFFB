@@ -32,11 +32,18 @@ int main(int argc, char **argv)
     printf("Failed to initialise debug output\n");
   }
 
-  char rawRequest[6];
-  unsigned int effect=0;
-  double stength = 0.5;
-  /* Get the correct game output mapping */
-  FFBCLIStatus argumentsStatus = parseArguments(argc, argv, localConfig->hapticName, effect, stength, rawRequest);
+  /* Parsing arguments */
+  char triggerSegaRawRequest[6];
+  unsigned int triggerSDLeffect=0;
+  double SDLStength = 0.5;
+  int dumpSupportedEffects=0;
+
+  FFBCLIStatus argumentsStatus = parseArguments(argc, argv, 
+                                                localConfig->hapticName,
+                                                &dumpSupportedEffects, 
+                                                &triggerSDLeffect, 
+                                                &SDLStength, 
+                                                triggerSegaRawRequest);
   switch (argumentsStatus)
   {
   case FFB_CLI_STATUS_ERROR:
@@ -53,14 +60,26 @@ int main(int argc, char **argv)
 
   debug(0, "OpenFFB Version "); printVersion();
 
-
-
+  /* dispatch to requested function */
   if(initHaptic(localConfig->hapticName))
   {
-    if(effect)
-      TriggerEffect(effect, 1);
-    else if(strlen(rawRequest)==6)
-        processPacket(rawRequest);
+    if(dumpSupportedEffects){
+      debug(0, "D3\n");
+      dumpSupportedFeatures();
+    }
+    else
+    {
+      debug(0, "D4\n");
+    }
+
+    /* SDL Effect requested */
+    if(triggerSDLeffect)
+      TriggerEffect(triggerSDLeffect, SDLStength);
+
+    /* Effect based on raw request */  
+    else if(strlen(triggerSegaRawRequest)==6)
+      processPacket(triggerSegaRawRequest);
+      
   }
 return 0;
 

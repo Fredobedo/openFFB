@@ -18,7 +18,8 @@
  **/
 FFBCLIStatus printUsage()
 {
-    debug(0, "Usage: openffb haptic_name\n\n");
+    debug(0, "Usage: openffb [HAPTIC_NAME] [OPTION]\n\n");
+    debug(0, "Haptic_name:                            Select haptic name or index\n");
     debug(0, "Options:\n");
     debug(0, "  --help                                Displays this text\n");
     debug(0, "  --version                             Displays OpenFFB Version\n");
@@ -47,7 +48,7 @@ FFBCLIStatus printUsage()
     debug(0, "                                       - D2 => Constant Torque Direction (Left=0x00, Right=0x01) \n");
     debug(0, "                                       - D3 => Constant Torque Power (0x00->0xFF)\n");
     debug(0, "\n");
-    debug(0, "  --SegaFFB6BytesRawRequest:[PACKET]  Activate FFB Effects based on a 4 bytes raw request:\n");
+    debug(0, "  --SegaFFB6BytesRawRequest:[PACKET]  Activate FFB Effects based on a 6 bytes raw request:\n");
     debug(0, "                                       - D0 => Start byte (0x80)\n");
     debug(0, "                                       - D1 => Spring     (0x00->0x7F)\n");
     debug(0, "                                       - D2 => Friction   (0x00->0x7F)\n");
@@ -93,7 +94,7 @@ unsigned int hapticEffectFromString(char *effectString)
  * @param game Pointer to a char array holding the game setting file name
  * @returns The status of the action performed
  **/
-FFBCLIStatus parseArguments(int argc, char **argv, char *haptic, unsigned int effect, double strengh, char* segaRawRequest)
+FFBCLIStatus parseArguments(int argc, char **argv, char *haptic, int* dumpSupportedEffects, unsigned int* triggerSDLeffect, double* SDLStrengh, char* triggerSegaRawRequest)
 {
     // If there are no arguments simply continue
     if (argc <= 1)
@@ -119,52 +120,65 @@ FFBCLIStatus parseArguments(int argc, char **argv, char *haptic, unsigned int ef
         DumpConfig();
         return FFB_CLI_STATUS_SUCCESS_CLOSE;
     }
+    else if (argv[1][0] != '-')
+        strcpy(haptic, argv[1]);
 
-    /*  --- Parameters with token --- */
-    char *command = strtok(argv[1], ":");
-    char* token = NULL;
-
-    if(command!=NULL){
-        // If the first argument doesn't start with a dash it must be the hapic name
-        if (strcmp(command, "--triggerSDLEffect") == 0)
+    if (argc > 2)
+    {
+        if (strcmp(argv[2], "--supportedEffects") == 0)
         {
-            token=strtok(NULL, ":");
-            effect = hapticEffectFromString(token);
-            if (effect==-1)
-                return FFB_CLI_STATUS_ERROR;
-            else
-            {
-                token=strtok(NULL, ":");
-                if(token!=NULL)
-                    strengh=((double)atoi(token))/100;
+            *dumpSupportedEffects=1;
+            return FFB_CLI_STATUS_SUCCESS_CONTINUE;
+        }
+        else {
+            /*  --- Parameters with token --- */
+            char *command = strtok(argv[2], ":");
+            char* token = NULL;
+
+            if(command!=NULL){
+                if (strcmp(command, "--triggerSDLEffect") == 0)
+                {
+                    token=strtok(NULL, ":");
+                    *triggerSDLeffect = hapticEffectFromString(token);
+                    if (*triggerSDLeffect==-1)
+                        return FFB_CLI_STATUS_ERROR;
+                    else
+                    {
+                        token=strtok(NULL, ":");
+                        if(token!=NULL)
+                            *SDLStrengh=((double)atoi(token))/100;
+
+                    }
+                        return FFB_CLI_STATUS_SUCCESS_CONTINUE;
+                }
+
+                if (strcmp(command, "--SegaFFB4BytesRawRequest") == 0)
+                {
+                    token=strtok(NULL, ":");
+
+                    // D0 => Start byte (0x80)
+                    // D5 => CRC        (D1^D2^D3^D4)&0x7F
+                    sprintf(triggerSegaRawRequest, "%d%s%d",0x80,token, token[0]^token[1]^token[2]^token[3]&0x7F);
+                    printf("segaRawRequest=%s\n", triggerSegaRawRequest);
+
+                    return FFB_CLI_STATUS_SUCCESS_CONTINUE;
+                }   
+
+                if (strcmp(command, "--SegaFFB6BytesRawRequest") == 0)
+                {
+                    triggerSegaRawRequest=strtok(NULL, ":");
+                    printf("segaRawRequest=%s\n", triggerSegaRawRequest);
+
+                    return FFB_CLI_STATUS_SUCCESS_CONTINUE;
+                }   
 
             }
-                return FFB_CLI_STATUS_SUCCESS_CONTINUE;
         }
-
-        // If the first argument doesn't start with a dash it must be the hapic name
-        if (strcmp(argv[1], "--SegaFFB4BytesRawRequest") == 0)
-        {
-            token=strtok(NULL, ":");
-
-            // D0 => Start byte (0x80)
-            // D5 => CRC        (D1^D2^D3^D4)&0x7F
-            sprintf(segaRawRequest, "%d%s%d",0x80,token, token[0]^token[1]^token[2]^token[3]&0x7F);
-            printf("segaRawRequest=%s\n", segaRawRequest);
-
-            return FFB_CLI_STATUS_SUCCESS_CONTINUE;
-        }   
-        // If the first argument doesn't start with a dash it must be the hapic name
-        if (strcmp(argv[1], "--SegaFFB6BytesRawRequest") == 0)
-        {
-            segaRawRequest=strtok(NULL, ":");
-            printf("segaRawRequest=%s\n", segaRawRequest);
-
-            return FFB_CLI_STATUS_SUCCESS_CONTINUE;
-        }   
-
     }
-    // If none of these where found, the argument is unknown.
-    debug(0, "Unknown argument %s\n", argv[1]);
-    return FFB_CLI_STATUS_ERROR;
+    if(!sizeof(haptic)) {
+        debug(0, "Unknown argument(s)\n");
+        return FFB_CLI_STATUS_ERROR;
+    }
+    else
+        return FFB_CLI_STATUS_SUCCESS_CONTINUE;
 }

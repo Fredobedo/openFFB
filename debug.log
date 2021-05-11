@@ -1,0 +1,29 @@
+; ---- set permissions --- 
+whoami
+ls -la /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
+sudo /usr/sbin/usesrmod -G dialout fred
+id -nG fred
+or
+chmod o+rw /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
+
+; ---- read Sega FFB Controller --- 
+cat -v < /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
+screen /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0 9600
+
+; ---- write Sega FFB Controller --- 
+stty -F /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0 speed 9600 cs8 -cstopb -parenb &&
+echo -ne '\033[2J' > /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
+echo -e "\x7E\x03\xD0\xAF und normaler Text" > /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
+
+; ---- scripting --- 
+stty -F /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0 9600 raw -echo   #CONFIGURE SERIAL PORT
+exec 3</dev/serial/by-id/usb-1a86_USB_Serial-if00-port0                   #REDIRECT SERIAL OUTPUT TO FD 3
+  cat <&3 > /tmp/ttyDump.dat &                                            #REDIRECT SERIAL OUTPUT TO FILE
+  PID=$!                                                                  #SAVE PID TO KILL CAT
+    echo "R" > /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0           #SEND COMMAND STRING TO SERIAL PORT
+    sleep 0.2s                                                            #WAIT FOR RESPONSE
+  kill $PID                                                               #KILL CAT PROCESS
+  wait $PID 2>/dev/null                                                   #SUPRESS "Terminated" output
+
+exec 3<&-                                                                 #FREE FD 3
+cat /tmp/ttyDump.dat                                                      #DUMP CAPTURED DATA

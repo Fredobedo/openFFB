@@ -7,22 +7,33 @@
 #include<stdio.h>
 #include<string.h>
 
-
 int initHaptic(char* name)
 {
     int idxDevice=-1;
 
-    /* Initialize the force feedbackness */
+    /* Initialize all necessary SDL subsystems */
     SDL_Init(SDL_USED_SUBSYSTEMS);
-    debug(0, "%d Haptic devices detected.\n", SDL_NumHaptics());
+
     if (SDL_NumHaptics() > 0) {
-        /* Try to find matching device */
-        for (int i = 0; i < SDL_NumHaptics(); i++) {
-            if (strcmp(SDL_HapticName(i), name) != 0){
-                idxDevice=i;
-                break;
-            }
-        }
+		debug(0, "%d Haptic devices detected.\n", SDL_NumHaptics());
+
+
+		char *end;
+		long lnum = strtol(name, &end, 10); 
+		int num = (int) lnum;
+
+		if (end != name && SDL_NumHaptics() > num) {
+			idxDevice=num;
+		}
+		else{
+			/* Try to find matching device */
+			for (int i = 0; i < SDL_NumHaptics(); i++) {
+				if (strcmp(GetSimplifiedName(SDL_HapticName(i)), name) == 0){
+					idxDevice=i;
+					break;
+				}
+			}
+		}
 
         if (idxDevice ==-1) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to find device matching '%s', aborting.\n",
@@ -30,14 +41,13 @@ int initHaptic(char* name)
             return 0;
         }
 
-
         haptic = SDL_HapticOpen(idxDevice);
         if (haptic == NULL) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to create the haptic device: %s\n",
                 SDL_GetError());
             return 0;
         }
-        debug(0, "Device: %s\n", SDL_HapticName(idxDevice));
+        debug(0, "Device found: %s\n", SDL_HapticName(idxDevice));
 
 		// Store supported Effect Mask
 		supported = SDL_HapticQuery(haptic);
@@ -45,14 +55,10 @@ int initHaptic(char* name)
         // Let's create effects and upload them to the device
         CreateHapticEffects();
 
-
-
-
-
-
         return 1;
     }
     else {
+		debug(0, "Error, no haptic device detected.\n");
         return 0;
     }
 }
@@ -180,25 +186,40 @@ void DumpAvailableHaptics()
     int nbrOfHaptics = SDL_NumHaptics();
     if (nbrOfHaptics > 0) {
         for (int i = 0; i < SDL_NumHaptics(); i++) 
-            debug(0, "Device[%d]: %s\n", i, SDL_HapticName(i));
+            debug(0, "Device[%d]: %s\n", i, GetSimplifiedName(SDL_HapticName(i)));
     } 
     else if (nbrOfHaptics==0) 
         debug(0, "-> Warning, no haptic found!\n");   
     else
         debug(0, "-> Warning, %s\n", SDL_GetError()); 
 }
+
 /*
  * Cleans up a bit.
  */
 void abort_execution(void)
 {
     debug(0, "\nAborting program execution.\n");
-
-    SDL_HapticClose(haptic);
+	if(haptic){
+		SDL_HapticStopAll(haptic);
+		SDL_HapticClose(haptic);
+	}
     SDL_Quit();
 }
 
+char* GetSimplifiedName(const char* name)
+{
+	char* simplifiedName=malloc (sizeof (char) * 128);;
+	strcpy(simplifiedName, name);
 
+	for (int i = 0; i < (int)strlen(simplifiedName); i++)
+	{
+		simplifiedName[i] = tolower(simplifiedName[i]);
+		if (simplifiedName[i] == ' ' || simplifiedName[i] == '/' || simplifiedName[i] == '(' || simplifiedName[i] == ')')
+			simplifiedName[i] = '-';
+	}
+	return simplifiedName;
+}
 /*
  * Displays information about the haptic device.
  */

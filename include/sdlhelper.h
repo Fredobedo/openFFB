@@ -72,8 +72,10 @@ void abort_execution(void);
 
 //void HapticPrintSupported(SDL_Haptic* haptic);
 int initHaptic(char* name);
+
 void CreateHapticEffects();
 void DumpAvailableHaptics();
+char* GetSimplifiedName(const char* name);
 
 /* --- SDL Effects (from Boomslangnz)          --- */
 /* we most probably will not use all of them       */

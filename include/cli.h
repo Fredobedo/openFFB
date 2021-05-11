@@ -1,7 +1,7 @@
 #ifndef CLI_H_
 #define CLI_H_
 
-
+#include <stdbool.h>
 #include <SDL2/SDL_haptic.h>
 
 typedef enum
@@ -30,7 +30,7 @@ static const struct
     {"SDL_HAPTIC_AUTOCENTER", SDL_HAPTIC_AUTOCENTER},
 };
 
-FFBCLIStatus parseArguments(int argc, char **argv, char *haptic, unsigned int effect, double strength, char* segaRawRequest);
+FFBCLIStatus parseArguments(int argc, char **argv, char *haptic, int* dumpSupportedEffects, unsigned int* triggerSDLeffect, double* SDLStrengh, char* triggerSegaRawRequest);
 FFBCLIStatus printVersion();
 
 unsigned int hapticEffectFromString(char *effectString);
