@@ -343,8 +343,8 @@ void TriggerConstantEffect(int direction, double strength)
 		SDL_HapticUpdateEffect(haptic, effects.effect_constant_id, &tempEffect);
 		SDL_HapticRunEffect(haptic, effects.effect_constant_id, 1);
 	}
-	else if(getConfig()->enableRumble)
-		SDL_HapticRumblePlay(haptic, strength, getConfig()->feedbackLength);
+	else
+		TriggerRumbleEffectDefault(strength);
 }
 
 void TriggerInertiaEffect(double strength)
@@ -589,8 +589,19 @@ void TriggerFrictionEffectWithDefaultOption(double strength, bool isDefault)
 		SDL_HapticUpdateEffect(haptic, effects.effect_friction_id, &tempEffect);
 		SDL_HapticRunEffect(haptic, effects.effect_friction_id, 1);
 	}
-	else if(getConfig()->enableRumble)
-		SDL_HapticRumblePlay(haptic, strength, getConfig()->feedbackLength);
+	else 
+		TriggerRumbleEffectDefault(strength);
+}
+
+void TriggerRumbleEffectDefault(double strength)
+{
+		TriggerRumbleEffect(strength, getConfig()->feedbackLength);
+}
+
+void TriggerRumbleEffect(double strength, int length)
+{
+	if(getConfig()->enableRumble)
+		SDL_HapticRumblePlay(haptic, strength, length);
 }
 
 void TriggerSineEffect(uint16_t period, uint16_t fadePeriod, double strength)

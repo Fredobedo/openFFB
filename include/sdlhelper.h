@@ -57,6 +57,8 @@ void TriggerFrictionEffect(double strength);
 void TriggerFrictionEffectWithDefaultOption(double strength, bool isDefault);
 void TriggerRampEffect(double start, double end);
 void TriggerAutoCenterEffect(double strength);
+void TriggerRumbleEffectDefault(double strength);
+void TriggerRumbleEffect(double strength, int length);
 
 /* --- generic function for testing --- */
 void TriggerEffect(unsigned int effect,double strength);

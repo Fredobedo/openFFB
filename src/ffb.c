@@ -87,3 +87,15 @@ FFBStatus processPacket(unsigned char* packet)
  
 	return FFB_STATUS_SUCCESS;
 }
+
+void playCOMInitEffect()
+{
+	TriggerRumbleEffectDefault(1.0);
+	usleep(500);
+	TriggerRumbleEffectDefault(1.0);
+}
+
+void playCOMEndEffect()
+{
+	TriggerRumbleEffect(1.0, 2000);
+}

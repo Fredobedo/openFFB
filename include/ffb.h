@@ -25,10 +25,10 @@
 typedef struct
 {
     uint8_t startByte;            // Start byte
-    double spring;                // from 0x00 to 0x7F -> 128 levels
-    double friction;             // from 0x00 to 0x7F -> 128 levels
+    double spring;                // from 0x00 to 0x7F -> 128 levels converted to double 0.0 -> 1.0
+    double friction;              // from 0x00 to 0x7F -> 128 levels converted to double 0.0 -> 1.0 
     uint8_t torqueDirection;      // 0x00 = Left, 0x01  = Right
-    double torquePower;           // from 0x00 to 0xFF -> 128 levels
+    double torquePower;           // from 0x00 to 0xFF -> 128 levels converted to double 0.0 -> 1.0
     uint8_t crc;                  // (D1 ^ D2 ^ D3 ^ D4) & 0x7F
 } FFBPacket;
 
@@ -41,10 +41,17 @@ typedef enum
     FFB_STATUS_ERROR_UNSUPPORTED_COMMAND,
 } FFBStatus;
 
+/* --- init haptic device with help of SDL library --- */
 int initFFB(char *devicePath);
 int disconnectFFB();
 
+/* --- read usb2 serial communication from Sega FFB Controller --- */
 FFBStatus readPacket();
+/* --- dispatch Sega FFB Controller request --- */
 FFBStatus processPacket(unsigned char* packet);
 
+/* --- openFFB execute an initial effect when communication with Sega FFB controller is up and running --- */
+void playCOMInitEffect();
+/* --- openFFB execute an end effect when communication with Sega FFB controller is finished --- */
+void playCOMEndEffect();
 #endif //FFB_H_
