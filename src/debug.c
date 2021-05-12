@@ -31,15 +31,4 @@ void debugBuffer(int level, unsigned char *buffer, int length)
     printf("\n");
 }
 
-void debugPacket(int level, FFBPacket *packet)
-{
-    if (globalLevel < level)
-        return;
 
-    printf("SPRING:           %d\n", packet->spring);
-    printf("FRICTION:         %d\n", packet->friction);
-    printf("TORQUE DIRECTION: %d\n", packet->torqueDirection);
-    printf("TORQUE POWER:     %d\n", packet->torquePower);
-
-    printf("\n");
-}

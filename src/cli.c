@@ -45,18 +45,18 @@ FFBCLIStatus printUsage()
     debug(0, "   --- NEXT IS FOR DEBUGGING PURPOSE !!!! --- \n");
     debug(0, "\n"); 
     debug(0, "  --4BytesSegaFFBRawRequest=[PACKET]  Activate FFB Effects based on a 4 bytes raw request:\n");
-    debug(0, "                                       - D0 => Spring     (0x00->0x7F)\n");
-    debug(0, "                                       - D1 => Friction   (0x00->0x7F)\n");
-    debug(0, "                                       - D2 => Constant Torque Direction (Left=0x00, Right=0x01) \n");
-    debug(0, "                                       - D3 => Constant Torque Power (0x00->0xFF)\n");
+    debug(0, "                                       - D0 => Spring     (00->7F)\n");
+    debug(0, "                                       - D1 => Friction   (00->7F)\n");
+    debug(0, "                                       - D2 => Constant Torque Direction (Left=00, Right=01) \n");
+    debug(0, "                                       - D3 => Constant Torque Power (00->FF)\n");
     debug(0, "\n");
     debug(0, "  --6BytesSegaFFBRawRequest=[PACKET]  Activate FFB Effects based on a 6 bytes raw request:\n");
-    debug(0, "                                       - D0 => Start byte (0x80)\n");
-    debug(0, "                                       - D1 => Spring     (0x00->0x7F)\n");
-    debug(0, "                                       - D2 => Friction   (0x00->0x7F)\n");
-    debug(0, "                                       - D3 => Constant Torque Direction (Left=0x00, Right=0x01) \n");
-    debug(0, "                                       - D4 => Constant Torque Power (0x00->0xFF)\n");
-    debug(0, "                                       - D5 => CRC        (D1^D2^D3^D4)&0x7F\n");
+    debug(0, "                                       - D0 => Start byte (80)\n");
+    debug(0, "                                       - D1 => Spring     (00->7F)\n");
+    debug(0, "                                       - D2 => Friction   (00->7F)\n");
+    debug(0, "                                       - D3 => Constant Torque Direction (Left=00, Right=01) \n");
+    debug(0, "                                       - D4 => Constant Torque Power (00->FF)\n");
+    debug(0, "                                       - D5 => CRC        (D1^D2^D3^D4)&7F\n");
     debug(0, "\n");
     return FFB_CLI_STATUS_SUCCESS_CLOSE;
 }
@@ -98,11 +98,18 @@ bool containArgument(int mode)
 char* getArgumentValue(int mode)
 {
     for (int i = 0; i < sizeof(arguments.keyvalue)/sizeof(arguments.keyvalue[0]); i++) {
-        if (arguments.keyvalue[i].mode==mode) 
+        if (arguments.keyvalue[i].mode==mode)
             return arguments.keyvalue[i].value;
-    }
+     }
+
     return 0;
 }
+
+ unsigned char ahex2bin(unsigned char MSB, unsigned char LSB) {  
+ if (MSB > '9') MSB -= 7;   // Convert MSB value to a contiguous range (0x30..0x3F)  
+ if (LSB > '9') LSB -= 7;   // Convert LSB value to a contiguous range (0x30..0x3F)  
+ return (MSB <<4) | (LSB & 0x0F);   // Make a result byte  using only low nibbles of MSB and LSB thus neglecting the input register case
+ }  
 
 /**
  * Parses the command line arguments
@@ -149,24 +156,51 @@ FFBCLIStatus parseArguments(int argc, char **argv)
                 strcpy(arguments.haptic_name, strtok(NULL, "="));
             }              
             else if ((strcmp(command, "--supportedEffects") == 0)         || (strcmp(command, "-s") == 0)) {
-                arguments.keyvalue[cpKeyValue++].mode=GET_SUPPORTED_EFFECTS;
+                arguments.keyvalue[cpKeyValue].mode=GET_SUPPORTED_EFFECTS;
+                cpKeyValue++;
             }
             else if ((strcmp(command, "--triggerSDLEffect") == 0)         || (strcmp(command, "-t") == 0)) {
-                arguments.keyvalue[cpKeyValue++].mode=TRIGGER_SDL_EFFECT;
+                arguments.keyvalue[cpKeyValue].mode=TRIGGER_SDL_EFFECT;
                 strcpy(arguments.keyvalue[cpKeyValue].value,strtok(NULL, "="));
+                cpKeyValue++;
             }
             else if ((strcmp(command, "--force") == 0)                    || (strcmp(command, "-f") == 0)) {
-                arguments.keyvalue[cpKeyValue++].mode=SET_FORCE;
-                strcpy(arguments.keyvalue[cpKeyValue].value,strtok(NULL, "="));                    
+                arguments.keyvalue[cpKeyValue].mode=SET_FORCE;
+                strcpy(arguments.keyvalue[cpKeyValue].value,strtok(NULL, "="));
+                cpKeyValue++;                                    
             }
             else if ((strcmp(command, "--4BytesSegaFFBRawRequest") == 0)  || (strcmp(command, "-4") == 0)) {
-                arguments.keyvalue[cpKeyValue++].mode=TRIGGER_SEGA_FFB_RAW_REQUEST;
+                arguments.keyvalue[cpKeyValue].mode=TRIGGER_SEGA_FFB_RAW_REQUEST;
                 token=strtok(NULL, "=");
-                sprintf(arguments.keyvalue[cpKeyValue].value, "%d%s%d",0x80,token, token[0]^token[1]^token[2]^token[3]&0x7F);
+                
+                unsigned char AsciiHexToBin[4]={ahex2bin(token[0],token[1]),
+                                                ahex2bin(token[2],token[3]),
+                                                ahex2bin(token[4],token[5]),
+                                                ahex2bin(token[6],token[7])};
+
+                sprintf(arguments.keyvalue[cpKeyValue].value, "%c%c%c%c%c%c",
+                    0x80,
+                    AsciiHexToBin[0], 
+                    AsciiHexToBin[1],
+                    AsciiHexToBin[2],
+                    AsciiHexToBin[3],
+                    (AsciiHexToBin[0]^AsciiHexToBin[1]^AsciiHexToBin[2]^AsciiHexToBin[3])&0x7F);
+                
+                cpKeyValue++;
             }
             else if ((strcmp(command, "--6BytesSegaFFBRawRequest") == 0)  || (strcmp(command, "-6") == 0)) {
-                arguments.keyvalue[cpKeyValue++].mode=TRIGGER_SEGA_FFB_RAW_REQUEST;
-                strcpy(arguments.keyvalue[cpKeyValue].value,strtok(NULL, "="));
+                arguments.keyvalue[cpKeyValue].mode=TRIGGER_SEGA_FFB_RAW_REQUEST;
+                token=strtok(NULL, "=");
+                
+                sprintf(arguments.keyvalue[cpKeyValue].value, "%c%c%c%c%c%c",
+                                                ahex2bin(token[0],token[1]),
+                                                ahex2bin(token[2],token[3]),
+                                                ahex2bin(token[4],token[5]),
+                                                ahex2bin(token[6],token[7]),
+                                                ahex2bin(token[8],token[9]),
+                                                ahex2bin(token[10],token[11]));
+                                                
+                cpKeyValue++;                
             }
             else{
                 debug(0, "Unknown argument '%s'\n", command);

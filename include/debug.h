@@ -26,6 +26,6 @@
 int initDebug(int level);
 void debug(int level, const char *format, ...);
 void debugBuffer(int level, unsigned char *buffer, int length);
-void debugPacket(int level, FFBPacket *packet);
+
 
 #endif // DEBUG_H_

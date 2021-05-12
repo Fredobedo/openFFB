@@ -28,7 +28,7 @@ int initHaptic(char* name)
 		else{
 			/* Try to find matching device */
 			for (int i = 0; i < SDL_NumHaptics(); i++) {
-				if (strcmp(GetSimplifiedName(SDL_HapticName(i)), name) == 0){
+				if (strcmp(GetHapticSimplifiedName(SDL_HapticName(i)), name) == 0){
 					idxDevice=i;
 					break;
 				}
@@ -172,7 +172,10 @@ void CreateHapticEffects()
         tempEffect.condition.delay = 0;
         tempEffect.condition.length = 5000;
         effects.effect_leftright_id = SDL_HapticNewEffect(haptic, &tempEffect);    
-    }	
+    }
+	if(SDL_HapticRumbleSupported(haptic) && getConfig()->enableRumble) {
+		SDL_HapticRumbleInit(haptic);
+	}	
 }
 
 void DumpAvailableHaptics()
@@ -186,7 +189,7 @@ void DumpAvailableHaptics()
     int nbrOfHaptics = SDL_NumHaptics();
     if (nbrOfHaptics > 0) {
         for (int i = 0; i < SDL_NumHaptics(); i++) 
-            debug(0, "Device[%d]: %s\n", i, GetSimplifiedName(SDL_HapticName(i)));
+            debug(0, "Device[%d]: %s\n", i, GetHapticSimplifiedName(SDL_HapticName(i)));
     } 
     else if (nbrOfHaptics==0) 
         debug(0, "-> Warning, no haptic found!\n");   
@@ -207,7 +210,7 @@ void abort_execution(void)
     SDL_Quit();
 }
 
-char* GetSimplifiedName(const char* name)
+char* GetHapticSimplifiedName(const char* name)
 {
 	char* simplifiedName=malloc (sizeof (char) * 128);;
 	strcpy(simplifiedName, name);
@@ -269,12 +272,21 @@ void dumpSupportedFeatures()
     debug(0, "      - autocenter:  %s", CheckEffect(supported, SDL_HAPTIC_AUTOCENTER));
     debug(0, "      - status:      %s", CheckEffect(supported, SDL_HAPTIC_STATUS));
     debug(0, "      - pause:       %s", CheckEffect(supported, SDL_HAPTIC_PAUSE));
+    debug(0, "\n");
+	debug(0, "     Rumble Supported:\n");
+    debug(0, "      - rumble:      %s", CheckEffect(SDL_HapticRumbleSupported(haptic), 1));	
 }
 
-void clearEffect(int effect)
+void stopEffect(int effect)
 {
-    if (haptic != NULL)
-        SDL_HapticDestroyEffect(haptic, effect);
+    if (haptic)
+        SDL_HapticStopEffect(haptic, effect);
+}
+
+void stopAllEffects()
+{
+	if(haptic)
+		SDL_HapticStopAll(haptic);
 }
 
 void TriggerConstantEffect(int direction, double strength)
@@ -331,6 +343,8 @@ void TriggerConstantEffect(int direction, double strength)
 		SDL_HapticUpdateEffect(haptic, effects.effect_constant_id, &tempEffect);
 		SDL_HapticRunEffect(haptic, effects.effect_constant_id, 1);
 	}
+	else if(getConfig()->enableRumble)
+		SDL_HapticRumblePlay(haptic, strength, getConfig()->feedbackLength);
 }
 
 void TriggerInertiaEffect(double strength)
@@ -575,6 +589,8 @@ void TriggerFrictionEffectWithDefaultOption(double strength, bool isDefault)
 		SDL_HapticUpdateEffect(haptic, effects.effect_friction_id, &tempEffect);
 		SDL_HapticRunEffect(haptic, effects.effect_friction_id, 1);
 	}
+	else if(getConfig()->enableRumble)
+		SDL_HapticRumblePlay(haptic, strength, getConfig()->feedbackLength);
 }
 
 void TriggerSineEffect(uint16_t period, uint16_t fadePeriod, double strength)
