@@ -32,6 +32,8 @@ typedef struct
     uint8_t crc;                  // (D1 ^ D2 ^ D3 ^ D4) & 0x7F
 } FFBPacket;
 
+unsigned char previous_rawpacket[6];
+
 typedef enum
 {
     FFB_STATUS_SUCCESS,

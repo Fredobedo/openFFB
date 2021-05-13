@@ -106,9 +106,9 @@ char* getArgumentValue(int mode)
 }
 
  unsigned char ahex2bin(unsigned char MSB, unsigned char LSB) {  
- if (MSB > '9') MSB -= 7;   // Convert MSB value to a contiguous range (0x30..0x3F)  
- if (LSB > '9') LSB -= 7;   // Convert LSB value to a contiguous range (0x30..0x3F)  
- return (MSB <<4) | (LSB & 0x0F);   // Make a result byte  using only low nibbles of MSB and LSB thus neglecting the input register case
+    if (MSB > '9') MSB -= 7;          // Convert MSB value to a contiguous range (0x30..0x3F)  
+    if (LSB > '9') LSB -= 7;          // Convert LSB value to a contiguous range (0x30..0x3F)  
+     return (MSB <<4) | (LSB & 0x0F); // Make a result byte  using only low nibbles of MSB and LSB thus neglecting the input register case
  }  
 
 /**
@@ -212,9 +212,13 @@ FFBCLIStatus parseArguments(int argc, char **argv)
             debug(0, "--hapic parameter is required\n");
             return FFB_CLI_STATUS_ERROR;
         }
-        return FFB_CLI_STATUS_SUCCESS_CONTINUE;
+        else
+            return FFB_CLI_STATUS_SUCCESS_CONTINUE;
     }
-    else 
+    else if(strlen(arguments.haptic_name)==0){ 
         return FFB_CLI_STATUS_ERROR;
+    }
+    else
+        return FFB_CLI_STATUS_SUCCESS_CONTINUE;
 }
 

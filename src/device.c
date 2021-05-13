@@ -1,7 +1,7 @@
 #include "device.h"
 #include "debug.h"
 
-#define TIMEOUT_SELECT 200
+#define TIMEOUT_SELECT 2000
 
 int serialIO = -1;
 
@@ -9,6 +9,7 @@ int setSerialAttributes(int fd, int myBaud);
 
 int initDevice(char *devicePath)
 {
+  debug(0, "initDevice...\n");
   if ((serialIO = open(devicePath, O_RDWR | O_NOCTTY | O_SYNC | O_NDELAY)) < 0)
   {
     debug(0, "Error: Failed to open %s with:%d \n", devicePath, serialIO);
@@ -32,21 +33,23 @@ int readBytes(unsigned char *buffer, int amount)
 {
   fd_set fd_serial;
   struct timeval tv;
-
+//debug(0,"1\n");
   FD_ZERO(&fd_serial);
+//debug(0,"2\n");  
   FD_SET(serialIO, &fd_serial);
 
   tv.tv_sec = 0;
   tv.tv_usec = TIMEOUT_SELECT * 1000;
-
+//debug(0,"3\n");
   int filesReadyToRead = select(serialIO + 1, &fd_serial, NULL, NULL, &tv);
-
+//debug(0,"4\n");
   if (filesReadyToRead < 1)
     return -1;
 
   if (!FD_ISSET(serialIO, &fd_serial))
     return -1;
 
+//debug(0,"5\n");
   return read(serialIO, buffer, amount);
 }
 

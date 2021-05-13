@@ -78,13 +78,21 @@ FFBStatus processPacket(unsigned char* packet)
 	}
 	debug(0, "\nWill try to execute effect...\n");
 	/* --- spring            from 0x00 to 0x7F -> 128 levels --- */
-	TriggerSpringEffect(inputPacket.spring);
+	debug(0, "previous_rawpacket[1]=%02X, packet[1]=%02X\n", previous_rawpacket[1], packet[1]);
+	if(!(previous_rawpacket[1]==0x00 && packet[1]==0x00)){
+		TriggerSpringEffect(inputPacket.spring, previous_rawpacket[1]==packet[1]);
+	}
     /* --- friction          from 0x00 to 0x7F -> 128 levels --- */
-	TriggerFrictionEffect(inputPacket.friction);
+	if(!(previous_rawpacket[2]==0x00 && packet[2]==0x00)){
+		TriggerFrictionEffect(inputPacket.friction, previous_rawpacket[2]==packet[2]);		
+	}
     /* --- torqueDirection   0x00 = Left, 0x01  = Right      --- */
     /* --- torquePower       from 0x00 to 0xFF -> 128 levels --- */
-	TriggerConstantEffect(inputPacket.torqueDirection, inputPacket.torquePower);
- 
+	if(!(previous_rawpacket[3]==0x00 && packet[3]==0x00)){
+		TriggerConstantEffect(inputPacket.torqueDirection, inputPacket.torquePower, previous_rawpacket[3]==packet[3]);
+	}
+	strcpy(previous_rawpacket, packet);
+
 	return FFB_STATUS_SUCCESS;
 }
 

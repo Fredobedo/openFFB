@@ -27,3 +27,9 @@ exec 3</dev/serial/by-id/usb-1a86_USB_Serial-if00-port0                   #REDIR
 
 exec 3<&-                                                                 #FREE FD 3
 cat /tmp/ttyDump.dat                                                      #DUMP CAPTURED DATA
+
+touch ./virtualSerialIN
+touch ./virtualSerialOUT
+socat pty,link=/home/fred/Documents/openFFB/virtualSerialOUT,raw,echo=0 pty,link=/home/fred/Documents/openFFB/virtualSerialIN,raw,echo=0
+echo -e "\x80\x7F\x7F\x00\x00\x00" > /home/fred/Documents/openFFB/virtualSerialIN
+

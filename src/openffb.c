@@ -71,9 +71,14 @@ int main(int argc, char **argv)
   if(containArgument(TRIGGER_SEGA_FFB_RAW_REQUEST))
     processPacket(getArgumentValue(TRIGGER_SEGA_FFB_RAW_REQUEST));
 
-return 0;
+//return 0;
+if (!initFFB(localConfig->segaFFBControllerPath))
+ {
+  debug(0, "Error: Could not initialize communication with Sega FFB Controller (Serial over USBsu)\n");
+  return EXIT_FAILURE;
+}
 
-
+debug(0, "Will start the main loop...\n");
 
   /* Process packets forever */
   FFBStatus processingStatus;
@@ -86,6 +91,8 @@ return 0;
         debug(0, "Error: A checksum error occoured\n");
         break;
       case FFB_STATUS_ERROR_TIMEOUT:
+              printf(".");
+              fflush(stdout);
         break;
       default:
         break;
