@@ -383,7 +383,10 @@ void TriggerConstantEffect(int direction, double strength, bool replay)
 		SDL_HapticRunEffect(haptic, effects.effect_constant_id, 1);
 	}
 	else
+	{
+		debug(0, "-> not supported, will try default rumble\n");
 		TriggerRumbleEffectDefault(strength);
+	}
 }
 
 void TriggerInertiaEffect(double strength, bool replay)
@@ -650,8 +653,10 @@ void TriggerFrictionEffectWithDefaultOption(double strength, bool isDefault, boo
 		}
 		SDL_HapticRunEffect(haptic, effects.effect_friction_id, 1);
 	}
-	else 
+	else {
+		debug(0, "-> not supported, will try default rumble\n");
 		TriggerRumbleEffectDefault(strength);
+	}
 }
 
 void TriggerRumbleEffectDefault(double strength)
@@ -665,6 +670,8 @@ void TriggerRumbleEffect(double strength, int length)
 		debug(0, "Playing rumble effect...\n");
 		SDL_HapticRumblePlay(haptic, strength, length);
 	}
+	else
+		debug(0, "-> rumble not supported/active\n");
 }
 
 void TriggerSineEffect(uint16_t period, uint16_t fadePeriod, double strength, bool replay)

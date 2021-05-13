@@ -53,12 +53,13 @@ int main(int argc, char **argv)
 
   strcpy(localConfig->hapticName, arguments.haptic_name);
 
-  /* dispatch to requested function */
   if(!initHaptic(localConfig->hapticName))
     return EXIT_FAILURE;
 
-  if(containArgument(GET_SUPPORTED_EFFECTS))
+  if(containArgument(GET_SUPPORTED_EFFECTS)){
     dumpSupportedFeatures();
+    return EXIT_SUCCESS;
+  }
 
   if(containArgument(TRIGGER_SDL_EFFECT)){
     double SDLStrength = 0.5;
@@ -66,15 +67,19 @@ int main(int argc, char **argv)
       SDLStrength=((double)atoi(getArgumentValue(TRIGGER_SDL_EFFECT)))/100;
     
     TriggerEffect(hapticEffectFromString(getArgumentValue(TRIGGER_SDL_EFFECT)), SDLStrength);
+    usleep(localConfig->feedbackLength * 2000);
+    return EXIT_SUCCESS;
   }
 
-  if(containArgument(TRIGGER_SEGA_FFB_RAW_REQUEST))
+  if(containArgument(TRIGGER_SEGA_FFB_RAW_REQUEST)){
     processPacket(getArgumentValue(TRIGGER_SEGA_FFB_RAW_REQUEST));
+    usleep(localConfig->feedbackLength * 2000);
+    return EXIT_SUCCESS;
+  }
 
-//return 0;
 if (!initFFB(localConfig->segaFFBControllerPath))
  {
-  debug(0, "Error: Could not initialize communication with Sega FFB Controller (Serial over USBsu)\n");
+  debug(0, "Error: Could not initialize communication with Sega FFB Controller (Serial over USB)\n");
   return EXIT_FAILURE;
 }
 
