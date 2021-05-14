@@ -42,3 +42,30 @@ echo -e "\x80\x7F\x7F\x00\x00\x00" > /home/fred/Documents/openFFB/virtualSerialI
 - ceck if we must use SDL_HAPTIC_INFINITY in SDL_HapticRunEffect or in the structure
   (To repeat the effect over and over indefinitely, set iterations to SDL_HAPTIC_INFINITY. (Repeats the envelope - attack and fade.) To make one instance of the effect last indefinitely (so the effect does not fade), set the effect's length in its structure/union to SDL_HAPTIC_INFINITY instead.)
 - test openFFB as a service
+
+
+install new-lg4ff
+==================
+; check your installed kernel version
+apt search linux-headers-$(uname -r)
+
+; check if kernel headers are already installed
+ls -l /usr/src/linux-headers-$(uname -r)
+
+; if not installed
+sudo apt install linux-headers-$(uname -r)
+
+; install dkms
+sudo apt-get install dkms
+
+;create folder
+sudo mkdir /usr/src/new-lg4ff
+
+;download package
+wget https://github.com/berarma/new-lg4ff/archive/refs/heads/master.zip
+
+; extract and copy to destination folder
+sudo unzip ./master.zip "new-lg4ff-master/*" -d  "/usr/src/new-lg4ff/"
+
+;compile and install package
+sudo dkms install /usr/src/new-lg4ff
