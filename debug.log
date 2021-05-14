@@ -33,3 +33,12 @@ touch ./virtualSerialOUT
 socat pty,link=/home/fred/Documents/openFFB/virtualSerialOUT,raw,echo=0 pty,link=/home/fred/Documents/openFFB/virtualSerialIN,raw,echo=0
 echo -e "\x80\x7F\x7F\x00\x00\x00" > /home/fred/Documents/openFFB/virtualSerialIN
 
+// TO Do
+- make startup and end effet
+- test SDL effects as parameters
+- implement game file as parameter
+- Make install kit
+- test config and game files
+- ceck if we must use SDL_HAPTIC_INFINITY in SDL_HapticRunEffect or in the structure
+  (To repeat the effect over and over indefinitely, set iterations to SDL_HAPTIC_INFINITY. (Repeats the envelope - attack and fade.) To make one instance of the effect last indefinitely (so the effect does not fade), set the effect's length in its structure/union to SDL_HAPTIC_INFINITY instead.)
+- test openFFB as a service
