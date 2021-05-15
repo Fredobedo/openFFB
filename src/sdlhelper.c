@@ -15,8 +15,7 @@ int initHaptic(char* name)
     SDL_Init(SDL_USED_SUBSYSTEMS);
 
     if (SDL_NumHaptics() > 0) {
-		debug(0, "%d Haptic devices detected.\n", SDL_NumHaptics());
-
+		debug(1, "%d Haptic devices detected.\n", SDL_NumHaptics());
 
 		char *end;
 		long lnum = strtol(name, &end, 10); 
@@ -47,7 +46,7 @@ int initHaptic(char* name)
                 SDL_GetError());
             return 0;
         }
-        debug(0, "Device found: %s\n", SDL_HapticName(idxDevice));
+        debug(1, "Device found: %s\n", SDL_HapticName(idxDevice));
 
 		// Store supported Effect Mask
 		supported = SDL_HapticQuery(haptic);
@@ -58,7 +57,7 @@ int initHaptic(char* name)
         return 1;
     }
     else {
-		debug(0, "Error, no haptic device detected.\n");
+		debug(1, "Error, no haptic device detected.\n");
         return 0;
     }
 }
@@ -79,7 +78,7 @@ void CreateHapticEffects()
         effects.effect_constant_id = SDL_HapticNewEffect(haptic, &tempEffect); 
 
 		if(effects.effect_constant_id<0)
-			debug(0, "Error creating SDL_HAPTIC_CONSTANT effect: %s\n", SDL_GetError());
+			debug(1, "Error creating SDL_HAPTIC_CONSTANT effect: %s\n", SDL_GetError());
     }
 
     /* --- SDL_HAPTIC_FRICTION --- */
@@ -92,7 +91,7 @@ void CreateHapticEffects()
         effects.effect_friction_id = SDL_HapticNewEffect(haptic, &tempEffect);
 		
 		if(effects.effect_friction_id<0)
-			debug(0, "Error creating SDL_HAPTIC_FRICTION effect: %s\n", SDL_GetError());		
+			debug(1, "Error creating SDL_HAPTIC_FRICTION effect: %s\n", SDL_GetError());		
     }
     /* --- SDL_HAPTIC_SINE --- */
     if (supported & SDL_HAPTIC_SINE) {
@@ -109,7 +108,7 @@ void CreateHapticEffects()
         effects.effect_sine_id = SDL_HapticNewEffect(haptic, &tempEffect);
 
 		if(effects.effect_sine_id<0)
-			debug(0, "Error creating SDL_HAPTIC_SINE effect: %s\n", SDL_GetError());
+			debug(1, "Error creating SDL_HAPTIC_SINE effect: %s\n", SDL_GetError());
     }
     /* --- SDL_HAPTIC_SPRING --- */
     if (supported & SDL_HAPTIC_SPRING) {
@@ -121,7 +120,7 @@ void CreateHapticEffects()
         effects.effect_spring_id = SDL_HapticNewEffect(haptic, &tempEffect);
 
 		if(effects.effect_spring_id<0)
-			debug(0, "Error creating SDL_HAPTIC_SPRING effect: %s\n", SDL_GetError());
+			debug(1, "Error creating SDL_HAPTIC_SPRING effect: %s\n", SDL_GetError());
     }
     /* --- SDL_HAPTIC_INERTIA --- */
     if (supported & SDL_HAPTIC_INERTIA) {    
@@ -133,7 +132,7 @@ void CreateHapticEffects()
         effects.effect_inertia_id = SDL_HapticNewEffect(haptic, &tempEffect);
 
 		if(effects.effect_inertia_id<0)
-			debug(0, "Error creating SDL_HAPTIC_INERTIA effect: %s\n", SDL_GetError());		
+			debug(1, "Error creating SDL_HAPTIC_INERTIA effect: %s\n", SDL_GetError());		
     }
     /* --- SDL_HAPTIC_DAMPER --- */
     if (supported & SDL_HAPTIC_DAMPER) {    
@@ -145,7 +144,7 @@ void CreateHapticEffects()
         effects.effect_damper_id = SDL_HapticNewEffect(haptic, &tempEffect);
 
 		if(effects.effect_damper_id<0)
-			debug(0, "Error creating SDL_HAPTIC_DAMPER effect: %s\n", SDL_GetError());		
+			debug(1, "Error creating SDL_HAPTIC_DAMPER effect: %s\n", SDL_GetError());		
     }
     /* --- SDL_HAPTIC_TRIANGLE --- */
     if (supported & SDL_HAPTIC_TRIANGLE) {    
@@ -157,7 +156,7 @@ void CreateHapticEffects()
         effects.effect_triangle_id = SDL_HapticNewEffect(haptic, &tempEffect);
 
 		if(effects.effect_triangle_id<0)
-			debug(0, "Error creating SDL_HAPTIC_TRIANGLE effect: %s\n", SDL_GetError());		
+			debug(1, "Error creating SDL_HAPTIC_TRIANGLE effect: %s\n", SDL_GetError());		
     }
     /* --- SDL_HAPTIC_RAMP --- */
     if (supported & SDL_HAPTIC_RAMP) {    
@@ -169,7 +168,7 @@ void CreateHapticEffects()
         effects.effect_ramp_id = SDL_HapticNewEffect(haptic, &tempEffect);
 
 		if(effects.effect_ramp_id<0)
-			debug(0, "Error creating SDL_HAPTIC_RAMP effect: %s\n", SDL_GetError());		
+			debug(1, "Error creating SDL_HAPTIC_RAMP effect: %s\n", SDL_GetError());		
     }
     /* --- SDL_HAPTIC_SAWTOOTHUP --- */
     if (supported & SDL_HAPTIC_SAWTOOTHUP) {    
@@ -181,7 +180,7 @@ void CreateHapticEffects()
         effects.effect_sawtoothup_id = SDL_HapticNewEffect(haptic, &tempEffect);
 
 		if(effects.effect_sawtoothup_id<0)
-			debug(0, "Error creating SDL_HAPTIC_SAWTOOTHUP effect: %s\n", SDL_GetError());		
+			debug(1, "Error creating SDL_HAPTIC_SAWTOOTHUP effect: %s\n", SDL_GetError());		
     }
     /* --- SDL_HAPTIC_SAWTOOTHDOWN --- */
     if (supported & SDL_HAPTIC_SAWTOOTHDOWN) {    
@@ -193,7 +192,7 @@ void CreateHapticEffects()
         effects.effect_sawtoothdown_id = SDL_HapticNewEffect(haptic, &tempEffect);  
 
 		if(effects.effect_sawtoothdown_id<0)
-			debug(0, "Error creating SDL_HAPTIC_CARTESIAN effect: %s\n", SDL_GetError());		  
+			debug(1, "Error creating SDL_HAPTIC_CARTESIAN effect: %s\n", SDL_GetError());		  
     }
     /* --- SDL_HAPTIC_LEFTRIGHT --- */
     if (supported & SDL_HAPTIC_LEFTRIGHT) {    
@@ -205,11 +204,11 @@ void CreateHapticEffects()
         effects.effect_leftright_id = SDL_HapticNewEffect(haptic, &tempEffect);  
 
 		if(effects.effect_leftright_id<0)
-			debug(0, "Error creating SDL_HAPTIC_LEFTRIGHT effect: %s\n", SDL_GetError());		  
+			debug(1, "Error creating SDL_HAPTIC_LEFTRIGHT effect: %s\n", SDL_GetError());		  
     }
 	if(SDL_HapticRumbleSupported(haptic) && getConfig()->enableRumble) {
 		if(SDL_HapticRumbleInit(haptic)<0){
-			debug(0, "Error init RUMBLE effect: %s\n", SDL_GetError());
+			debug(1, "Error init RUMBLE effect: %s\n", SDL_GetError());
 			SDL_Haptic_RumbleSupported=false;
 		}
 		else
@@ -240,7 +239,7 @@ void DumpAvailableHaptics()
 
 void abort_execution(void)
 {
-    debug(0, "\nAborting program execution.\n");
+    debug(1, "\nAborting program execution.\n");
 	if(haptic){
 		SDL_HapticStopAll(haptic);
 		SDL_HapticClose(haptic);
@@ -325,66 +324,68 @@ void stopAllEffects()
 		SDL_HapticStopAll(haptic);
 }
 
-void TriggerConstantEffect(int direction, double strength, bool replay)
+void TriggerConstantEffect(int direction, double strength)
 {
-	debug(0, "TriggerConstantEffect\n");
-	if (supported & SDL_HAPTIC_CONSTANT) {
-		if(!replay)
+	//if(direction=1)
+	//direction=0;
+
+	debug(1, "TriggerConstantEffect\n");
+	if (supported & SDL_HAPTIC_CONSTANT) 
+	{
+		SDL_HapticEffect tempEffect;
+		SDL_memset(&tempEffect, 0, sizeof(SDL_HapticEffect));
+		tempEffect.type = SDL_HAPTIC_CONSTANT;
+		tempEffect.constant.direction.type = SDL_HAPTIC_CARTESIAN;
+		tempEffect.constant.direction.dir[0] = direction;
+		tempEffect.constant.length = getConfig()->feedbackLength;
+		tempEffect.constant.delay = 0;
+
+		int confMinForce = getConfig()->minForce;
+		int confMaxForce = getConfig()->maxForce;
+
+		/*
+		if (AlternativeFFB == 1)
 		{
-			SDL_HapticEffect tempEffect;
-			SDL_memset(&tempEffect, 0, sizeof(SDL_HapticEffect));
-			tempEffect.type = SDL_HAPTIC_CONSTANT;
-			tempEffect.constant.direction.type = SDL_HAPTIC_CARTESIAN;
-			tempEffect.constant.direction.dir[0] = direction;
-			tempEffect.constant.length = getConfig()->feedbackLength;
-			tempEffect.constant.delay = 0;
-
-			int confMinForce = getConfig()->minForce;
-			int confMaxForce = getConfig()->maxForce;
-
-			/*
-			if (AlternativeFFB == 1)
+			if (direction == -1)
 			{
-				if (direction == -1)
-				{
-					confMinForce = configAlternativeMinForceLeft;
-					confMaxForce = configAlternativeMaxForceLeft;
-				}
-				else
-				{
-					confMinForce = configAlternativeMinForceRight;
-					confMaxForce = configAlternativeMaxForceRight;
-				}
+				confMinForce = configAlternativeMinForceLeft;
+				confMaxForce = configAlternativeMaxForceLeft;
 			}
-			if (PowerMode == 1)
+			else
 			{
-				strength = pow(strength, 0.5);
+				confMinForce = configAlternativeMinForceRight;
+				confMaxForce = configAlternativeMaxForceRight;
 			}
-			*/
-
-			short MinForce = (short)(strength > 0.001 ? (getConfig()->minForce / 100.0 * 32767.0) : 0);
-			short MaxForce = (short)(getConfig()->maxForce / 100.0 * 32767.0);
-			short range = MaxForce - MinForce;
-			short level = (short)(strength * range + MinForce);
-
-			if (range > 0 && level < 0)
-			{
-				level = 32767;
-			}
-			else if (range < 0 && level > 0)
-			{
-				level = -32767;
-			}
-
-			tempEffect.constant.level = level;
-
-			SDL_HapticUpdateEffect(haptic, effects.effect_constant_id, &tempEffect);
 		}
-		SDL_HapticRunEffect(haptic, effects.effect_constant_id, 1);
+		if (PowerMode == 1)
+		{
+			strength = pow(strength, 0.5);
+		}
+		*/
+
+		short MinForce = (short)(strength > 0.001 ? (getConfig()->minForce / 100.0 * 32767.0) : 0);
+		short MaxForce = (short)(getConfig()->maxForce / 100.0 * 32767.0);
+		short range = MaxForce - MinForce;
+		short level = (short)(strength * range + MinForce);
+
+		if (range > 0 && level < 0)
+			level = 32767;
+
+		else if (range < 0 && level > 0)
+			level = -32767;
+
+		tempEffect.constant.level = level;
+
+		if(SDL_HapticUpdateEffect(haptic, effects.effect_constant_id, &tempEffect)!=0)
+			debug(1, "Error updating effect: %s\n", SDL_GetError());
+		else if(SDL_HapticRunEffect(haptic, effects.effect_constant_id, SDL_HAPTIC_INFINITY)!=0)
+			debug(1, "Error executing effect: %s\n", SDL_GetError());
+		else
+			debug(1,"->success\n");		
 	}
 	else
 	{
-		debug(0, "-> not supported, will try default rumble\n");
+		debug(1, "-> not supported, will try default rumble\n");
 		TriggerRumbleEffectDefault(strength);
 	}
 }
@@ -617,44 +618,44 @@ void TriggerSawToothDownEffect(double strength, bool replay)
 	}
 }
 
-void TriggerFrictionEffect(double strength, bool replay)
+void TriggerFrictionEffect(double strength)
 {
-	TriggerFrictionEffectWithDefaultOption(strength, false, replay);
+	TriggerFrictionEffectWithDefaultOption(strength, false);
 }
 
-void TriggerFrictionEffectWithDefaultOption(double strength, bool isDefault, bool replay)
+void TriggerFrictionEffectWithDefaultOption(double strength, bool isDefault)
 {
-	debug(0, "TriggerFrictionEffectWithDefaultOption\n");
+	debug(1, "TriggerFrictionEffectWithDefaultOption\n");
 	if (supported & SDL_HAPTIC_FRICTION) {
-		if(!replay)
-		{		
-			SDL_HapticEffect tempEffect;
-			SDL_memset(&tempEffect, 0, sizeof(SDL_HapticEffect));
-			tempEffect.type = SDL_HAPTIC_FRICTION;
-			tempEffect.condition.type = SDL_HAPTIC_FRICTION;
-			tempEffect.condition.direction.type = SDL_HAPTIC_CARTESIAN;
-			tempEffect.condition.delay = 0;
-			tempEffect.condition.length = isDefault ? SDL_HAPTIC_INFINITY : getConfig()->feedbackLength;
-			tempEffect.condition.left_sat[0] = 0xFFFF;
-			tempEffect.condition.right_sat[0] = 0xFFFF;
+		SDL_HapticEffect tempEffect;
+		SDL_memset(&tempEffect, 0, sizeof(SDL_HapticEffect));
+		tempEffect.type = SDL_HAPTIC_FRICTION;
+		tempEffect.condition.type = SDL_HAPTIC_FRICTION;
+		tempEffect.condition.direction.type = SDL_HAPTIC_CARTESIAN;
+		tempEffect.condition.delay = 0;
+		tempEffect.condition.length = isDefault ? SDL_HAPTIC_INFINITY : getConfig()->feedbackLength;
+		tempEffect.condition.left_sat[0] = 0xFFFF;
+		tempEffect.condition.right_sat[0] = 0xFFFF;
 
-			short minForce = (short)(strength > 0.001 ? (getConfig()->minForce / 100.0 * 32767.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
-			short maxForce = (short)(getConfig()->maxForce / 100.0 * 32767.0);
-			short range = maxForce - minForce;
-			short coeff = (short)(strength * range + minForce);
-			if (coeff < 0)
-			{
-				coeff = 32767;
-			}
+		short minForce = (short)(strength > 0.001 ? (getConfig()->minForce / 100.0 * 32767.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
+		short maxForce = (short)(getConfig()->maxForce / 100.0 * 32767.0);
+		short range = maxForce - minForce;
+		short coeff = (short)(strength * range + minForce);
+		if (coeff < 0)
+			coeff = 32767;
 
-			tempEffect.condition.left_coeff[0] = (short)(coeff);
-			tempEffect.condition.right_coeff[0] = (short)(coeff);
-			SDL_HapticUpdateEffect(haptic, effects.effect_friction_id, &tempEffect);
-		}
-		SDL_HapticRunEffect(haptic, effects.effect_friction_id, 1);
+		tempEffect.condition.left_coeff[0] = (short)(coeff);
+		tempEffect.condition.right_coeff[0] = (short)(coeff);
+
+		if(SDL_HapticUpdateEffect(haptic, effects.effect_friction_id, &tempEffect)!=0)
+			debug(1, "Error updating effect: %s\n", SDL_GetError());
+		else if(SDL_HapticRunEffect(haptic, effects.effect_friction_id, SDL_HAPTIC_INFINITY)!=0)
+			debug(1, "Error executing effect: %s\n", SDL_GetError());
+		else
+			debug(1,"->success\n");				
 	}
 	else {
-		debug(0, "-> not supported, will try default rumble\n");
+		debug(1, "-> not supported, will try default rumble\n");
 		TriggerRumbleEffectDefault(strength);
 	}
 }
@@ -667,11 +668,11 @@ void TriggerRumbleEffectDefault(double strength)
 void TriggerRumbleEffect(double strength, int length)
 {
 	if(SDL_Haptic_RumbleSupported){
-		debug(0, "Playing rumble effect...\n");
+		debug(1, "Playing rumble effect...\n");
 		SDL_HapticRumblePlay(haptic, strength, length);
 	}
 	else
-		debug(0, "-> rumble not supported/active\n");
+		debug(1, "-> rumble not supported/active\n");
 }
 
 void TriggerSineEffect(uint16_t period, uint16_t fadePeriod, double strength, bool replay)
@@ -749,45 +750,44 @@ void TriggerSineEffect(uint16_t period, uint16_t fadePeriod, double strength, bo
     */
 }
 
-void TriggerSpringEffect(double strength, bool replay)
+void TriggerSpringEffect(double strength)
 {
-	TriggerSpringEffectWithDefaultOption(strength, false, replay);
+	TriggerSpringEffectWithDefaultOption(strength, false);
 }
 
-void TriggerSpringEffectWithDefaultOption(double strength, bool isDefault, bool replay)
+void TriggerSpringEffectWithDefaultOption(double strength, bool isDefault)
 {
-	debug(0, "TriggerSpringEffectWithDefaultOption\n");
+	debug(1, "TriggerSpringEffectWithDefaultOption\n");
 	if (supported & SDL_HAPTIC_SPRING) {
-		if(!replay)
-		{		
-			SDL_HapticEffect tempEffect;
-			SDL_memset(&tempEffect, 0, sizeof(SDL_HapticEffect));
-			tempEffect.type = SDL_HAPTIC_SPRING;
-			tempEffect.condition.type = SDL_HAPTIC_SPRING;
-			tempEffect.condition.direction.type = SDL_HAPTIC_CARTESIAN;
-			tempEffect.condition.delay = 0;
-			tempEffect.condition.length = isDefault ? SDL_HAPTIC_INFINITY : getConfig()->feedbackLength;
-			tempEffect.condition.direction.dir[0] = 1;
-			tempEffect.constant.direction.dir[1] = 0; //Y Position
+		SDL_HapticEffect tempEffect;
+		SDL_memset(&tempEffect, 0, sizeof(SDL_HapticEffect));
+		tempEffect.type = SDL_HAPTIC_SPRING;
+		tempEffect.condition.type = SDL_HAPTIC_SPRING;
+		tempEffect.condition.direction.type = SDL_HAPTIC_CARTESIAN;
+		tempEffect.condition.delay = 0;
+		tempEffect.condition.length = isDefault ? SDL_HAPTIC_INFINITY : getConfig()->feedbackLength;
+		tempEffect.condition.direction.dir[0] = 1;
+		tempEffect.constant.direction.dir[1] = 0; //Y Position
 
-			short minForce = (short)(strength > 0.001 ? (getConfig()->minForce / 100.0 * 32767.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
-			short maxForce = (short)(getConfig()->maxForce / 100.0 * 32767.0);
-			short range = maxForce - minForce;
-			short coeff = (short)(strength * range + minForce);
-			if (coeff < 0)
-			{
-				coeff = 32767;
-			}
+		short minForce = (short)(strength > 0.001 ? (getConfig()->minForce / 100.0 * 32767.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
+		short maxForce = (short)(getConfig()->maxForce / 100.0 * 32767.0);
+		short range = maxForce - minForce;
+		short coeff = (short)(strength * range + minForce);
+		if (coeff < 0)
+			coeff = 32767;
 
-			tempEffect.condition.left_coeff[0] = (short)(coeff);
-			tempEffect.condition.right_coeff[0] = (short)(coeff);
-			tempEffect.condition.left_sat[0] = (short)(coeff * 2.0);  //Needed for Logitech G920 wheel
-			tempEffect.condition.right_sat[0] = (short)(coeff * 2.0); //Needed for Logitech G920 wheel
-			tempEffect.condition.center[0] = 0;
+		tempEffect.condition.left_coeff[0] = (short)(coeff);
+		tempEffect.condition.right_coeff[0] = (short)(coeff);
+		tempEffect.condition.left_sat[0] = (short)(coeff * 2.0);  //Needed for Logitech G920 wheel
+		tempEffect.condition.right_sat[0] = (short)(coeff * 2.0); //Needed for Logitech G920 wheel
+		tempEffect.condition.center[0] = 0;
 
-			SDL_HapticUpdateEffect(haptic, effects.effect_spring_id, &tempEffect);
-		}
-		SDL_HapticRunEffect(haptic, effects.effect_spring_id, 1);
+		if(SDL_HapticUpdateEffect(haptic, effects.effect_spring_id, &tempEffect)!=0)
+			debug(1, "Error updating effect: %s\n", SDL_GetError());
+		else if(SDL_HapticRunEffect(haptic, effects.effect_spring_id, SDL_HAPTIC_INFINITY)!=0)
+			debug(1, "Error executing effect: %s\n", SDL_GetError());
+		else
+			debug(1,"->success\n");
 	}
 }
 
@@ -846,7 +846,7 @@ void ReTriggerEffect(unsigned int effect)
 {
 	if(effect > 0){
 
-		debug(0, "ReTriggerEffect %u\n", effect);
+		debug(1, "ReTriggerEffect %u\n", effect);
 		SDL_HapticRunEffect(haptic, effect, 1);
 	}
 	//avoid rumble effect if request is spring effect
@@ -876,10 +876,10 @@ void TriggerEffect(unsigned int sdl_effect, double strength)
             TriggerSawToothDownEffect(strength,false);
             break;
         case SDL_HAPTIC_CONSTANT:
-            TriggerConstantEffect(0, strength,false);
+            TriggerConstantEffect(0, strength);
             break;
         case SDL_HAPTIC_SPRING:
-            TriggerSpringEffect(strength,false);
+            TriggerSpringEffect(strength);
             break;
         case SDL_HAPTIC_DAMPER:
             TriggerDamperEffect(strength,false);
@@ -888,7 +888,7 @@ void TriggerEffect(unsigned int sdl_effect, double strength)
             TriggerInertiaEffect(strength,false);
             break;
         case SDL_HAPTIC_FRICTION:
-            TriggerFrictionEffect(strength,false);
+            TriggerFrictionEffect(strength);
             break;
         case SDL_HAPTIC_RAMP:
             TriggerRampEffect(0.01, 0.1,false);

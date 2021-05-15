@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 
   debug(0, "OpenFFB Version "); printVersion();
   debug(0, "  Sega FFB Controller:\t\t%s\n", localConfig->segaFFBControllerPath);
-  debug(0, "\nDebug messages will appear below, you are in debug mode %d.\n\n", localConfig->debugLevel);
+  debug(1, "\nDebug messages will appear below, you are in debug mode %d.\n\n", localConfig->debugLevel);
 
   strcpy(localConfig->hapticName, arguments.haptic_name);
 
@@ -83,7 +83,7 @@ if (!initFFB(localConfig->segaFFBControllerPath))
   return EXIT_FAILURE;
 }
 
-debug(0, "Will start the main loop...\n");
+debug(2, "Will start the main loop...\n");
 
   /* Process packets forever */
   FFBStatus processingStatus;
@@ -93,10 +93,10 @@ debug(0, "Will start the main loop...\n");
     switch (processingStatus)
     {
       case FFB_STATUS_ERROR_CHECKSUM:
-        debug(0, "Error: A checksum error occoured\n");
+        debug(2, "Error: A checksum error occoured\n");
         break;
       case FFB_STATUS_ERROR_TIMEOUT:
-              printf(".");
+              debug(2,".");
               fflush(stdout);
         break;
       default:
@@ -107,7 +107,7 @@ debug(0, "Will start the main loop...\n");
   /* Close the file pointer */
   if (!disconnectFFB())
   {
-    debug(0, "Error: Could not disconnect from serial\n");
+    debug(2, "Error: Could not disconnect from serial\n");
     return EXIT_FAILURE;
   }
 
@@ -118,7 +118,7 @@ void handleSignal(int signal)
 {
   if (signal == 2)
   {
-    debug(0, "\nClosing down OpenFFB...\n");
+    debug(2, "\nClosing down OpenFFB...\n");
     running = 0;
   }
 }

@@ -30,8 +30,19 @@ cat /tmp/ttyDump.dat                                                      #DUMP 
 
 touch ./virtualSerialIN
 touch ./virtualSerialOUT
-socat pty,link=/home/fred/Documents/openFFB/virtualSerialOUT,raw,echo=0 pty,link=/home/fred/Documents/openFFB/virtualSerialIN,raw,echo=0
-echo -e "\x80\x7F\x7F\x00\x00\x00" > /home/fred/Documents/openFFB/virtualSerialIN
+
+
+// some tests
+; test spring effect
+echo -e "\x80\x7F\x00\x00\x00\x7F" > /home/fred/Documents/openFFB/virtualSerialIN
+; test friction effect
+echo -e "\x80\x00\x7F\x00\x00\x7F" > /home/fred/Documents/openFFB/virtualSerialIN
+; test constant right effect
+echo -e "\x80\x00\x00\x01\xFF\x7E" > /home/fred/Documents/openFFB/virtualSerialIN
+; test constant left effect
+echo -e "\x80\x00\x00\x00\xFF\x7F" > /home/fred/Documents/openFFB/virtualSerialIN
+;clear 
+echo -e "\x80\x00\x00\x00\x00\x00" > /home/fred/Documents/openFFB/virtualSerialIN
 
 // TO Do
 - make startup and end effet

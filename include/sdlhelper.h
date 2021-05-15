@@ -49,13 +49,13 @@ void TriggerLeftRightEffect(double smallstrength, double largestrength, bool rep
 void TriggerTriangleEffect(double strength, bool replay);
 void TriggerSawToothUpEffect(double strength, bool replay);
 void TriggerSawToothDownEffect(double strength, bool replay);
-void TriggerConstantEffect(int direction, double strength, bool replay);
-void TriggerSpringEffect(double strength, bool replay);
-void TriggerSpringEffectWithDefaultOption(double strength, bool isDefault, bool replay);
+void TriggerConstantEffect(int direction, double strength);
+void TriggerSpringEffect(double strength);
+void TriggerSpringEffectWithDefaultOption(double strength, bool isDefault);
 void TriggerDamperEffect(double strength, bool replay);
 void TriggerInertiaEffect(double strength, bool replay);
-void TriggerFrictionEffect(double strength, bool replay);
-void TriggerFrictionEffectWithDefaultOption(double strength, bool isDefault, bool replay);
+void TriggerFrictionEffect(double strength);
+void TriggerFrictionEffectWithDefaultOption(double strength, bool isDefault);
 void TriggerRampEffect(double start, double end, bool replay);
 void TriggerAutoCenterEffect(double strength);
 void TriggerRumbleEffectDefault(double strength);

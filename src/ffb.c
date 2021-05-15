@@ -37,7 +37,8 @@ FFBStatus readPacket()
 
 FFBStatus processPacket(unsigned char* packet)
 {
-	debug(0, "processPacket (hex): %02X %02X %02X %02X %02X %02X\n", 
+	
+	debug(2, "\nprocessPacket (hex): %02X %02X %02X %02X %02X %02X\n", 
 					packet[0],
 					packet[1],
 					packet[2],
@@ -45,7 +46,8 @@ FFBStatus processPacket(unsigned char* packet)
 					packet[4],
 					packet[5]
 			);
-	debug(0, "processPacket (dec): %u %u %u %u %u %u\n", 
+/*			
+	debug(2, "processPacket (dec): %u %u %u %u %u %u\n", 
 					packet[0],
 					packet[1],
 					packet[2],
@@ -53,15 +55,15 @@ FFBStatus processPacket(unsigned char* packet)
 					packet[4],
 					packet[5]
 			);
-
+*/
 	inputPacket.startByte 		= packet[0];
 	inputPacket.spring          = ((double)packet[1]+1)/128;
 	inputPacket.friction        = ((double)packet[2]+1)/128;
 	inputPacket.torqueDirection = packet[3];
 	inputPacket.torquePower     = ((double)packet[4]+1)/128;
 	inputPacket.crc             = packet[5];
-	
-	debug(0, "\nstored in struct:\n-----------------\nstartByte:       %d\nspring:          %f\nfriction:        %f\ntorqueDirection: %d\ntorquePower:     %f\ncrc:             %d\n", 
+/*	
+	debug(2, "\nstored in struct:\n-----------------\nstartByte:       %d\nspring:          %f\nfriction:        %f\ntorqueDirection: %d\ntorquePower:     %f\ncrc:             %d\n", 
 				inputPacket.startByte,
 				inputPacket.spring, 
 				inputPacket.friction, 
@@ -69,29 +71,34 @@ FFBStatus processPacket(unsigned char* packet)
 				inputPacket.torquePower,
 				inputPacket.crc
 			);
-
+*/
 	/* --- (D1^D2^D3^D4)&0x7F --- */
 	unsigned char checksum = (packet[1]^packet[2]^packet[3]^packet[4])&0x7F;
 	if(checksum!=inputPacket.crc) {
-		debug(0, "\nWarning, checksum error\n");
+		debug(2, "\nWarning, checksum error\n");
 		return FFB_STATUS_ERROR_CHECKSUM;
 	}
-	debug(0, "\nWill try to execute effect...\n");
+	//debug(2, "\nWill try to execute effect...\n");
 	/* --- spring            from 0x00 to 0x7F -> 128 levels --- */
-	debug(0, "previous_rawpacket[1]=%02X, packet[1]=%02X\n", previous_rawpacket[1], packet[1]);
-	if(!(previous_rawpacket[1]==0x00 && packet[1]==0x00)){
-		TriggerSpringEffect(inputPacket.spring, previous_rawpacket[1]==packet[1]);
-	}
+	//debug(2, "previous_rawpacket[1]=%02X, packet[1]=%02X\n", previous_rawpacket[1], packet[1]);
+	debug(2, "previous_rawpacket[1]=%02X, packet[1]=%02X\n",previous_rawpacket[1],packet[1]);	
+	if(previous_rawpacket[1]!=packet[1])
+		TriggerSpringEffect(inputPacket.spring);
+
     /* --- friction          from 0x00 to 0x7F -> 128 levels --- */
-	if(!(previous_rawpacket[2]==0x00 && packet[2]==0x00)){
-		TriggerFrictionEffect(inputPacket.friction, previous_rawpacket[2]==packet[2]);		
-	}
-    /* --- torqueDirection   0x00 = Left, 0x01  = Right      --- */
-    /* --- torquePower       from 0x00 to 0xFF -> 128 levels --- */
-	if(!(previous_rawpacket[3]==0x00 && packet[3]==0x00)){
-		TriggerConstantEffect(inputPacket.torqueDirection, inputPacket.torquePower, previous_rawpacket[3]==packet[3]);
-	}
-	strcpy(previous_rawpacket, packet);
+	debug(2, "previous_rawpacket[2]=%02X, packet[2]=%02X\n",previous_rawpacket[2],packet[2]);
+	if(previous_rawpacket[2]!=packet[2])
+		TriggerFrictionEffect(inputPacket.friction);		
+
+    /* --- torqueDirection   0x00 = Left, 0x01  = Right                     --- */
+    /* --- torquePower       from 0x00 to 0xFF -> 128 levels                --- */
+	/* note that torqueDirection is where the wheel is turning                  */
+	/* this is the oposite of SDL direction, which is where the force comes     */
+	debug(2, "previous_rawpacket[3]=%02X, packet[3]=%02X, direction=%d\n",previous_rawpacket[3],packet[3], inputPacket.torqueDirection);	
+	if(previous_rawpacket[3]!=packet[3]|| previous_rawpacket[4]!=packet[4] )
+		TriggerConstantEffect(-inputPacket.torqueDirection, inputPacket.torquePower);
+
+	memcpy(previous_rawpacket, packet, 6);
 
 	return FFB_STATUS_SUCCESS;
 }

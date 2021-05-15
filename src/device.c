@@ -9,10 +9,10 @@ int setSerialAttributes(int fd, int myBaud);
 
 int initDevice(char *devicePath)
 {
-  debug(0, "initDevice...\n");
+  debug(2, "initDevice...\n");
   if ((serialIO = open(devicePath, O_RDWR | O_NOCTTY | O_SYNC | O_NDELAY)) < 0)
   {
-    debug(0, "Error: Failed to open %s with:%d \n", devicePath, serialIO);
+    debug(2, "Error: Failed to open %s with:%d \n", devicePath, serialIO);
     return 0;
   }
 
