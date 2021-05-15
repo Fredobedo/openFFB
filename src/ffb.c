@@ -98,7 +98,18 @@ FFBStatus processPacket(unsigned char* packet)
 	if(previous_rawpacket[3]!=packet[3]|| previous_rawpacket[4]!=packet[4] )
 		TriggerConstantEffect(-inputPacket.torqueDirection, inputPacket.torquePower);
 
-	memcpy(previous_rawpacket, packet, 6);
+	/* only copy if there is a diff */
+	if(memcmp(previous_rawpacket, packet,6)!=0){
+		debug(0, "%02X %02X %02X %02X %02X %02X\n", 
+					packet[0],
+					packet[1],
+					packet[2],
+					packet[3],
+					packet[4],
+					packet[5]
+			);
+		memcpy(previous_rawpacket, packet, 6);
+	}
 
 	return FFB_STATUS_SUCCESS;
 }
