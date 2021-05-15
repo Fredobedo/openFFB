@@ -1,7 +1,7 @@
 # OpenFFB Config
 
 # Setup the default game FFB Profile
-DEFAULT_GAME generic-driving
+DEFAULT_GAME_SETTING generic-driving
 
 # Setup the debug mode for outputting debug information
 # DEBUG_MODE 1 - This will show information level traces
@@ -9,4 +9,4 @@ DEFAULT_GAME generic-driving
 DEBUG_MODE 0
 
 # Setup the Sega FFB Controller device path
-DEVICE_PATH /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
+SEGA_FFB_CONTROLLER_PATH /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0

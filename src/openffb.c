@@ -62,18 +62,18 @@ int main(int argc, char **argv)
   }
 
   if(containArgument(TRIGGER_SDL_EFFECT)){
-    double SDLStrength = 0.5;
+    double SDLStrength = 0.85;
     if(containArgument(SET_FORCE))
-      SDLStrength=((double)atoi(getArgumentValue(TRIGGER_SDL_EFFECT)))/100;
-    
+      SDLStrength=((double)atoi(getArgumentValue(SET_FORCE)))/100;
+
     TriggerEffect(hapticEffectFromString(getArgumentValue(TRIGGER_SDL_EFFECT)), SDLStrength);
-    usleep(localConfig->feedbackLength * 2000);
+    sleep(5);
     return EXIT_SUCCESS;
   }
 
   if(containArgument(TRIGGER_SEGA_FFB_RAW_REQUEST)){
     processPacket(getArgumentValue(TRIGGER_SEGA_FFB_RAW_REQUEST));
-    usleep(localConfig->feedbackLength * 2000);
+    sleep(5);
     return EXIT_SUCCESS;
   }
 

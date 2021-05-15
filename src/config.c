@@ -88,18 +88,19 @@ FFBConfigStatus parseConfig(char *path)
 
         char *command = getNextToken(buffer, " ", &saveptr);
 
-       if (strcmp(command, "HAPTIC_NAME") == 0)
+
+       if (strcmp(command, "SEGA_FFB_CONTROLLER_PATH") == 0)
+            strcpy(config.segaFFBControllerPath, getNextToken(NULL, " ", &saveptr));
+
+       else if (strcmp(command, "HAPTIC_NAME") == 0)
             strcpy(config.hapticName, getNextToken(NULL, " ", &saveptr));
 
-       if (strcmp(command, "GAME_SETTING_PATH") == 0)
+       else if (strcmp(command, "GAME_SETTING_PATH") == 0)
             strcpy(config.gameSettingPath, getNextToken(NULL, " ", &saveptr));
 
         else if (strcmp(command, "DEFAULT_GAME_SETTING") == 0)
             strcpy(config.defaultGameSetting, getNextToken(NULL, " ", &saveptr));
 
-        else if (strcmp(command, "SEGA_FFB_CONTROLLER_PATH") == 0)
-            strcpy(config.segaFFBControllerPath, getNextToken(NULL, " ", &saveptr));
-            
         else if (strcmp(command, "DEBUG_MODE") == 0)
             config.debugLevel = atoi(getNextToken(NULL, " ", &saveptr));
 
@@ -135,7 +136,6 @@ FFBConfigStatus parseConfig(char *path)
 
         else if (strcmp(command, "GLOBAL_GAIN") == 0)
             config.globalGain = atoi(getNextToken(NULL, " ", &saveptr));
-
         else
             printf("Error: Unknown configuration command %s\n", command);
     }
