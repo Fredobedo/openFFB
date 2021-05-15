@@ -1,7 +1,7 @@
 ; ---- set permissions --- 
 whoami
 ls -la /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
-sudo /usr/sbin/usesrmod -G dialout fred
+sudo /usr/sbin/usermod -aG dialout fred
 id -nG fred
 or
 chmod o+rw /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
@@ -80,3 +80,8 @@ sudo unzip ./master.zip "new-lg4ff-master/*" -d  "/usr/src/new-lg4ff/"
 
 ;compile and install package
 sudo dkms install /usr/src/new-lg4ff
+
+
+
+cd build
+sudo cmake --install .

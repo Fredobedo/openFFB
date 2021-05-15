@@ -46,3 +46,24 @@ add_executable( ${PROJECT_NAME} ${Sources} )
 
 find_package(SDL2 REQUIRED)
 target_link_libraries(openffb ${SDL2_LIBRARY})
+
+install(TARGETS ${PROJECT_NAME}
+		COMPONENT ${PROJECT_NAME}
+		RUNTIME DESTINATION "bin/"
+		LIBRARY DESTINATION "lib/"
+)
+
+install(FILES ${CMAKE_SOURCE_DIR}/docs/openffb.service
+		COMPONENT ${PROJECT_NAME}
+		DESTINATION "/etc/systemd/system/"
+)
+
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/docs/openffb
+		COMPONENT ${PROJECT_NAME}
+		DESTINATION "/etc"
+)
+
+SET(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+SET(CPACK_GENERATOR "DEB")
+SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "fbernard1@hotmail.com") #required
+INCLUDE(CPack)
