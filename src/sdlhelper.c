@@ -326,8 +326,16 @@ void stopAllEffects()
 
 void TriggerConstantEffect(int direction, double strength)
 {
-	//if(direction=1)
-	//direction=0;
+	printf("TriggerConstantEffect-direction=%d\n", direction);
+	/*
+		RIGHT:
+		tempEffect.constant.direction.dir[0] = -1;
+		tempEffect.constant.direction.dir[1] = 1;
+
+		LEFT:
+		tempEffect.constant.direction.dir[0] = 1;
+		tempEffect.constant.direction.dir[1] = 1;	
+	*/
 
 	debug(1, "TriggerConstantEffect\n");
 	if (supported & SDL_HAPTIC_CONSTANT) 
@@ -337,31 +345,12 @@ void TriggerConstantEffect(int direction, double strength)
 		tempEffect.type = SDL_HAPTIC_CONSTANT;
 		tempEffect.constant.direction.type = SDL_HAPTIC_CARTESIAN;
 		tempEffect.constant.direction.dir[0] = direction;
+		tempEffect.constant.direction.dir[1] = 1;
 		tempEffect.constant.length = getConfig()->feedbackLength;
 		tempEffect.constant.delay = 0;
 
 		int confMinForce = getConfig()->minForce;
 		int confMaxForce = getConfig()->maxForce;
-
-		/*
-		if (AlternativeFFB == 1)
-		{
-			if (direction == -1)
-			{
-				confMinForce = configAlternativeMinForceLeft;
-				confMaxForce = configAlternativeMaxForceLeft;
-			}
-			else
-			{
-				confMinForce = configAlternativeMinForceRight;
-				confMaxForce = configAlternativeMaxForceRight;
-			}
-		}
-		if (PowerMode == 1)
-		{
-			strength = pow(strength, 0.5);
-		}
-		*/
 
 		short MinForce = (short)(strength > 0.001 ? (getConfig()->minForce / 100.0 * 32767.0) : 0);
 		short MaxForce = (short)(getConfig()->maxForce / 100.0 * 32767.0);

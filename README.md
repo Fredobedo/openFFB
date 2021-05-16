@@ -4,6 +4,15 @@ SDL2
 
 ## Installation and Running
 
+rm -r openFFB
+git clone https://github.com/Fredobedo/openFFB
+cd openFFB
+mkdir build
+cd build 
+cmake ..
+make
+cmake --install .
+
 sudo apt install git cmake
 ```
 git clone https://github.com/Fredobedo/openFFB
