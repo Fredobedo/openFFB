@@ -95,7 +95,7 @@ FFBStatus processPacket(unsigned char* packet)
 	/* note that torqueDirection is where the wheel is turning                  */
 	/* this is the oposite of SDL direction, which is where the force comes     */
 	/* for SDL left=1, right=-1                                                 */
-	debug(0, "previous_rawpacket[3]=%02X, packet[3]=%02X, direction=%d\n",previous_rawpacket[3],packet[3], inputPacket.torqueDirection);	
+	//debug(0, "previous_rawpacket[3]=%02X, packet[3]=%02X, direction=%d\n",previous_rawpacket[3],packet[3], inputPacket.torqueDirection);	
 	if(previous_rawpacket[3]!=packet[3]|| previous_rawpacket[4]!=packet[4] ){
 		if(inputPacket.torqueDirection==0)
 			inputPacket.torqueDirection=1;
