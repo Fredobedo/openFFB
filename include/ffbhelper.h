@@ -1,0 +1,115 @@
+#ifndef FFBHELPER_H_
+#define FFBHELPER_H_
+
+#include <stdint.h>
+#include <stdbool.h>
+#include <linux/input.h>
+#include <sys/ioctl.h>
+#include <dirent.h>
+
+//#define nBitsPerUchar          (sizeof(unsigned char) * 8)                                        // Number of bits for 1 unsigned char
+//#define bitOffsetInUchar(bit)  ((bit)%nBitsPerUchar)                                              // Index=Offset of given bit in 1 unsigned char 
+//#define ucharValueForBit(bit)  (((unsigned char)(1))<<bitOffsetInUchar(bit))                      // Value of an unsigned char with bit set at given index=offset /
+//#define ucharIndexForBit(bit)  ((bit)/nBitsPerUchar)                                              // Index=Offset of the unsigned char associated to the bit at the given index=offset
+//#define testBit(bit, array)    ((array[ucharIndexForBit(bit)] >> bitOffsetInUchar(bit)) & 1)      // Test the bit with given index=offset in an unsigned char array
+
+
+#define test_bit(yalv, abs_b) ((((char *)abs_b)[yalv/8] & (1<<yalv%8)) > 0)
+
+#define BITS_TO_LONGS(x) (((x) + 8 * sizeof (unsigned long) - 1) / (8 * sizeof (unsigned long)))
+//unsigned long supportedFeatures[BITS_TO_LONGS(FF_CNT)];
+unsigned int supportedFeatures;
+//unsigned char ffb_supported[1 + FF_MAX/8/sizeof(unsigned char)];
+
+#define HAPTIC_INFINITY 0xFFFF
+
+#define FF_SINE_LOADED       1U << 0
+#define FF_SQUARE_LOADED     1U << 1
+#define FF_TRIANGLE_LOADED   1U << 2
+#define FF_SAW_UP_LOADED     1U << 3
+#define FF_SAW_DOWN_LOADED   1U << 4
+#define FF_CONSTANT_LOADED   1U << 5
+#define FF_SPRING_LOADED     1U << 6
+#define FF_DAMPER_LOADED     1U << 7
+#define FF_INERTIA_LOADED    1U << 8
+#define FF_FRICTION_LOADED   1U << 9
+#define FF_RAMP_LOADED       1U << 10
+#define FF_CUSTOM_LOADED     1U << 11
+#define FF_GAIN_LOADED       1U << 12
+#define FF_AUTOCENTER_LOADED 1U << 13
+#define FF_RUMBLE_LOADED     1U << 14
+
+
+int device_handle;
+
+#define DEV_INPUT_EVENT "/dev/input"
+#define MAX_DEVICE 10
+#define MAX_EFFECTS 16
+
+struct device{
+	char path[256];
+	char realName[256];
+	char simplifiedName[256];
+	char driverVersion[128];
+	char vendorProductVersion[128];	
+} devices[MAX_DEVICE];
+int NbrOfDevices;
+
+typedef enum{
+	constant_effect_idx = 0,
+	sine_effect_idx,
+	square_effect_idx,
+	triangle_effect_idx,		
+	sawtoothup_effect_idx,	
+	sawtoothdown_effect_idx,
+	spring_effect_idx,
+	damper_effect_idx,
+	inertia_effect_idx,	
+	friction_effect_idx,
+	ramp_effect_idx,	
+	rumble_effect_idx
+} effects_idx;
+
+struct ff_effect ffb_effects[MAX_EFFECTS];
+struct input_event play, stop, gain;
+
+char* FFBGetHapticSimplifiedName(const char* name);
+int   FFBisEventDevice(const struct dirent *dir);
+int   FFBGetAllDevices();
+char* FFBGetDevicePath(char* device_name);
+bool  CheckIfFFBDevice(int handle);
+void  FFBDumpAvailableDevices();
+
+/* --- close haptic and sql quit --- */
+void FFBAbortExecution(void);
+
+bool FFBInitHaptic(char* name);
+
+void FFBCreateHapticEffects();
+
+void FFBTriggerConstantEffect(int direction, double strength);
+void FFBTriggerSineEffect(double strength);
+void FFBTriggerSpringEffect(double strength);
+void FFBTriggerSpringEffectWithDefaultOption(double strength, bool isDefault);
+void FFBTriggerFrictionEffect(double strength);
+void FFBTriggerFrictionEffectWithDefaultOption(double strength, bool isDefault);
+void FFBTriggerRumbleEffectDefault(double strength);
+void FFBTriggerRumbleEffect(double strength, int length);
+
+
+
+/* --- generic function for testing --- */
+void FFBTriggerEffect(unsigned int effect,double strength);
+/* --- This will stop the effect if it's running. Effects are automatically destroyed when the device is closed. --- */
+void FFBStopEffect(int effect_id);
+/* --- This will stop all effects if they are running. Effects are automatically destroyed when the device is closed. --- */
+void FFBStopAllEffects(void);
+
+/* --- dump supported features in the console --- */
+void FFBDumpSupportedFeatures();
+
+/* --- set global gain and auto center effects --- */
+void FFBSetGlobalGain(int level);
+void FFBSetGlobalAutoCenter(int level);
+
+#endif

@@ -8,13 +8,15 @@
 #include "debug.h"
 
 #include "sdlhelper.h"
+#include "ffbhelper.h"
 
-void handleSignal(int signal);
+//void handleSignal(int signal);
 
 int running = 1;
 
 int main(int argc, char **argv)
 {
+    
   signal(SIGINT, handleSignal);
 
   /* Read the initial config */
@@ -26,7 +28,6 @@ int main(int argc, char **argv)
     printf("Warning: No valid game config file found, default FFB settings will be used\n");
 
   FFBConfig *localConfig = getConfig();
-
 
   /* Initialise the debug output */
   if (!initDebug(localConfig->debugLevel))
@@ -72,7 +73,7 @@ int main(int argc, char **argv)
   }
 
   if(containArgument(TRIGGER_SEGA_FFB_RAW_REQUEST)){
-    processPacket(getArgumentValue(TRIGGER_SEGA_FFB_RAW_REQUEST));
+    processPacketSDL(getArgumentValue(TRIGGER_SEGA_FFB_RAW_REQUEST));
     sleep(5);
     return EXIT_SUCCESS;
   }
@@ -89,7 +90,7 @@ debug(2, "Will start the main loop...\n");
   FFBStatus processingStatus;
   while (running)
   {
-    processingStatus = readPacket();
+    processingStatus = readPacketSDL();
     switch (processingStatus)
     {
       case FFB_STATUS_ERROR_CHECKSUM:

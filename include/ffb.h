@@ -48,10 +48,12 @@ int initFFB(char *devicePath);
 int disconnectFFB();
 
 /* --- read usb2 serial communication from Sega FFB Controller --- */
-FFBStatus readPacket();
-/* --- dispatch Sega FFB Controller request --- */
-FFBStatus processPacket(unsigned char* packet);
+FFBStatus readPacketSDL();
+FFBStatus readPacketC();
 
+/* --- dispatch Sega FFB Controller request --- */
+FFBStatus processPacketSDL(unsigned char* packet);
+FFBStatus processPacketC(unsigned char* packet);
 /* --- openFFB execute an initial effect when communication with Sega FFB controller is up and running --- */
 void playCOMInitEffect();
 /* --- openFFB execute an end effect when communication with Sega FFB controller is finished --- */

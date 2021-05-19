@@ -6,7 +6,7 @@ DEFAULT_GAME_SETTING generic-driving
 # Setup the debug mode for outputting debug information
 # DEBUG_MODE 1 - This will show information level traces
 # DEBUG_MODE 2 - This will show debug level traces
-DEBUG_MODE 0
+DEBUG_MODE 1
 
 # Setup the Sega FFB Controller device path
 SEGA_FFB_CONTROLLER_PATH /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0

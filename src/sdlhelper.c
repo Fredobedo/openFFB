@@ -275,7 +275,7 @@ void dumpSupportedFeatures()
 
     supported = SDL_HapticQuery(haptic);
     debug(0, "------------------------------------------------------------------\n");
-    debug(0, "-- Checking capabilities:\n");
+    debug(0, "-- Checking capabilities (SDL):\n");
     debug(0, "------------------------------------------------------------------\n");
     debug(0, "   Nbr of programmable effects for this device: %d\n", SDL_HapticNumEffects(haptic));
     debug(0, "   Nbr of effects the device can play at the same time: %d\n", SDL_HapticNumEffectsPlaying(haptic));
@@ -324,18 +324,18 @@ void stopAllEffects()
 		SDL_HapticStopAll(haptic);
 }
 
+/*
+	RIGHT:
+	tempEffect.constant.direction.dir[0] = -1;
+	tempEffect.constant.direction.dir[1] = 0;
+
+	LEFT:
+	tempEffect.constant.direction.dir[0] = 0;
+	tempEffect.constant.direction.dir[1] = 0;	
+*/
 void TriggerConstantEffect(int direction, double strength)
 {
 	printf("TriggerConstantEffect-direction=%d\n", direction);
-	/*
-		RIGHT:
-		tempEffect.constant.direction.dir[0] = -1;
-		tempEffect.constant.direction.dir[1] = 1;
-
-		LEFT:
-		tempEffect.constant.direction.dir[0] = 1;
-		tempEffect.constant.direction.dir[1] = 1;	
-	*/
 
 	debug(1, "TriggerConstantEffect\n");
 	if (supported & SDL_HAPTIC_CONSTANT) 
@@ -345,8 +345,9 @@ void TriggerConstantEffect(int direction, double strength)
 		tempEffect.type = SDL_HAPTIC_CONSTANT;
 		tempEffect.constant.direction.type = SDL_HAPTIC_CARTESIAN;
 		tempEffect.constant.direction.dir[0] = direction;
-		tempEffect.constant.direction.dir[1] = 1;
-		tempEffect.constant.length = getConfig()->feedbackLength;
+		tempEffect.constant.direction.dir[1] = 0;
+		tempEffect.constant.direction.dir[2] = 0;
+		tempEffect.constant.length = SDL_HAPTIC_INFINITY;
 		tempEffect.constant.delay = 0;
 
 		int confMinForce = getConfig()->minForce;
@@ -370,7 +371,26 @@ void TriggerConstantEffect(int direction, double strength)
 		else if(SDL_HapticRunEffect(haptic, effects.effect_constant_id, SDL_HAPTIC_INFINITY)!=0)
 			debug(1, "Error executing effect: %s\n", SDL_GetError());
 		else
-			debug(1,"->success\n");		
+			debug(1,"->success\n");	
+		sleep(5);
+
+/*
+debug(0,"test2\n");			
+		tempEffect.constant.direction.dir[0] = 0;
+		tempEffect.constant.direction.dir[1] = 0;
+		tempEffect.constant.direction.dir[2] = 0;
+		SDL_HapticUpdateEffect(haptic, effects.effect_constant_id, &tempEffect);
+		SDL_HapticRunEffect(haptic, effects.effect_constant_id, SDL_HAPTIC_INFINITY);
+		sleep(5);
+
+debug(0,"test3\n");			
+		tempEffect.constant.direction.dir[0] = 1;
+		tempEffect.constant.direction.dir[1] = 0;
+		tempEffect.constant.direction.dir[2] = 0;
+		SDL_HapticUpdateEffect(haptic, effects.effect_constant_id, &tempEffect);
+		SDL_HapticRunEffect(haptic, effects.effect_constant_id, SDL_HAPTIC_INFINITY);
+		sleep(5);
+*/
 	}
 	else
 	{

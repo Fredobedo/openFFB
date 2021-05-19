@@ -152,10 +152,13 @@ FFBCLIStatus parseArguments(int argc, char **argv)
         char* token = NULL;
 
         if(command!=NULL){
+            if ((strcmp(command, "--sdl") == 0)                        || (strcmp(command, "-sd") == 0)) {
+                arguments.SDL=1;
+            }              
             if ((strcmp(command, "--haptic") == 0)                        || (strcmp(command, "-h") == 0)) {
                 strcpy(arguments.haptic_name, strtok(NULL, "="));
             }              
-            else if ((strcmp(command, "--supportedEffects") == 0)         || (strcmp(command, "-s") == 0)) {
+            else if ((strcmp(command, "--supportedEffects") == 0)         || (strcmp(command, "-su") == 0)) {
                 arguments.keyvalue[cpKeyValue].mode=GET_SUPPORTED_EFFECTS;
                 cpKeyValue++;
             }

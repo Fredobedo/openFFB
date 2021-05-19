@@ -81,7 +81,25 @@ sudo unzip ./master.zip "new-lg4ff-master/*" -d  "/usr/src/new-lg4ff/"
 ;compile and install package
 sudo dkms install /usr/src/new-lg4ff
 
+sudo dkms uninstall new-lg4ff/-0.3.1 -k $(uname -r)
+
+;uninstall and remove
+sudo dkms uninstall new-lg4ff -v 0.3.1
+sudo dkms remove new-lg4ff -v 0.3.1 --all
+
+
+
 
 
 cd build
 sudo cmake --install .
+
+;install ffb tools
+sudo apt-get install gcc-multilib
+git clone https://github.com/berarma/ffbtools
+cd ffbtools
+make
+./build/ffbtools
+
+
+
