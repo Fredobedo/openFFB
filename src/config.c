@@ -31,15 +31,8 @@ FFBConfig config = {
     .debugLevel = 0,
     .minForce = 0,
     .maxForce = 100,
-    .enableRumble = 1,
-    .reverseRumble = 0,
-    .enableRumbleTriggers = 1,
-    .feedbackLength = 500,
-    .defaultCentering = 0,
-    .defaultFriction = 0,
-    .enableFFBStrengthDynamicAdjustment = 0,
-    .enableFFBStrengthPersistence = 0,
-    .globalGain = 0
+    .globalGain = 0,
+    .autoCenter =0
 };
 
 void DumpConfig()
@@ -53,16 +46,8 @@ void DumpConfig()
     printf("debugLevel                         = %d\n", config.debugLevel);
     printf("minForce                           = %d\n", config.minForce);
     printf("maxForce                           = %d\n", config.maxForce);
-    printf("enableRumble                       = %d\n", config.enableRumble);
-    printf("reverseRumble                      = %d\n", config.reverseRumble);
-    printf("enableRumbleTriggers               = %d\n", config.enableRumbleTriggers);
-    printf("feedbackLength                     = %d\n", config.feedbackLength);
-    printf("defaultCentering                   = %d\n", config.defaultCentering);
-    printf("defaultFriction                    = %d\n", config.defaultFriction);
-    printf("enableFFBStrengthDynamicAdjustment = %d\n", config.enableFFBStrengthDynamicAdjustment);
-    printf("enableFFBStrengthPersistence       = %d\n", config.enableFFBStrengthPersistence);
     printf("globalGain                         = %d\n", config.globalGain);
-
+    printf("autoCenter                         = %d\n", config.autoCenter);
 }
 
 FFBConfig *getConfig()
@@ -110,32 +95,11 @@ FFBConfigStatus parseConfig(char *path)
         else if (strcmp(command, "MAX_FORCE") == 0)
             config.maxForce = atoi(getNextToken(NULL, " ", &saveptr));
 
-        else if (strcmp(command, "ENABLE_RUMBLE") == 0)
-            config.enableRumble = atoi(getNextToken(NULL, " ", &saveptr));
-
-        else if (strcmp(command, "REVERSE_RUMBLE") == 0)
-            config.reverseRumble = atoi(getNextToken(NULL, " ", &saveptr));     
-
-        else if (strcmp(command, "ENABLE_RUMBLE_TRIGGERS") == 0)
-            config.enableRumbleTriggers = atoi(getNextToken(NULL, " ", &saveptr));
-
-        else if (strcmp(command, "FEEDBACK_LENGTH") == 0)
-            config.feedbackLength = atoi(getNextToken(NULL, " ", &saveptr));
-
-        else if (strcmp(command, "DEFAULT_CENTERING") == 0)
-            config.defaultCentering = atoi(getNextToken(NULL, " ", &saveptr));
-
-        else if (strcmp(command, "DEFAULT_FRICTION") == 0)
-            config.defaultFriction = atoi(getNextToken(NULL, " ", &saveptr));    
-
-        else if (strcmp(command, "ENABLE_FFB_STRENGTH_DYNAMIC_ADJUSTMENT") == 0)
-            config.enableFFBStrengthDynamicAdjustment = atoi(getNextToken(NULL, " ", &saveptr));
-
-        else if (strcmp(command, "ENABLE_FFB_STRENGTH_PERSISTENCE") == 0)
-            config.enableFFBStrengthPersistence = atoi(getNextToken(NULL, " ", &saveptr));
-
         else if (strcmp(command, "GLOBAL_GAIN") == 0)
             config.globalGain = atoi(getNextToken(NULL, " ", &saveptr));
+
+        else if (strcmp(command, "AUTO_CENTER") == 0)
+            config.autoCenter = atoi(getNextToken(NULL, " ", &saveptr));            
         else
             printf("Error: Unknown configuration command %s\n", command);
     }

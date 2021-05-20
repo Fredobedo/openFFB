@@ -2,7 +2,7 @@
 #define CLI_H_
 
 #include <stdbool.h>
-#include <SDL2/SDL_haptic.h>
+#include <linux/input.h>
 
 typedef enum
 {
@@ -16,25 +16,25 @@ static const struct
     const char *string;
     unsigned int FFB_EFFECT;
 } hapticEffectConversion[] = {
-    {"SDL_HAPTIC_SINE", SDL_HAPTIC_SINE},
-    {"SDL_HAPTIC_LEFTRIGHT", SDL_HAPTIC_LEFTRIGHT},
-    {"SDL_HAPTIC_TRIANGLE", SDL_HAPTIC_TRIANGLE},
-    {"SDL_HAPTIC_SAWTOOTHUP", SDL_HAPTIC_SAWTOOTHUP},
-    {"SDL_HAPTIC_SAWTOOTHDOWN", SDL_HAPTIC_SAWTOOTHDOWN},
-    {"SDL_HAPTIC_CONSTANT", SDL_HAPTIC_CONSTANT},
-    {"SDL_HAPTIC_SPRING", SDL_HAPTIC_SPRING},
-    {"SDL_HAPTIC_DAMPER", SDL_HAPTIC_DAMPER},
-    {"SDL_HAPTIC_INERTIA", SDL_HAPTIC_INERTIA},
-    {"SDL_HAPTIC_FRICTION", SDL_HAPTIC_FRICTION},
-    {"SDL_HAPTIC_RAMP", SDL_HAPTIC_RAMP},
-    {"SDL_HAPTIC_AUTOCENTER", SDL_HAPTIC_AUTOCENTER},
+    {"SINE", FF_SINE},
+    {"SQUARE", FF_SQUARE},
+    {"TRIANGLE", FF_TRIANGLE},
+    {"SAWUP",   FF_SAW_UP},
+    {"SAWDOWN", FF_SAW_DOWN},
+    {"CONSTANT", FF_CONSTANT},
+    {"SPRING", FF_SPRING},
+    {"DAMPER", FF_DAMPER},
+    {"INERTIA", FF_INERTIA},
+    {"FRICTION", FF_FRICTION},
+    {"RAMP", FF_RAMP},
+    {"AUTOCENTER", FF_AUTOCENTER},
+    {"RUMBLE", FF_RUMBLE},
 };
 
 struct arguments_t {
     char haptic_name[128];
-    int SDL;
     struct keyvalue_t{
-        enum mode_t{ NOTE_SET=0, GET_AVAILABLE_HAPTICS, GET_SUPPORTED_EFFECTS, TRIGGER_SDL_EFFECT, SET_FORCE, TRIGGER_SEGA_FFB_RAW_REQUEST} mode;
+        enum mode_t{ NOTE_SET=0, GET_AVAILABLE_HAPTICS, GET_SUPPORTED_EFFECTS, TRIGGER_EFFECT, SET_FORCE, TRIGGER_SEGA_FFB_RAW_REQUEST} mode;
         char value[64];
     }keyvalue[10];
 }arguments;

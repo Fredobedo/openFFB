@@ -20,6 +20,7 @@ some links:
 	https://www.linuxjournal.com/article/6429
 	https://github.com/Wiladams/LJIT2RPi/blob/master/tests/test_input.c
 	https://github.com/flosse/linuxconsole/blob/master/utils/fftest.c
+	https://github.com/OpenJVS/OpenJVS/blob/bobby/ffb/src/ffb.c
 */
 #define LONG_BITS (sizeof(long) * 8)
 struct ff_effect effect;
@@ -32,10 +33,8 @@ bool FFBGetDeviceName(int handle, char *deviceName)
 		debug(1," Error in evdev ioctl for FFBGetDeviceName (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
     	return false;
 	}
-	else{
-		//snprintf(deviceVersion, 20, "%d.%d.%d", version >> 16, (version >> 8) & 0xff, version & 0xff);
+	else
 		return true;
-	}
 }
 
 bool FFBGetDeviceDriverVersion(int handle, char *deviceVersion)
@@ -126,9 +125,6 @@ int FFBGetAllDevices()
         if ((fd = open(fname, O_RDONLY)) > -1)
         {
 			if(FFBCheckIfFFBDevice(fd)){
-
-				//printf("path size=%lu, fname size=%lu\n", sizeof(devices[NbrOfDevices].path), sizeof(fname));
-				//printf("D-fname=%s\n", fname);
 				strcpy(devices[NbrOfDevices].path, fname);
 				FFBGetDeviceName(fd, devices[NbrOfDevices].realName);
 				strcpy(devices[NbrOfDevices].simplifiedName, FFBGetHapticSimplifiedName(devices[NbrOfDevices].realName));
@@ -137,8 +133,6 @@ int FFBGetAllDevices()
 				
 				NbrOfDevices++;
 			}
-			//else
-			//	printf("device does not support FFB!\n");
 			
 			close(fd);
         }
@@ -213,7 +207,8 @@ bool FFBInitHaptic(char* device_name)
 				printf("Using device %s.\n\n", device_name);
 				
 				FFBCreateHapticEffects();
-				FFBSetGlobalGain(100); //(getConfig()->globalGain);
+				FFBSetGlobalGain(getConfig()->globalGain);
+				FFBSetGlobalAutoCenter(getConfig()->autoCenter);
 				return true;
 			}
 			else {
@@ -285,10 +280,10 @@ void FFBCreateHapticEffects()
 	//effect->replay.delay = 1000;
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
-		debug(1," Error creating FF_PERIODIC FF_SINE  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+		debug(1," Error creating FF_PERIODIC FF_SINE effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
 	else{
 		supportedFeatures|=FF_SINE_LOADED;
-		debug(1, "FF_SINE Effect id=%d\n", effect->id);
+		debug(1, "FF_SINE Effect     id=%d\n", effect->id);
 
 		/* Start effect */
 		/*
@@ -354,7 +349,7 @@ void FFBCreateHapticEffects()
 		debug(1," Error creating FF_SPRING  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);		
 	else{
 		supportedFeatures|=FF_SPRING_LOADED;
-		debug(1, "FF_SPRING Effect id=%d\n", effect->id);	
+		debug(1, "FF_SPRING Effect   id=%d\n", effect->id);	
 
 		/* Start effect */
 		memset(&event, 0, sizeof(event));
@@ -381,7 +376,7 @@ void FFBCreateHapticEffects()
 		debug(1," Error creating FF_SPRING  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);		
 	else{
 		supportedFeatures|=FF_RUMBLE_LOADED;
-		debug(1, "FF_RUMBLE Effect id=%d\n", effect->id);	
+		debug(1, "FF_RUMBLE Effect   id=%d\n", effect->id);	
 
 		/* Start effect */
 		memset(&event, 0, sizeof(event));
@@ -540,7 +535,7 @@ void FFBTriggerConstantEffect(double strength)
 
 		effect->u.constant.level =  level;	
 		effect->u.constant.envelope.attack_level =  (short)(strength * 32767.0); /* this one counts! */
-		effect->u.constant.envelope.fade_level =  (short)(strength * 32767.0);	/* only to be safe */
+		effect->u.constant.envelope.fade_level =  (short)(strength * 32767.0);	 /* only to be safe  */
 
 		/* update effect */
     	if (ioctl(device_handle, EVIOCSFF, effect) < 0)
@@ -711,7 +706,6 @@ void FFBSetGlobalGain(int level)
 		debug(1, "Error setting global gain\n");
 	else{
 		supportedFeatures|=FF_GAIN_LOADED;
-		debug(1,"->success\n");	
 	}
 }
 
@@ -728,7 +722,6 @@ void FFBSetGlobalAutoCenter(int level)
 		debug(1, "ERROR: failed to disable auto centering (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
 	else{
 		supportedFeatures|=FF_AUTOCENTER_LOADED;
-		debug(1,"->success\n");	
 	}		
 }
 

@@ -7,7 +7,6 @@
 #include "config.h"
 #include "debug.h"
 
-#include "sdlhelper.h"
 #include "ffbhelper.h"
 
 //void handleSignal(int signal);
@@ -69,12 +68,12 @@ int main(int argc, char **argv)
     return EXIT_SUCCESS;
   }
 
-  if(containArgument(TRIGGER_SDL_EFFECT)){
-    double SDLStrength = 0.85;
+  if(containArgument(TRIGGER_EFFECT)){
+    double Strength = 0.85;
     if(containArgument(SET_FORCE))
-      SDLStrength=((double)atoi(getArgumentValue(SET_FORCE)))/100;
+      Strength=((double)atoi(getArgumentValue(SET_FORCE)))/100;
 
-    FFBTriggerEffect(hapticEffectFromString(getArgumentValue(TRIGGER_SDL_EFFECT)), SDLStrength);
+    FFBTriggerEffect(hapticEffectFromString(getArgumentValue(TRIGGER_EFFECT)), Strength);
     sleep(5);
     return EXIT_SUCCESS;
   }

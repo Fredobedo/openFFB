@@ -24,35 +24,13 @@ typedef struct
     // 0-100: you may want to set a max force below 100 if your wheel's forces are stronger than desired @ 100%
     int maxForce;
 
-    // Set to 1 if you want to enable rumble, else 0.
-    int enableRumble;
-    int reverseRumble;
-
-    // Set to 1 if you want to enable rumble in triggers, else 0.
-    int enableRumbleTriggers;
-
-    // Length of a feedback command. While a long period works fine, some games may still require shorter ones.
-    int feedbackLength;
-
-    // If a game does not specify its own Centering or Friction forces (e.g. only specifies roll left/right),
-    // then a default centering and friction force can be applied here. If a game has any of its own such forces,
-    // these values will be overwritten immediately in-game.
-    // 0-100; Centering is the force that brings the wheel back to the center. Use -1 to disable behavior.
-    int defaultCentering;
-
-    // 0-100; Friction determines how difficult a wheel is to turn. Use -1 to disable behavior.
-    int defaultFriction;
-
-    // Set to 1 if you want to enable dynamic strength adjustments, else 0.
-    int enableFFBStrengthDynamicAdjustment;
-
-    // Set to 1 if you want FFB strength adjustments to persist between loads, else 0.
-    int enableFFBStrengthPersistence;
-
     // Use this function to set the global gain of the specified haptic device.
     // The user may specify the maximum gain by setting the environment variable SDL_HAPTIC_GAIN_MAX which should be between 0 and 100.
     // All calls to SDL_HapticSetGain() will scale linearly using SDL_HAPTIC_GAIN_MAX as the maximum.
     int globalGain;
+
+    //0-100: auto center force
+    int autoCenter;
 } FFBConfig;
 
 typedef enum

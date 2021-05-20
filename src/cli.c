@@ -6,7 +6,6 @@
 #include "debug.h"
 #include "cli.h"
 
-#include "sdlhelper.h"
 #include "ffbhelper.h"
 /**
  * Print usage information
@@ -27,20 +26,21 @@ FFBCLIStatus printUsage()
     debug(0, "  --availableHaptics                    Displays list of haptics\n");
     debug(0, "  --haptic=[NAME]                       Haptic Name or index\n");
     debug(0, "  --supportedEffects                    Displays supported effects\n");
-    debug(0, "  --triggerSDLEffect=[TYPE]             Activate 1 of these SDL effects\n");
+    debug(0, "  --triggerEffect=[TYPE]                Activate 1 of these effects\n");
     debug(0, "  --force=[1-100]                       The force (strength) of the effect to activate\n");
-    debug(0, "                                         - SDL_HAPTIC_SINE\n");
-    debug(0, "                                         - SDL_HAPTIC_LEFTRIGHT\n");
-    debug(0, "                                         - SDL_HAPTIC_TRIANGLE\n");
-    debug(0, "                                         - SDL_HAPTIC_SAWTOOTHUP\n");        
-    debug(0, "                                         - SDL_HAPTIC_SAWTOOTHDOWN\n");
-    debug(0, "                                         - SDL_HAPTIC_CONSTANT\n");
-    debug(0, "                                         - SDL_HAPTIC_SPRING\n"); 
-    debug(0, "                                         - SDL_HAPTIC_DAMPER\n");
-    debug(0, "                                         - SDL_HAPTIC_INERTIA\n");
-    debug(0, "                                         - SDL_HAPTIC_FRICTION\n"); 
-    debug(0, "                                         - SDL_HAPTIC_RAMP\n"); 
-    debug(0, "                                         - SDL_HAPTIC_AUTOCENTER\n"); 
+    debug(0, "                                         - SINE\n");
+    debug(0, "                                         - SQUARE\n");
+    debug(0, "                                         - TRIANGLE\n");
+    debug(0, "                                         - SAWUP\n");        
+    debug(0, "                                         - SAWDOWN\n");
+    debug(0, "                                         - CONSTANT\n");
+    debug(0, "                                         - SPRING\n"); 
+    debug(0, "                                         - DAMPER\n");
+    debug(0, "                                         - INERTIA\n");
+    debug(0, "                                         - FRICTION\n"); 
+    debug(0, "                                         - RAMP\n"); 
+    debug(0, "                                         - AUTOCENTER\n"); 
+    debug(0, "                                         - RUMBLE\n"); 
     debug(0, "\n");    
     debug(0, "   --- NEXT IS FOR DEBUGGING PURPOSE !!!! --- \n");
     debug(0, "\n"); 
@@ -82,7 +82,7 @@ unsigned int hapticEffectFromString(char *effectString)
         if (strcmp(hapticEffectConversion[i].string, effectString) == 0)
             return hapticEffectConversion[i].FFB_EFFECT;
     }
-    debug(0, "Error: Could not find the SDL Haptic Effect specified for string %s\n", effectString);
+    debug(0, "Error: Could not find the Haptic Effect specified for string %s\n", effectString);
     return 0;    
 }
 
@@ -152,9 +152,7 @@ FFBCLIStatus parseArguments(int argc, char **argv)
         char* token = NULL;
 
         if(command!=NULL){
-            if ((strcmp(command, "--sdl") == 0)                        || (strcmp(command, "-sd") == 0)) {
-                arguments.SDL=1;
-            }              
+           
             if ((strcmp(command, "--haptic") == 0)                        || (strcmp(command, "-h") == 0)) {
                 strcpy(arguments.haptic_name, strtok(NULL, "="));
             }              
@@ -162,8 +160,8 @@ FFBCLIStatus parseArguments(int argc, char **argv)
                 arguments.keyvalue[cpKeyValue].mode=GET_SUPPORTED_EFFECTS;
                 cpKeyValue++;
             }
-            else if ((strcmp(command, "--triggerSDLEffect") == 0)         || (strcmp(command, "-t") == 0)) {
-                arguments.keyvalue[cpKeyValue].mode=TRIGGER_SDL_EFFECT;
+            else if ((strcmp(command, "--triggerEffect") == 0)         || (strcmp(command, "-t") == 0)) {
+                arguments.keyvalue[cpKeyValue].mode=TRIGGER_EFFECT;
                 strcpy(arguments.keyvalue[cpKeyValue].value,strtok(NULL, "="));
                 cpKeyValue++;
             }
