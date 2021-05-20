@@ -43,17 +43,15 @@ typedef enum
     FFB_STATUS_ERROR_UNSUPPORTED_COMMAND,
 } FFBStatus;
 
-/* --- init haptic device with help of SDL library --- */
+/* --- init haptic device  --- */
 int initFFB(char *devicePath);
 int disconnectFFB();
 
 /* --- read usb2 serial communication from Sega FFB Controller --- */
-FFBStatus readPacketSDL();
-FFBStatus readPacketC();
+FFBStatus readPacket();
 
 /* --- dispatch Sega FFB Controller request --- */
-FFBStatus processPacketSDL(unsigned char* packet);
-FFBStatus processPacketC(unsigned char* packet);
+FFBStatus processPacket(unsigned char* packet);
 /* --- openFFB execute an initial effect when communication with Sega FFB controller is up and running --- */
 void playCOMInitEffect();
 /* --- openFFB execute an end effect when communication with Sega FFB controller is finished --- */

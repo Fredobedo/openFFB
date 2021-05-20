@@ -7,21 +7,24 @@
 #include <sys/ioctl.h>
 #include <dirent.h>
 
-//#define nBitsPerUchar          (sizeof(unsigned char) * 8)                                        // Number of bits for 1 unsigned char
-//#define bitOffsetInUchar(bit)  ((bit)%nBitsPerUchar)                                              // Index=Offset of given bit in 1 unsigned char 
-//#define ucharValueForBit(bit)  (((unsigned char)(1))<<bitOffsetInUchar(bit))                      // Value of an unsigned char with bit set at given index=offset /
-//#define ucharIndexForBit(bit)  ((bit)/nBitsPerUchar)                                              // Index=Offset of the unsigned char associated to the bit at the given index=offset
-//#define testBit(bit, array)    ((array[ucharIndexForBit(bit)] >> bitOffsetInUchar(bit)) & 1)      // Test the bit with given index=offset in an unsigned char array
-
-
-#define test_bit(yalv, abs_b) ((((char *)abs_b)[yalv/8] & (1<<yalv%8)) > 0)
-
-#define BITS_TO_LONGS(x) (((x) + 8 * sizeof (unsigned long) - 1) / (8 * sizeof (unsigned long)))
-//unsigned long supportedFeatures[BITS_TO_LONGS(FF_CNT)];
-unsigned int supportedFeatures;
-//unsigned char ffb_supported[1 + FF_MAX/8/sizeof(unsigned char)];
-
 #define HAPTIC_INFINITY 0xFFFF
+
+/* Number of bits for 1 unsigned char */
+#define nBitsPerUchar (sizeof(unsigned char) * 8)
+/* Number of unsigned chars to contain a given number of bits */
+#define nUcharsForNBits(nBits) ((((nBits)-1) / nBitsPerUchar) + 1)
+/* Index=Offset of given bit in 1 unsigned char */
+#define bitOffsetInUchar(bit) ((bit) % nBitsPerUchar)
+/* Index=Offset of the unsigned char associated to the bit at the given index=offset */
+#define ucharIndexForBit(bit) ((bit) / nBitsPerUchar)
+/* Value of an unsigned char with bit set at given index=offset */
+#define ucharValueForBit(bit) (((unsigned char)(1)) << bitOffsetInUchar(bit))
+/* Test the bit with given index=offset in an unsigned char array */
+#define testBit(bit, array) ((array[ucharIndexForBit(bit)] >> bitOffsetInUchar(bit)) & 1)
+unsigned char ff_bits[1 + FF_MAX / 8 / sizeof(unsigned char)];
+
+/* All loaded/supported effects are stored here */
+unsigned int supportedFeatures;
 
 #define FF_SINE_LOADED       1U << 0
 #define FF_SQUARE_LOADED     1U << 1
@@ -39,12 +42,12 @@ unsigned int supportedFeatures;
 #define FF_AUTOCENTER_LOADED 1U << 13
 #define FF_RUMBLE_LOADED     1U << 14
 
-
-int device_handle;
-
 #define DEV_INPUT_EVENT "/dev/input"
 #define MAX_DEVICE 10
 #define MAX_EFFECTS 16
+
+/* The haptic File descriptor Handle */
+int device_handle;
 
 struct device{
 	char path[256];
@@ -70,31 +73,41 @@ typedef enum{
 	rumble_effect_idx
 } effects_idx;
 
+typedef enum { 
+	strong_motor,
+	weak_motor,
+	both_motors
+} motor_select;
+
 struct ff_effect ffb_effects[MAX_EFFECTS];
-struct input_event play, stop, gain;
+struct input_event play, stop, gain, event;
+
+bool  FFBGetDeviceName(int handle, char *deviceName);
+bool  FFBGetDeviceVendorProductVersion(int handle, char *deviceVendorProductVersion);
+bool  FFBCheckIfFFBDevice(int handle);
 
 char* FFBGetHapticSimplifiedName(const char* name);
 int   FFBisEventDevice(const struct dirent *dir);
 int   FFBGetAllDevices();
 char* FFBGetDevicePath(char* device_name);
-bool  CheckIfFFBDevice(int handle);
+
 void  FFBDumpAvailableDevices();
 
 /* --- close haptic and sql quit --- */
-void FFBAbortExecution(void);
+void  FFBAbortExecution(void);
 
-bool FFBInitHaptic(char* name);
+bool  FFBInitHaptic(char* name);
 
-void FFBCreateHapticEffects();
+void  FFBCreateHapticEffects();
 
-void FFBTriggerConstantEffect(int direction, double strength);
-void FFBTriggerSineEffect(double strength);
-void FFBTriggerSpringEffect(double strength);
-void FFBTriggerSpringEffectWithDefaultOption(double strength, bool isDefault);
-void FFBTriggerFrictionEffect(double strength);
-void FFBTriggerFrictionEffectWithDefaultOption(double strength, bool isDefault);
-void FFBTriggerRumbleEffectDefault(double strength);
-void FFBTriggerRumbleEffect(double strength, int length);
+void  FFBTriggerConstantEffect(double strength);
+void  FFBTriggerSineEffect(double strength);
+void  FFBTriggerSpringEffect(double strength);
+void  FFBTriggerSpringEffectWithDefaultOption(double strength, bool isDefault);
+void  FFBTriggerFrictionEffect(double strength);
+void  FFBTriggerFrictionEffectWithDefaultOption(double strength, bool isDefault);
+void  FFBTriggerRumbleEffectDefault(double strength);
+void  FFBTriggerRumbleEffect(double strength,  motor_select motor);
 
 
 

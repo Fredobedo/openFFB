@@ -54,11 +54,18 @@ int main(int argc, char **argv)
 
   strcpy(localConfig->hapticName, arguments.haptic_name);
 
-  if(!initHaptic(localConfig->hapticName))
+  if(!FFBInitHaptic(localConfig->hapticName))
     return EXIT_FAILURE;
 
+//FFBSetGlobalAutoCenter(10);
+//testBobbyEffect();
+//setBobbyForce(1.0);
+//sleep(5);
+//   return EXIT_SUCCESS;
+
   if(containArgument(GET_SUPPORTED_EFFECTS)){
-    dumpSupportedFeatures();
+    FFBDumpSupportedFeatures();
+        sleep(5);
     return EXIT_SUCCESS;
   }
 
@@ -67,30 +74,31 @@ int main(int argc, char **argv)
     if(containArgument(SET_FORCE))
       SDLStrength=((double)atoi(getArgumentValue(SET_FORCE)))/100;
 
-    TriggerEffect(hapticEffectFromString(getArgumentValue(TRIGGER_SDL_EFFECT)), SDLStrength);
+    FFBTriggerEffect(hapticEffectFromString(getArgumentValue(TRIGGER_SDL_EFFECT)), SDLStrength);
     sleep(5);
     return EXIT_SUCCESS;
   }
 
   if(containArgument(TRIGGER_SEGA_FFB_RAW_REQUEST)){
-    processPacketSDL(getArgumentValue(TRIGGER_SEGA_FFB_RAW_REQUEST));
+
+    processPacket(getArgumentValue(TRIGGER_SEGA_FFB_RAW_REQUEST));
     sleep(5);
     return EXIT_SUCCESS;
   }
 
-if (!initFFB(localConfig->segaFFBControllerPath))
- {
-  debug(0, "Error: Could not initialize communication with Sega FFB Controller (Serial over USB)\n");
-  return EXIT_FAILURE;
-}
+  if (!initFFB(localConfig->segaFFBControllerPath))
+  {
+    debug(0, "Error: Could not initialize communication with Sega FFB Controller (Serial over USB)\n");
+    return EXIT_FAILURE;
+  }
 
-debug(2, "Will start the main loop...\n");
+  debug(2, "Will start the main loop...\n");
 
   /* Process packets forever */
   FFBStatus processingStatus;
   while (running)
   {
-    processingStatus = readPacketSDL();
+    processingStatus = readPacket();
     switch (processingStatus)
     {
       case FFB_STATUS_ERROR_CHECKSUM:
@@ -111,7 +119,6 @@ debug(2, "Will start the main loop...\n");
     debug(2, "Error: Could not disconnect from serial\n");
     return EXIT_FAILURE;
   }
-
   return EXIT_SUCCESS;
 }
 

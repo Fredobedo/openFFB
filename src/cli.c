@@ -7,7 +7,7 @@
 #include "cli.h"
 
 #include "sdlhelper.h"
-
+#include "ffbhelper.h"
 /**
  * Print usage information
  * 
@@ -136,7 +136,7 @@ FFBCLIStatus parseArguments(int argc, char **argv)
         return printVersion();
     }
     else if ((strcmp(argv[1], "--availableHaptics") == 0) || (strcmp(argv[1], "-a") == 0)) {
-        DumpAvailableHaptics();
+        FFBDumpAvailableDevices();
         return FFB_CLI_STATUS_SUCCESS_CLOSE;
     }    
     else if ((strcmp(argv[1], "--configuration") == 0)    || (strcmp(argv[1], "-c") == 0)) {

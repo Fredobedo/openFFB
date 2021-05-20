@@ -22,13 +22,28 @@ some links:
 	https://github.com/flosse/linuxconsole/blob/master/utils/fftest.c
 */
 #define LONG_BITS (sizeof(long) * 8)
+struct ff_effect effect;
 
-bool GetDeviceDriverVersion(int handle, char *deviceVersion)
+bool FFBGetDeviceName(int handle, char *deviceName)
+{
+	int version;
+	if (!ioctl(handle, EVIOCGNAME(256), deviceName)) 
+	{
+		debug(1," Error in evdev ioctl for FFBGetDeviceName (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+    	return false;
+	}
+	else{
+		//snprintf(deviceVersion, 20, "%d.%d.%d", version >> 16, (version >> 8) & 0xff, version & 0xff);
+		return true;
+	}
+}
+
+bool FFBGetDeviceDriverVersion(int handle, char *deviceVersion)
 {
 	int version;
 	if (ioctl(handle, EVIOCGVERSION, &version)) 
 	{
-		debug(1," Error in evdev ioctl for GetDeviceDriverVersion");
+		debug(1," Error in evdev ioctl for FFBGetDeviceDriverVersion (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
     	return false;
 	}
 	else{
@@ -37,41 +52,37 @@ bool GetDeviceDriverVersion(int handle, char *deviceVersion)
 	}
 }
 
-bool GetDeviceVendorProductVersion(int handle, char *deviceVendorProductVersion)
+bool FFBGetDeviceVendorProductVersion(int handle, char *deviceVendorProductVersion)
 {
 	struct input_id device_info;
 
 	if (ioctl(handle, EVIOCGID, &device_info)) 
 	{
-		debug(1," Error in evdev ioctl for GetDeviceVendorProductVersion");
+		debug(1," Error in evdev ioctl for FFBGetDeviceVendorProductVersion (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
     	return false;
 	}
 	else{
-		snprintf(deviceVendorProductVersion, 42,"vendor:%04hx, product:%04hx, version:%04hx", device_info.vendor, device_info.product, device_info.version);
+		snprintf(deviceVendorProductVersion, 42,"%04hx/%04hx/%04hx", device_info.vendor, device_info.product, device_info.version);
 		return true;
 	}
 }
 
-bool CheckIfFFBDevice(int handle)
+bool FFBCheckIfFFBDevice(int handle)
 {
-	unsigned char evtype_b[EV_MAX/8 + 1];
-	int yalv;
-	bool rc=false;
+	/* Now get some information about force feedback */
+	memset(ff_bits, 0, sizeof(ff_bits));
+	if (ioctl(handle, EVIOCGBIT(EV_FF, sizeof(ff_bits)), ff_bits) < 0)
+	{
+		fprintf(stderr, "ERROR: can not get ff bits (%s) [%s:%d]\n",
+				strerror(errno), __FILE__, __LINE__);
+		return false;
+	}
 
-	memset(evtype_b, 0, sizeof(evtype_b));
-	int rs=ioctl(handle, EVIOCGBIT(0, EV_MAX), evtype_b);
-	if (rs< 0) {
-		debug(1," Error in evdev ioctl for CheckIfFFBDevice");
-	}
-	else{
-		for (yalv = 0; yalv < EV_MAX; yalv++) {
-			if (test_bit(yalv, evtype_b)) {
-				if(yalv==EV_FF || yalv==EV_FF_STATUS)
-					return true;
-			}
-		}
-	}
-	return false;
+	/* force feedback supported? */
+	if (!testBit(FF_RUMBLE, ff_bits))
+		return false;
+	else
+		return true;
 }
 
 char* FFBGetHapticSimplifiedName(const char* name)
@@ -112,18 +123,18 @@ int FFBGetAllDevices()
 		char fname[512];
 
         snprintf(fname, sizeof(fname), "%s/%s", DEV_INPUT_EVENT, namelist[i]->d_name);
-
         if ((fd = open(fname, O_RDONLY)) > -1)
         {
-			if(CheckIfFFBDevice(fd)){
-				debug(0,"device supports FFB\n");
+			if(FFBCheckIfFFBDevice(fd)){
 
-				int rc=ioctl(fd, EVIOCGNAME(sizeof(name)), name);
-
-
-				strcpy(devices[NbrOfDevices].realName, name);
-				strcpy(devices[NbrOfDevices].simplifiedName, FFBGetHapticSimplifiedName(name));
+				//printf("path size=%lu, fname size=%lu\n", sizeof(devices[NbrOfDevices].path), sizeof(fname));
+				//printf("D-fname=%s\n", fname);
 				strcpy(devices[NbrOfDevices].path, fname);
+				FFBGetDeviceName(fd, devices[NbrOfDevices].realName);
+				strcpy(devices[NbrOfDevices].simplifiedName, FFBGetHapticSimplifiedName(devices[NbrOfDevices].realName));
+				FFBGetDeviceVendorProductVersion(fd, devices[NbrOfDevices].vendorProductVersion);
+				FFBGetDeviceDriverVersion(fd, devices[NbrOfDevices].driverVersion);
+				
 				NbrOfDevices++;
 			}
 			//else
@@ -142,12 +153,19 @@ void FFBDumpAvailableDevices()
 {
 	if(FFBGetAllDevices()>0)
 	{
+		debug(0, "----------------------------------------------------\n");
 		debug(0, "Available Devices:\n");
-		debug(0, "------------------\n");
+
 		for (int i = 0; i < NbrOfDevices; i++) 
 		{
-			if(devices[i].path)
-				debug(0, "Device[%d]: %s\n", i, devices[i].simplifiedName);
+		    debug(0, "----------------------------------------------------\n");
+			if(devices[i].path){
+				debug(0, "Device[%d] Simplified Name        : %s\n", i, devices[i].simplifiedName);
+				debug(0, "Device[%d] Real Name              : %s\n", i, devices[i].realName);
+				debug(0, "Device[%d] Vendor/Product/Version : %s\n", i, devices[i].vendorProductVersion);
+				debug(0, "Device[%d] Driver Version         : %s\n", i, devices[i].driverVersion);
+				debug(0, "Device[%d] path                   : %s\n", i, devices[i].path);
+			}
 		}
 	}
 }
@@ -195,7 +213,7 @@ bool FFBInitHaptic(char* device_name)
 				printf("Using device %s.\n\n", device_name);
 				
 				FFBCreateHapticEffects();
-				//FFBSetGlobalGain(getConfig()->globalGain);
+				FFBSetGlobalGain(100); //(getConfig()->globalGain);
 				return true;
 			}
 			else {
@@ -221,19 +239,29 @@ void FFBCreateHapticEffects()
 	effect->replay.delay = 0;
 	effect->direction = 0xC000;
 	//effect->replay =1; 
-	effect->u.constant.level = 0x6000;				// this is an sint16 => -32768 to 32767
+	//effect->u.constant.level = 0; 			// this is an sint16 => -32768 to 32767
 	effect->u.constant.envelope.attack_length = 0;
-	effect->u.constant.envelope.attack_level = 0;
+	effect->u.constant.envelope.attack_level = 0;		// -> this one to update
 	effect->u.constant.envelope.fade_length = 0;
-	effect->u.constant.envelope.fade_level = 0;
+	effect->u.constant.envelope.fade_level = 0;			// -> this one to update
 
-	if(ioctl(device_handle, EVIOCSFF, effect)==-1)
-		debug(1, "Error creating FF_CONSTANT effect\n");
+	if(ioctl(device_handle, EVIOCSFF, effect))
+		debug(1," Error creating FF_CONSTANT effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
 	else{
 		supportedFeatures|=FF_CONSTANT_LOADED;
 		debug(1, "FF_CONSTANT Effect id=%d\n", effect->id);
+
+		/* Start effect */
+		
+		memset(&event, 0, sizeof(event));
+		event.type = EV_FF;
+		event.code = effect->id;
+		event.value = 1;
+		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
+			fprintf(stderr, "ERROR: starting effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
+			
 	}
-	
+
 	/* --- FF_SINE --- */
 	effect=&ffb_effects[sine_effect_idx];
 	memset(effect,0,sizeof(ffb_effects[0]));
@@ -248,21 +276,32 @@ void FFBCreateHapticEffects()
 	effect->u.periodic.phase = 0;
 	effect->direction = 0x4000;				/* Along X axis */
 	effect->u.periodic.envelope.attack_length = 1000;
-	effect->u.periodic.envelope.attack_level = 0x7fff;
+	effect->u.periodic.envelope.attack_level = 0; //0x7fff; 		-> this one to update
 	effect->u.periodic.envelope.fade_length = 1000;
-	effect->u.periodic.envelope.fade_level = 0x7fff;
+	effect->u.periodic.envelope.fade_level = 0; //0x7fff; 			-> this one to update
 	effect->trigger.button = 0;
 	effect->trigger.interval = 0;
 	effect->replay.length = HAPTIC_INFINITY;
 	//effect->replay.delay = 1000;
 
-	if(ioctl(device_handle, EVIOCSFF, effect)==-1)
-		debug(1, "Error creating FF_PERIODIC FF_SINE effect\n");
+	if(ioctl(device_handle, EVIOCSFF, effect))
+		debug(1," Error creating FF_PERIODIC FF_SINE  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
 	else{
 		supportedFeatures|=FF_SINE_LOADED;
 		debug(1, "FF_SINE Effect id=%d\n", effect->id);
+
+		/* Start effect */
+		/*
+		memset(&event, 0, sizeof(event));
+		event.type = EV_FF;
+		event.code = effect->id;
+		event.value = 1;
+		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
+			fprintf(stderr, "ERROR: starting effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
+			*/
 	}
 
+	
     /* --- FF_FRICTION --- */
 	effect=&ffb_effects[friction_effect_idx];
 	memset(effect,0,sizeof(ffb_effects[0]));
@@ -275,18 +314,22 @@ void FFBCreateHapticEffects()
 	effect->replay.length = HAPTIC_INFINITY; 
 	effect->replay.delay = 0;
 	effect->direction = 0xC000;
-	
-	effect->u.constant.level = 0x6000;				// this is an sint16 => -32768 to 32767
-	effect->u.constant.envelope.attack_length = 0;
-	effect->u.constant.envelope.attack_level = 0;
-	effect->u.constant.envelope.fade_length = 0;
-	effect->u.constant.envelope.fade_level = 0;
+	effect->u.condition->left_saturation = 0xFFFF;
+	effect->u.condition->right_saturation = 0xFFFF;
 
-	if(ioctl(device_handle, EVIOCSFF, effect)==-1)
-		debug(1, "Error creating FF_FRICTION effect\n");
+	if(ioctl(device_handle, EVIOCSFF, effect))
+		debug(1," Error creating FF_FRICTION  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);	
 	else{
 		supportedFeatures|=FF_FRICTION_LOADED;
 		debug(1, "FF_FRICTION Effect id=%d\n", effect->id);	
+		
+		/* Start effect */
+		memset(&event, 0, sizeof(event));
+		event.type = EV_FF;
+		event.code = effect->id;
+		event.value = 1;
+		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
+			fprintf(stderr, "ERROR: starting effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);		
 	}
 
     /* --- FF_SPRING --- */
@@ -307,11 +350,19 @@ void FFBCreateHapticEffects()
 	effect->replay.length = HAPTIC_INFINITY;  /* 20 seconds */
 	effect->replay.delay = 0;
 
-	if(ioctl(device_handle, EVIOCSFF, effect)==-1)
-		debug(1, "Error creating FF_SPRING effect\n");
+	if(ioctl(device_handle, EVIOCSFF, effect))
+		debug(1," Error creating FF_SPRING  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);		
 	else{
 		supportedFeatures|=FF_SPRING_LOADED;
 		debug(1, "FF_SPRING Effect id=%d\n", effect->id);	
+
+		/* Start effect */
+		memset(&event, 0, sizeof(event));
+		event.type = EV_FF;
+		event.code = effect->id;
+		event.value = 1;
+		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
+			fprintf(stderr, "ERROR: starting effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);		
 	}
 
     /* --- FF_RUMBLE --- */
@@ -321,16 +372,24 @@ void FFBCreateHapticEffects()
 	effect->id = -1;
 	effect->type = FF_RUMBLE;
 
-	effect->u.rumble.strong_magnitude = 0x8000; // left
-	effect->u.rumble.weak_magnitude = 0x8000;   // right
+	effect->u.rumble.strong_magnitude = 0; 
+	effect->u.rumble.weak_magnitude = 0;   
 	effect->replay.length = HAPTIC_INFINITY; 
 	effect->replay.delay = 1000;
 
-	if(ioctl(device_handle, EVIOCSFF, effect)==-1)
-		debug(1, "Error creating FF_RUMBLE effect\n");
+	if(ioctl(device_handle, EVIOCSFF, effect))
+		debug(1," Error creating FF_SPRING  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);		
 	else{
 		supportedFeatures|=FF_RUMBLE_LOADED;
 		debug(1, "FF_RUMBLE Effect id=%d\n", effect->id);	
+
+		/* Start effect */
+		memset(&event, 0, sizeof(event));
+		event.type = EV_FF;
+		event.code = effect->id;
+		event.value = 1;
+		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
+			fprintf(stderr, "ERROR: starting effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
 	}
 	
 }
@@ -359,10 +418,16 @@ void FFBDumpSupportedFeatures()
     debug(0, "------------------------------------------------------------------\n");
 
 	int n_effects;	
-	ioctl(device_handle, EVIOCGEFFECTS, &n_effects);
-    debug(0, "   Nbr of programmable effects for this device: %d\n", n_effects);
-	ioctl(device_handle, EVIOCGEFFECTS, &n_effects);
-    debug(0, "   Nbr of effects the device can play at the same time: %d\n",n_effects);
+	if(ioctl(device_handle, EVIOCGEFFECTS, &n_effects))
+		debug(1," Error getting Nbr of programmable effects (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+	else
+    	debug(0, "   Nbr of programmable effects for this device: %d\n", n_effects);
+
+	if(ioctl(device_handle, EVIOCGEFFECTS, &n_effects))
+		debug(1," Error getting Nbr simultaneous effects (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+	else
+    	debug(0, "   Nbr of simultaneous effects the device can play: %d\n",n_effects);
+
     debug(0, "\n");
     debug(0, "     ffb_supported periodic effects:\n");
     debug(0, "      - sine:         %s", FFBCheckEffect(FF_SINE_LOADED));
@@ -453,14 +518,18 @@ void FFBTriggerSineEffect(double strength)
 	}
 }
 
-void FFBTriggerConstantEffect(int direction, double strength)
+void FFBTriggerConstantEffect(double strength)
 {
-	printf("TriggerConstantEffect-direction=%d\n", direction);
-
 	debug(1, "TriggerConstantEffect\n");
 	if(FF_CONSTANT_LOADED==(supportedFeatures & FF_CONSTANT_LOADED)) 
 	{
 		struct ff_effect* effect=&ffb_effects[constant_effect_idx];
+
+		if (strength > 1.0)
+			strength = 1.0;
+		else if (strength < -1.0)
+			strength = -1.0;
+
 		int confMinForce = getConfig()->minForce;
 		int confMaxForce = getConfig()->maxForce;
 
@@ -469,29 +538,13 @@ void FFBTriggerConstantEffect(int direction, double strength)
 		short range = MaxForce - MinForce;
 		short level = (short)(strength * range + MinForce);
 
-		if (range > 0 && level < 0)
-			level = 32767;
-
-		else if (range < 0 && level > 0)
-			level = -32767;
-
-		effect->u.constant.level = level;	// 0x2000 -> 25 % 
-		effect->direction = direction;      // 0x6000 -> 135 degrees 
+		effect->u.constant.level =  level;	
+		effect->u.constant.envelope.attack_level =  (short)(strength * 32767.0); /* this one counts! */
+		effect->u.constant.envelope.fade_level =  (short)(strength * 32767.0);	/* only to be safe */
 
 		/* update effect */
     	if (ioctl(device_handle, EVIOCSFF, effect) < 0)
             debug(1, "ERROR: uploading effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
-
-		/* run effect */
-		struct input_event event;
-		memset(&event, 0, sizeof(event));
-		event.type = EV_FF;
-		event.code = effect->id;
-		event.value = 1; 
-		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-			debug(1, "ERROR: starting effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
-		else
-			debug(1,"->success\n");	
 	}
 	else
 	{
@@ -507,21 +560,24 @@ void FFBTriggerFrictionEffect(double strength)
 
 void FFBTriggerFrictionEffectWithDefaultOption(double strength, bool isDefault)
 {
-	debug(1, "TriggerConstantEffect\n");
-	if(FF_FRICTION_LOADED==(supportedFeatures & FF_FRICTION_LOADED)) 
+	debug(1, "FFBTriggerFrictionEffect\n");
+	if(FF_CONSTANT_LOADED==(supportedFeatures & FF_CONSTANT_LOADED)) 
 	{
-		struct ff_effect* effect=&ffb_effects[friction_effect_idx];
+		struct ff_effect* effect=&ffb_effects[constant_effect_idx];
 
-		/* run effect */
-		struct input_event event;
-		memset(&event, 0, sizeof(event));
-		event.type = EV_FF;
-		event.code = effect->id;
-		event.value = 1; 
-		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-			debug(1, "ERROR: starting effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
-		else
-			debug(1,"->success\n");	
+		short minForce = (short)(strength > 0.001 ? (getConfig()->minForce / 100.0 * 32767.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
+		short maxForce = (short)(getConfig()->maxForce / 100.0 * 32767.0);
+		short range = maxForce - minForce;
+		short coeff = (short)(strength * range + minForce);
+		if (coeff < 0)
+			coeff = 32767;
+
+		effect->u.condition->left_coeff =  (short)(coeff);
+		effect->u.condition->right_coeff =  (short)(coeff);
+		
+		/* update effect */
+    	if (ioctl(device_handle, EVIOCSFF, effect) < 0)
+            debug(1, "ERROR: uploading effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
 	}
 	else
 	{
@@ -570,23 +626,43 @@ void FFBTriggerFrictionEffectWithDefaultOption(double strength, bool isDefault)
 
 void FFBTriggerRumbleEffectDefault(double strength)
 {
-	FFBTriggerRumbleEffect(strength, getConfig()->feedbackLength);
+	FFBTriggerRumbleEffect(strength, both_motors);
 }
 
-void FFBTriggerRumbleEffect(double strength, int length)
+void FFBTriggerRumbleEffect(double strength, motor_select motor)
 {
 	if(FF_RUMBLE_LOADED==(supportedFeatures & FF_RUMBLE_LOADED)) 
 	{	
-		struct input_event event;
+		struct ff_effect* effect=&ffb_effects[rumble_effect_idx];
 
-		/* Start effect */
-		memset(&event, 0, sizeof(event));
-		event.type = EV_FF;
-		event.code = ffb_effects[rumble_effect_idx].id;
-		event.value = 1; 
-		//event.value = level;
-		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-			debug(1, "ERROR: setting Rumble failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+		if (strength > 1.0)
+			strength = 1.0;
+		else if (strength < -1.0)
+			strength = -1.0;
+
+		int confMinForce = getConfig()->minForce;
+		int confMaxForce = getConfig()->maxForce;
+
+		short MinForce = (short)(strength > 0.001 ? (getConfig()->minForce / 100.0 * 32767.0) : 0);
+		short MaxForce = (short)(getConfig()->maxForce / 100.0 * 32767.0);
+		short range = MaxForce - MinForce;
+		short level = (short)(strength * range + MinForce);
+
+		if(motor==weak_motor){
+			effect->u.rumble.strong_magnitude =  0; 
+			effect->u.rumble.weak_magnitude =  level;   
+
+			effect->u.rumble.strong_magnitude =  level;
+			effect->u.rumble.weak_magnitude =  0;   
+		}
+		else {	
+			effect->u.rumble.strong_magnitude =  level; 
+			effect->u.rumble.weak_magnitude =  level;  
+		}
+
+		/* update effect */
+    	if (ioctl(device_handle, EVIOCSFF, effect) < 0)
+            debug(1, "ERROR: uploading effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
 	}
 	else
 		debug(1,"FFBTriggerRumbleEffect not supported\n");
@@ -599,9 +675,7 @@ void FFBTriggerSpringEffect(double strength)
 
 void FFBTriggerSpringEffectWithDefaultOption(double strength, bool isDefault)
 {
-	printf("FFBTriggerSpringEffectWithDefaultOption\n");
-
-	debug(1, "TriggerConstantEffect\n");
+	debug(1, "FFBTriggerSpringEffect here\n");
 	if (FF_SPRING_LOADED==(supportedFeatures & FF_SPRING_LOADED))  
 	{
 		struct ff_effect* effect=&ffb_effects[spring_effect_idx];
@@ -620,18 +694,6 @@ void FFBTriggerSpringEffectWithDefaultOption(double strength, bool isDefault)
 		/* update effect */
     	if (ioctl(device_handle, EVIOCSFF, effect) < 0)
             debug(1, "ERROR: uploading effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
-
-		/* run effect */
-		struct input_event event;
-		memset(&event, 0, sizeof(event));
-		event.type = EV_FF;
-		event.code = effect->id;
-		event.value = 1; 
-		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-			debug(1, "ERROR: starting effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
-		else
-			debug(1,"->success\n");	
-		sleep(5);
 	}
 }
 
@@ -643,7 +705,7 @@ void FFBSetGlobalGain(int level)
 	memset(&gain, 0, sizeof(gain));
 	gain.type = EV_FF;
 	gain.code = FF_GAIN;
-	gain.value = level * 655; /*  0xFFFF -> 100% */
+	gain.value = 0xFFFFUL * level / 100;
 
 	if (write(device_handle, &gain, sizeof(gain)) != sizeof(gain)) 
 		debug(1, "Error setting global gain\n");
@@ -653,21 +715,21 @@ void FFBSetGlobalGain(int level)
 	}
 }
 
+/* --- AutoCenter Global Setting (1-100)--- */
 void FFBSetGlobalAutoCenter(int level)
 {
 	debug(1, "FFBSetGlobalAutoCenter\n");
-	if (FF_CONSTANT==(supportedFeatures & FF_CONSTANT)) 
-	{	
-		struct input_event event;
-
-		/* Start effect */
-		memset(&event, 0, sizeof(event));
-		event.type = EV_FF;
-		event.code = FF_AUTOCENTER;
-		event.value = level;
-		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-			fprintf(stderr, "ERROR: setting AutoCenter failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
-	}
+	
+	memset(&event, 0, sizeof(event));
+	event.type = EV_FF;
+	event.code = FF_AUTOCENTER;
+	event.value = 0xFFFFUL * level / 100;
+	if (write(device_handle, &event, sizeof(event)) != sizeof(event))
+		debug(1, "ERROR: failed to disable auto centering (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+	else{
+		supportedFeatures|=FF_AUTOCENTER_LOADED;
+		debug(1,"->success\n");	
+	}		
 }
 
 void FFBTriggerEffect(unsigned int effect, double strength)
@@ -676,7 +738,7 @@ void FFBTriggerEffect(unsigned int effect, double strength)
     switch(effect)
     {
         case FF_CONSTANT:
-            FFBTriggerConstantEffect(0, strength);
+            FFBTriggerConstantEffect(strength);
             break;
         case FF_SPRING:
             FFBTriggerSpringEffect(strength);
