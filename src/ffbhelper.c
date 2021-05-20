@@ -14,13 +14,15 @@
 
 /*
 some links: 
+	linux/input.h    : lots of information in this header file
 	https://www.kernel.org/doc/html/latest/input/ff.html
 	https://github.com/Eliasvan/Linux-Force-Feedback
 	https://www.youtube.com/watch?v=pCq01LHaIVg
 	https://www.linuxjournal.com/article/6429
 	https://github.com/Wiladams/LJIT2RPi/blob/master/tests/test_input.c
-	https://github.com/flosse/linuxconsole/blob/master/utils/fftest.c
-	https://github.com/OpenJVS/OpenJVS/blob/bobby/ffb/src/ffb.c
+	fftest          : https://github.com/flosse/linuxconsole/blob/master/utils/fftest.c
+	openjvs         : https://github.com/OpenJVS/OpenJVS/blob/bobby/ffb/src/ffb.c
+	ff-memless-next : https://github.com/chrisboyle/G940-linux/blob/main/drivers/input/ff-memless-next.c
 */
 #define LONG_BITS (sizeof(long) * 8)
 struct ff_effect effect;
@@ -278,6 +280,7 @@ void FFBCreateHapticEffects()
 	effect->trigger.interval = 0;
 	effect->replay.length = HAPTIC_INFINITY;
 	effect->replay.delay = 1000;
+	effect->u.periodic.magnitude=0;
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
 		debug(1," Error creating FF_PERIODIC FF_SINE effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
@@ -307,8 +310,8 @@ void FFBCreateHapticEffects()
 	effect->replay.length = HAPTIC_INFINITY; 
 	effect->replay.delay = 0;
 	effect->direction = 0xC000;
-	effect->u.condition->left_saturation = 0xFFFF;
-	effect->u.condition->right_saturation = 0xFFFF;
+	//effect->u.condition->left_saturation = 0xFFFF;
+	//effect->u.condition->right_saturation = 0xFFFF;
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
 		debug(1," Error creating FF_FRICTION  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);	
@@ -467,7 +470,14 @@ void FFBStopAllEffects()
 	}
 }
 
-//Dummy call for now (TBC)
+/**
+ * @waveform: kind of the effect (wave)
+ * @period: period of the wave (ms)
+ * @magnitude: peak value
+ * @offset: mean value of the wave (roughly)
+ * @phase: 'horizontal' shift
+ * @envelope: envelope data
+ */
 void FFBTriggerSineEffect(double strength)
 {
 	debug(1, "FFBTriggerSineEffect\n");
@@ -482,8 +492,8 @@ void FFBTriggerSineEffect(double strength)
 		if (coeff < 0)
 			coeff = 32767;
 
-		effect->u.periodic.envelope.attack_level = 10;//(short)(coeff); //0x7fff; 		-> this one to update?
-		effect->u.periodic.envelope.fade_level = 10;//(short)(coeff); //0x7fff; 		-> this one to update?
+		//effect->u.periodic.envelope.attack_level = 0x7fff; 		 
+		//effect->u.periodic.envelope.fade_level =  0x7fff; 		
 
 		effect->u.periodic.magnitude=(short)(coeff);
 
@@ -498,6 +508,20 @@ void FFBTriggerSineEffect(double strength)
 	}
 }
 
+
+/**
+ * Generic force-feedback effect envelope (struct ff_envelope):
+ *   @attack_length: duration of the attack (ms)
+ *   @attack_level:  level at the beginning of the attack
+ *   @fade_length:   duration of fade (ms)
+ *   @fade_level:    level at the end of fade
+ *  Constant:
+ *   @level:         strength of the effect; may be negative
+ * The @attack_level and @fade_level are absolute values; when applying
+ * envelope force-feedback core will convert to positive/negative
+ * value based on polarity of the default level of the effect.
+ * Valid range for the attack and fade levels is 0x0000 - 0x7fff
+ */
 void FFBTriggerConstantEffect(double strength)
 {
 	debug(1, "TriggerConstantEffect\n");
@@ -519,8 +543,10 @@ void FFBTriggerConstantEffect(double strength)
 		short level = (short)(strength * range + MinForce);
 
 		effect->u.constant.level =  level;	
+		
+		/* Here we set the two values to the max as the arcade system 'manages" fades                */
 		effect->u.constant.envelope.attack_level =  (short)(strength * 32767.0); /* this one counts! */
-		effect->u.constant.envelope.fade_level =  (short)(strength * 32767.0);	 /* only to be safe  */
+		effect->u.constant.envelope.fade_level =    (short)(strength * 32767.0); /* only to be safe  */
 
 		/* update effect */
     	if (ioctl(device_handle, EVIOCSFF, effect) < 0)
@@ -533,14 +559,16 @@ void FFBTriggerConstantEffect(double strength)
 	}
 }
 
+
+/**
+ * @right_saturation: maximum level when joystick moved all way to the right
+ * @left_saturation:  same for the left side
+ * @right_coeff:      controls how fast the force grows when the joystick moves
+ * @left_coeff:       same for the left side 
+ */
 void FFBTriggerFrictionEffect(double strength)
 {
-	FFBTriggerFrictionEffectWithDefaultOption(strength, false);
-}
-
-void FFBTriggerFrictionEffectWithDefaultOption(double strength, bool isDefault)
-{
-	debug(1, "FFBTriggerFrictionEffect\n");
+	debug(1, "FFBTriggerFrictionEffect dd\n");
 	if(FF_CONSTANT_LOADED==(supportedFeatures & FF_CONSTANT_LOADED)) 
 	{
 		struct ff_effect* effect=&ffb_effects[constant_effect_idx];
@@ -552,9 +580,11 @@ void FFBTriggerFrictionEffectWithDefaultOption(double strength, bool isDefault)
 		if (coeff < 0)
 			coeff = 32767;
 
-		effect->u.condition->left_coeff =  (short)(coeff);
-		effect->u.condition->right_coeff =  (short)(coeff);
-		
+		effect->u.condition[0].right_saturation = 100; 
+		effect->u.condition[0].left_saturation = 100; 
+		effect->u.condition[0].right_coeff = (short)(coeff);
+		effect->u.condition[0].left_coeff = (short)(coeff);
+
 		/* update effect */
     	if (ioctl(device_handle, EVIOCSFF, effect) < 0)
             debug(1, "ERROR: uploading effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
@@ -650,11 +680,6 @@ void FFBTriggerRumbleEffect(double strength, motor_select motor)
 
 void FFBTriggerSpringEffect(double strength)
 {
-	FFBTriggerSpringEffectWithDefaultOption(strength, false);
-}
-
-void FFBTriggerSpringEffectWithDefaultOption(double strength, bool isDefault)
-{
 	debug(1, "FFBTriggerSpringEffect\n");
 	if (FF_SPRING_LOADED==(supportedFeatures & FF_SPRING_LOADED))  
 	{
@@ -668,8 +693,8 @@ void FFBTriggerSpringEffectWithDefaultOption(double strength, bool isDefault)
 		
 		effect->u.condition[0].right_saturation = (short)(coeff * 2.0); 
 		effect->u.condition[0].left_saturation = (short)(coeff * 2.0); 
-		effect->u.condition[0].right_coeff = (short)(coeff);
-		effect->u.condition[0].left_coeff = (short)(coeff);
+		effect->u.condition[0].right_coeff = 20000; //(short)(coeff);
+		effect->u.condition[0].left_coeff = 20000; //(short)(coeff);
 
 		/* update effect */
     	if (ioctl(device_handle, EVIOCSFF, effect) < 0)

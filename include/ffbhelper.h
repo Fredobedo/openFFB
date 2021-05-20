@@ -103,9 +103,7 @@ void  FFBCreateHapticEffects();
 void  FFBTriggerConstantEffect(double strength);
 void  FFBTriggerSineEffect(double strength);
 void  FFBTriggerSpringEffect(double strength);
-void  FFBTriggerSpringEffectWithDefaultOption(double strength, bool isDefault);
 void  FFBTriggerFrictionEffect(double strength);
-void  FFBTriggerFrictionEffectWithDefaultOption(double strength, bool isDefault);
 void  FFBTriggerRumbleEffectDefault(double strength);
 void  FFBTriggerRumbleEffect(double strength,  motor_select motor);
 

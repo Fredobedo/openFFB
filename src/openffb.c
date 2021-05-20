@@ -79,7 +79,7 @@ int main(int argc, char **argv)
   if(containArgument(TRIGGER_SEGA_FFB_RAW_REQUEST)){
 
     processPacket(getArgumentValue(TRIGGER_SEGA_FFB_RAW_REQUEST));
-    sleep(5);
+    sleep(20);
     return EXIT_SUCCESS;
   }
 

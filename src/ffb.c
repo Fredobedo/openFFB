@@ -64,10 +64,13 @@ FFBStatus processPacket(unsigned char* packet)
 	if(previous_rawpacket[1]!=packet[1])
 		FFBTriggerSpringEffect(inputPacket.spring);
 
-    /* --- friction          from 0x00 to 0x7F -> 128 levels --- */
+    /* --- friction          from 0x00 to 0x7F -> 128 levels                                                --- */
+	/* --- For now on, I will use Sine effect instead as I can't control the strengh of a froction effect ? --- */
 	debug(2, "previous_rawpacket[2]=%02X, packet[2]=%02X\n",previous_rawpacket[2],packet[2]);
 	if(previous_rawpacket[2]!=packet[2])
-		FFBTriggerFrictionEffect(inputPacket.friction);		
+		FFBTriggerSineEffect(inputPacket.friction);		
+		//FFBTriggerFrictionEffect(inputPacket.friction);		
+
 
     /* --- torqueDirection   0x00 = Left, 0x01  = Right                     --- */
     /* --- torquePower       from 0x00 to 0xFF -> 128 levels                --- */
