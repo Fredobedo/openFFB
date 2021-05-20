@@ -72,7 +72,7 @@ int main(int argc, char **argv)
       Strength=((double)atoi(getArgumentValue(SET_FORCE)))/100;
 
     FFBTriggerEffect(hapticEffectFromString(getArgumentValue(TRIGGER_EFFECT)), Strength);
-    sleep(5);
+    sleep(2);
     return EXIT_SUCCESS;
   }
 

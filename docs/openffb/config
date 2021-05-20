@@ -1,7 +1,7 @@
 # OpenFFB Config
 
 # Setup the default game FFB Profile
-DEFAULT_GAME_SETTING generic-driving
+DEFAULT_DRIVING_PROFILE generic-driving
 
 # Setup the debug mode for outputting debug information
 # DEBUG_MODE 1 - This will show information level traces

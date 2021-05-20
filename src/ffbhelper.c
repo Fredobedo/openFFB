@@ -277,23 +277,21 @@ void FFBCreateHapticEffects()
 	effect->trigger.button = 0;
 	effect->trigger.interval = 0;
 	effect->replay.length = HAPTIC_INFINITY;
-	//effect->replay.delay = 1000;
+	effect->replay.delay = 1000;
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
 		debug(1," Error creating FF_PERIODIC FF_SINE effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
 	else{
 		supportedFeatures|=FF_SINE_LOADED;
 		debug(1, "FF_SINE Effect     id=%d\n", effect->id);
-
+		
 		/* Start effect */
-		/*
 		memset(&event, 0, sizeof(event));
 		event.type = EV_FF;
 		event.code = effect->id;
 		event.value = 1;
 		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-			fprintf(stderr, "ERROR: starting effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
-			*/
+			fprintf(stderr, "ERROR: starting effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);	
 	}
 
 	
@@ -477,39 +475,26 @@ void FFBTriggerSineEffect(double strength)
 	{
 		struct ff_effect* effect=&ffb_effects[sine_effect_idx];
 
-		/*
-		int confMinForce = getConfig()->minForce;
-		int confMaxForce = getConfig()->maxForce;
+		short minForce = (short)(strength > 0.001 ? (getConfig()->minForce / 100.0 * 32767.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
+		short maxForce = (short)(getConfig()->maxForce / 100.0 * 32767.0);
+		short range = maxForce - minForce;
+		short coeff = (short)(strength * range + minForce);
+		if (coeff < 0)
+			coeff = 32767;
 
-		short MinForce = (short)(strength > 0.001 ? (getConfig()->minForce / 100.0 * 32767.0) : 0);
-		short MaxForce = (short)(getConfig()->maxForce / 100.0 * 32767.0);
-		short range = MaxForce - MinForce;
-		short level = (short)(strength * range + MinForce);
+		effect->u.periodic.envelope.attack_level = 10;//(short)(coeff); //0x7fff; 		-> this one to update?
+		effect->u.periodic.envelope.fade_level = 10;//(short)(coeff); //0x7fff; 		-> this one to update?
 
-		if (range > 0 && level < 0)
-			level = 32767;
+		effect->u.periodic.magnitude=(short)(coeff);
 
-		else if (range < 0 && level > 0)
-			level = -32767;
-
-		effect->u.constant.level = level;	// 0x2000 -> 25 % 
-*/
 		/* update effect */
-    	//if (ioctl(device_handle, EVIOCSFF, effect) < 0)
-        //    debug(1, "ERROR: uploading effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
-
-		/* run effect */
-		struct input_event event;
-		memset(&event, 0, sizeof(event));
-		event.type = EV_FF;
-		event.code = effect->id;
-		event.value = 1; 
-
-	
-		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-			debug(1, "ERROR: starting effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
-		else
-			debug(1,"->success id=%d\n", effect->id);	
+    	if (ioctl(device_handle, EVIOCSFF, effect) < 0)
+            debug(1, "ERROR: uploading effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+	}
+	else
+	{
+		debug(1, "-> not ffb_supported, will try default rumble\n");
+		FFBTriggerRumbleEffectDefault(strength);
 	}
 }
 
@@ -670,7 +655,7 @@ void FFBTriggerSpringEffect(double strength)
 
 void FFBTriggerSpringEffectWithDefaultOption(double strength, bool isDefault)
 {
-	debug(1, "FFBTriggerSpringEffect here\n");
+	debug(1, "FFBTriggerSpringEffect\n");
 	if (FF_SPRING_LOADED==(supportedFeatures & FF_SPRING_LOADED))  
 	{
 		struct ff_effect* effect=&ffb_effects[spring_effect_idx];
@@ -749,6 +734,5 @@ void FFBTriggerEffect(unsigned int effect, double strength)
             FFBTriggerSineEffect(strength);
             break;  						
     }
-	sleep(5);
 }
 

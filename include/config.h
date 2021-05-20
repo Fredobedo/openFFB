@@ -3,8 +3,8 @@
 
 //#include "input.h"
 
-#define DEFAULT_CONFIG_PATH "/etc/openffb/config"
-#define DEFAULT_GAME_SETTING_PATH "/etc/openffb/games/"
+#define CONFIG_PATH "/etc/openffb/config"
+#define DRIVING_PROFILE_PATH "/etc/openffb/games/"
 
 #define MAX_PATH_LENGTH 1024
 #define MAX_LINE_LENGTH 1024
@@ -12,8 +12,8 @@
 typedef struct
 {
     char hapticName[MAX_PATH_LENGTH];
-    char gameSettingPath[MAX_PATH_LENGTH];
-    char defaultGameSetting[MAX_PATH_LENGTH];
+    char drivingProfilePath[MAX_PATH_LENGTH];
+    char drivingProfile[MAX_PATH_LENGTH];
     char segaFFBControllerPath[MAX_PATH_LENGTH];
     int  debugLevel;
 
@@ -43,6 +43,7 @@ typedef enum
 
 FFBConfig *getConfig();
 FFBConfigStatus parseConfig(char *path);
+FFBConfigStatus parseDrivingProfile(char *path);
 void DumpConfig();
 //FFBConfigStatus parseGameSetting(char *path, InputMappings *inputMappings);
 

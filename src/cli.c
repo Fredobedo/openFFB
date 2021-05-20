@@ -17,40 +17,40 @@
  **/
 FFBCLIStatus printUsage()
 {
-    debug(0, "Usage: openffb [HAPTIC_NAME] [OPTION]\n\n");
+    debug(0, "Usage: openffb [HAPTIC_NAME] [OPTIONS]\n\n");
     debug(0, "Haptic_name:                            Select haptic name or index\n");
     debug(0, "Options:\n");
-    debug(0, "  --help                                Displays this text\n");
-    debug(0, "  --version                             Displays OpenFFB Version\n");
-    debug(0, "  --configuration                       Displays OpenFFB Configuration\n");
-    debug(0, "  --availableHaptics                    Displays list of haptics\n");
-    debug(0, "  --haptic=[NAME]                       Haptic Name or index\n");
-    debug(0, "  --supportedEffects                    Displays supported effects\n");
-    debug(0, "  --triggerEffect=[TYPE]                Activate 1 of these effects\n");
-    debug(0, "  --force=[1-100]                       The force (strength) of the effect to activate\n");
-    debug(0, "                                         - SINE\n");
-    debug(0, "                                         - SQUARE\n");
-    debug(0, "                                         - TRIANGLE\n");
-    debug(0, "                                         - SAWUP\n");        
-    debug(0, "                                         - SAWDOWN\n");
-    debug(0, "                                         - CONSTANT\n");
-    debug(0, "                                         - SPRING\n"); 
-    debug(0, "                                         - DAMPER\n");
-    debug(0, "                                         - INERTIA\n");
-    debug(0, "                                         - FRICTION\n"); 
-    debug(0, "                                         - RAMP\n"); 
-    debug(0, "                                         - AUTOCENTER\n"); 
-    debug(0, "                                         - RUMBLE\n"); 
+    debug(0, "  -?,  --help                                Displays this text\n");
+    debug(0, "  -v,  --version                             Displays OpenFFB Version\n");
+    debug(0, "  -c,  --configuration                       Displays OpenFFB Configuration\n");
+    debug(0, "  -a,  --availableHaptics                    Displays list of haptics\n");
+    debug(0, "  -h,  --haptic=[NAME/IDX]                   Haptic Name or index\n");
+    debug(0, "  -s,  --supportedEffects                    Displays supported effects\n");
+    debug(0, "  -t,  --triggerEffect=[TYPE]                Activate 1 of these effects\n");
+    debug(0, "  -f,  --force=[1-100]                       The force (strength) of the effect to activate\n");
+    debug(0, "                                             - SINE\n");
+    debug(0, "                                             - SQUARE\n");
+    //debug(0, "                                         - TRIANGLE\n");            //NOT SUPPORTED YET
+    //debug(0, "                                         - SAWUP\n");               //NOT SUPPORTED YET
+    //debug(0, "                                         - SAWDOWN\n");             //NOT SUPPORTED YET
+    debug(0, "                                             - CONSTANT\n");
+    debug(0, "                                             - SPRING\n"); 
+    //debug(0, "                                         - DAMPER\n");              //NOT SUPPORTED YET
+    //debug(0, "                                         - INERTIA\n");             //NOT SUPPORTED YET
+    debug(0, "                                             - FRICTION\n"); 
+    //debug(0, "                                         - RAMP\n");                //NOT SUPPORTED YET
+    debug(0, "                                             - AUTOCENTER\n"); 
+    debug(0, "                                             - RUMBLE\n"); 
     debug(0, "\n");    
     debug(0, "   --- NEXT IS FOR DEBUGGING PURPOSE !!!! --- \n");
     debug(0, "\n"); 
-    debug(0, "  --4BytesSegaFFBRawRequest=[PACKET]  Activate FFB Effects based on a 4 bytes raw request:\n");
+    debug(0, "  -4,  --4BytesSegaFFBRawRequest=[PACKET]  Activate FFB Effects based on a 4 bytes raw request:\n");
     debug(0, "                                       - D0 => Spring     (00->7F)\n");
     debug(0, "                                       - D1 => Friction   (00->7F)\n");
     debug(0, "                                       - D2 => Constant Torque Direction (Left=00, Right=01) \n");
     debug(0, "                                       - D3 => Constant Torque Power (00->FF)\n");
     debug(0, "\n");
-    debug(0, "  --6BytesSegaFFBRawRequest=[PACKET]  Activate FFB Effects based on a 6 bytes raw request:\n");
+    debug(0, "  -6,  --6BytesSegaFFBRawRequest=[PACKET]  Activate FFB Effects based on a 6 bytes raw request:\n");
     debug(0, "                                       - D0 => Start byte (80)\n");
     debug(0, "                                       - D1 => Spring     (00->7F)\n");
     debug(0, "                                       - D2 => Friction   (00->7F)\n");
@@ -148,7 +148,7 @@ FFBCLIStatus parseArguments(int argc, char **argv)
     int cpKeyValue=0;
     for (optind = 1; optind < argc ; optind++) {
         /*  --- Parameters with token --- */
-        char *command = strtok(argv[optind], "=");
+        char *command = strtok(argv[optind], "=:");
         char* token = NULL;
 
         if(command!=NULL){
@@ -156,7 +156,7 @@ FFBCLIStatus parseArguments(int argc, char **argv)
             if ((strcmp(command, "--haptic") == 0)                        || (strcmp(command, "-h") == 0)) {
                 strcpy(arguments.haptic_name, strtok(NULL, "="));
             }              
-            else if ((strcmp(command, "--supportedEffects") == 0)         || (strcmp(command, "-su") == 0)) {
+            else if ((strcmp(command, "--supportedEffects") == 0)         || (strcmp(command, "-s") == 0)) {
                 arguments.keyvalue[cpKeyValue].mode=GET_SUPPORTED_EFFECTS;
                 cpKeyValue++;
             }
