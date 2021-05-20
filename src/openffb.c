@@ -19,14 +19,18 @@ int main(int argc, char **argv)
   signal(SIGINT, handleSignal);
 
   /* Read the initial config */
-  if (parseConfig(DEFAULT_CONFIG_PATH) != FFB_CONFIG_STATUS_SUCCESS)
+  if (parseConfig(CONFIG_PATH) != FFB_CONFIG_STATUS_SUCCESS)
     printf("Warning: No valid openffb config file found, a default is being used\n");
 
-  /* reading game profile settings */
-  if (parseConfig(DEFAULT_GAME_SETTING_PATH) != FFB_CONFIG_STATUS_SUCCESS)
-    printf("Warning: No valid game config file found, default FFB settings will be used\n");
-
   FFBConfig *localConfig = getConfig();
+
+  /* reading game profile settings */
+  char racingProfilePathAndName[256];
+  strcpy(racingProfilePathAndName, DRIVING_PROFILE_PATH);
+  strcat(racingProfilePathAndName, getConfig()->drivingProfile);
+
+  if (parseDrivingProfile(racingProfilePathAndName) != FFB_CONFIG_STATUS_SUCCESS)
+    printf("Warning: No valid game config file found, default FFB settings will be used\n");
 
   /* Initialise the debug output */
   if (!initDebug(localConfig->debugLevel))
@@ -55,12 +59,6 @@ int main(int argc, char **argv)
 
   if(!FFBInitHaptic(localConfig->hapticName))
     return EXIT_FAILURE;
-
-//FFBSetGlobalAutoCenter(10);
-//testBobbyEffect();
-//setBobbyForce(1.0);
-//sleep(5);
-//   return EXIT_SUCCESS;
 
   if(containArgument(GET_SUPPORTED_EFFECTS)){
     FFBDumpSupportedFeatures();
