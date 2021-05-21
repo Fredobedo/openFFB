@@ -1,7 +1,7 @@
 #include "device.h"
 #include "debug.h"
 
-#define TIMEOUT_SELECT 2000
+#define TIMEOUT_SELECT 200
 
 int serialIO = -1;
 
@@ -9,24 +9,32 @@ int setSerialAttributes(int fd, int myBaud);
 
 int initDevice(char *devicePath)
 {
-  debug(2, "initDevice...\n");
   if ((serialIO = open(devicePath, O_RDWR | O_NOCTTY | O_SYNC | O_NDELAY)) < 0)
   {
-    debug(2, "Error: Failed to open %s with:%d \n", devicePath, serialIO);
     return 0;
   }
-
+   
   /* Setup the serial connection */
   setSerialAttributes(serialIO, B115200);
-
 
   return 1;
 }
 
 int closeDevice()
 {
-  tcflush(serialIO, TCIOFLUSH);
-  return close(serialIO) == 0;
+  if(serialIO>0){
+    tcflush(serialIO, TCIOFLUSH);
+
+    struct timeval tv;
+
+    tv.tv_sec = 0;
+    tv.tv_usec = TIMEOUT_SELECT * 1000;
+
+    select(serialIO + 1, NULL, NULL, NULL, &tv);
+    return close(serialIO) == 0;
+  }
+  else
+    return 0;
 }
 
 int readBytes(unsigned char *buffer, int amount)
@@ -47,7 +55,7 @@ int readBytes(unsigned char *buffer, int amount)
     return -1;
 
   if (!FD_ISSET(serialIO, &fd_serial))
-    return -1;
+    return -2;
 
 //debug(0,"5\n");
   return read(serialIO, buffer, amount);
@@ -90,7 +98,6 @@ int setSerialAttributes(int fd, int myBaud)
   struct serial_struct serial_settings;
 
   ioctl(fd, TIOCGSERIAL, &serial_settings);
-
   serial_settings.flags |= ASYNC_LOW_LATENCY;
   ioctl(fd, TIOCSSERIAL, &serial_settings);
 

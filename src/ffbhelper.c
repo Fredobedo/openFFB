@@ -218,7 +218,11 @@ bool FFBInitHaptic(char* device_name)
 				return false;
 			}
 		}
+		else
+			return false;
 	}
+	else
+		return false;
 }
 
 void FFBCreateHapticEffects()
@@ -371,7 +375,7 @@ void FFBCreateHapticEffects()
 	effect->u.rumble.strong_magnitude = 0; 
 	effect->u.rumble.weak_magnitude = 0;   
 	effect->replay.length = HAPTIC_INFINITY; 
-	effect->replay.delay = 1000;
+	effect->replay.delay = 0;
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
 		debug(1," Error creating FF_SPRING  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);		

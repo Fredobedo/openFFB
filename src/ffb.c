@@ -1,9 +1,11 @@
+#include <unistd.h>
+#include <time.h>
 #include "ffb.h"
 #include "config.h"
 #include "debug.h"
 #include "device.h"
-#include <time.h>
 #include "ffbhelper.h"
+
 /* The in packet used to read from Sega FFB Controller */
 FFBPacket inputPacket;
 unsigned char rawPacket[6];
@@ -11,6 +13,7 @@ unsigned char rawPacket[6];
 int initFFB(char *devicePath)
 {
 	/* Init the connection to the Aganyte's Sega FFB Controller */
+	//int rc=initDevice(devicePath);
 	if (!initDevice(devicePath))
 		return 0;
 
@@ -25,11 +28,13 @@ int disconnectFFB()
 FFBStatus readPacket()
 {
 	int bytesRead = readBytes(rawPacket, 6);
-	if (bytesRead < 0)
+	if (bytesRead < 0){
 		return FFB_STATUS_ERROR_TIMEOUT;
+	}
 	else if (bytesRead < 6)
+	{
 		return FFB_STATUS_ERROR;
-
+	}
 
 	return processPacket(rawPacket);
 }
@@ -101,18 +106,20 @@ FFBStatus processPacket(unsigned char* packet)
 
 void playCOMInitEffect()
 {
-	FFBTriggerRumbleEffectDefault(1.0);
-	usleep(500);
-	FFBTriggerRumbleEffectDefault(0.0);
-	usleep(500);
-	FFBTriggerRumbleEffectDefault(1.0);
-	usleep(500);
-	FFBTriggerRumbleEffectDefault(0.0);
+	debug(2, "playCOMInitEffect!!!\n");
+	FFBTriggerConstantEffect(-0.40);
+	usleep(20 * 1000);
+	FFBTriggerConstantEffect(0.0);
+	usleep(10 * 1000);
+	FFBTriggerConstantEffect(0.40);
+	usleep(20 * 1000);
+	FFBTriggerConstantEffect(0.0);
 }
 
 void playCOMEndEffect()
 {
-	FFBTriggerRumbleEffectDefault(1.0);
-	usleep(1000);
-	FFBTriggerRumbleEffectDefault(0.0);
+	debug(2,"playCOMEndEffect!!!\n");	
+	FFBTriggerConstantEffect(0.70);
+	usleep(50 * 1000);
+	FFBTriggerConstantEffect(0.0);
 }

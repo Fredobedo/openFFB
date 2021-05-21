@@ -2,6 +2,7 @@
 #include <signal.h>
 #include <string.h>
 #include "cli.h"
+#include "device.h"
 #include "openffb.h"
 #include "ffb.h"
 #include "config.h"
@@ -15,14 +16,24 @@ int running = 1;
 
 int main(int argc, char **argv)
 {
-    
   signal(SIGINT, handleSignal);
+  FFBConfig *localConfig = getConfig(); 
+
+  void initCOM()
+  {
+    debug(1, "Connecting to Sega FFB Controller");
+    while(!initFFB(localConfig->segaFFBControllerPath) && running)
+    {
+      debug(1, ".");
+      fflush(stdout);
+      sleep(1);
+    }
+    debug(1, "\n");
+  }
 
   /* Read the initial config */
   if (parseConfig(CONFIG_PATH) != FFB_CONFIG_STATUS_SUCCESS)
     printf("Warning: No valid openffb config file found, a default is being used\n");
-
-  FFBConfig *localConfig = getConfig();
 
   /* reading game profile settings */
   char racingProfilePathAndName[256];
@@ -38,7 +49,7 @@ int main(int argc, char **argv)
     printf("Failed to initialise debug output\n");
   }
 
-  /* Parsing arguments */
+    /* Parsing arguments */
   FFBCLIStatus argumentsStatus = parseArguments(argc, argv);
 
   switch (argumentsStatus)
@@ -57,8 +68,10 @@ int main(int argc, char **argv)
 
   strcpy(localConfig->hapticName, arguments.haptic_name);
 
-  if(!FFBInitHaptic(localConfig->hapticName))
-    return EXIT_FAILURE;
+  while(!FFBInitHaptic(localConfig->hapticName) && running){
+    debug(0, "Error, can not open device!\n"); 
+    sleep(2);
+  }
 
   if(containArgument(GET_SUPPORTED_EFFECTS)){
     FFBDumpSupportedFeatures();
@@ -83,17 +96,16 @@ int main(int argc, char **argv)
     return EXIT_SUCCESS;
   }
 
-  if (!initFFB(localConfig->segaFFBControllerPath))
-  {
-    debug(0, "Error: Could not initialize communication with Sega FFB Controller (Serial over USB)\n");
-    return EXIT_FAILURE;
-  }
+  initCOM();
 
   debug(2, "Will start the main loop...\n");
 
   /* Process packets forever */
   FFBStatus processingStatus;
-  while (running)
+  int FFBStatusMinus      = FFB_STATUS_ERROR_TIMEOUT;
+  int FFBStatusMinusMinus = FFB_STATUS_ERROR_TIMEOUT;
+  
+    while (running)
   {
     processingStatus = readPacket();
     switch (processingStatus)
@@ -102,12 +114,20 @@ int main(int argc, char **argv)
         debug(2, "Error: A checksum error occoured\n");
         break;
       case FFB_STATUS_ERROR_TIMEOUT:
-              debug(2,".");
-              fflush(stdout);
+        if (FFBStatusMinus==FFB_STATUS_SUCCESS){
+            playCOMEndEffect();
+            closeDevice();
+            initCOM();
+        }
         break;
+      case FFB_STATUS_SUCCESS:
+        if (FFBStatusMinusMinus==FFB_STATUS_ERROR_TIMEOUT)
+          playCOMInitEffect();
       default:
         break;
-      }
+    }
+    FFBStatusMinusMinus = FFBStatusMinus;
+    FFBStatusMinus      = processingStatus;
   }
 
   /* Close the file pointer */
@@ -124,6 +144,7 @@ void handleSignal(int signal)
   if (signal == 2)
   {
     debug(2, "\nClosing down OpenFFB...\n");
+    disconnectFFB();
     running = 0;
   }
 }
