@@ -62,6 +62,7 @@ int main(int argc, char **argv)
     break;
   }
 
+
   debug(0, "OpenFFB Version "); printVersion();
   debug(0, "  Sega FFB Controller:\t\t%s\n", localConfig->segaFFBControllerPath);
   debug(1, "\nDebug messages will appear below, you are in debug mode %d.\n\n", localConfig->debugLevel);
@@ -98,32 +99,59 @@ int main(int argc, char **argv)
 
   initCOM();
 
+
   debug(2, "Will start the main loop...\n");
 
   /* Process packets forever */
+  int current_state=0;
   FFBStatus processingStatus;
   int FFBStatusMinus      = FFB_STATUS_ERROR_TIMEOUT;
   int FFBStatusMinusMinus = FFB_STATUS_ERROR_TIMEOUT;
   
-    while (running)
+  int MAX_TIMOUT_COUNT = 4;
+  int nbrOfTimeOut=0;
+
+  int MAX_SUCCESS = 3;
+  int nbrOfSuccess=0;
+
+  while (running)
   {
     processingStatus = readPacket();
     switch (processingStatus)
     {
       case FFB_STATUS_ERROR_CHECKSUM:
-        debug(2, "Error: A checksum error occoured\n");
+        debug(1, "Error: checksum error occoured\n");
         break;
+      case FFB_STATUS_ERROR:
       case FFB_STATUS_ERROR_TIMEOUT:
-        if (FFBStatusMinus==FFB_STATUS_SUCCESS){
+        debug(1, "Error: timout occoured, nbrOfTimeOut=%d\n", nbrOfTimeOut);      
+        nbrOfSuccess=0;
+        if (nbrOfTimeOut==MAX_TIMOUT_COUNT){
             playCOMEndEffect();
             closeDevice();
             initCOM();
+            nbrOfTimeOut=0;
+            current_state=STATE_INIT_FINISHED;
         }
+        else
+            nbrOfTimeOut++;
+
         break;
       case FFB_STATUS_SUCCESS:
-        if (FFBStatusMinusMinus==FFB_STATUS_ERROR_TIMEOUT)
-          playCOMInitEffect();
+        nbrOfTimeOut=0;
+        if(current_state==STATE_INIT_FINISHED) {
+            if(nbrOfSuccess==MAX_SUCCESS){
+              playCOMInitEffect();
+              nbrOfSuccess=0;
+              current_state=STATE_RUNNING;
+            }
+            else{
+              nbrOfSuccess++;
+            }
+        }
+        break;
       default:
+        //debug(1, "default processingStatus=%d\n", processingStatus);      
         break;
     }
     FFBStatusMinusMinus = FFBStatusMinus;

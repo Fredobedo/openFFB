@@ -3,6 +3,12 @@
 
 #include <stdbool.h>
 
+typedef enum
+{
+    STATE_INIT_FINISHED,
+    STATE_RUNNING,
+}openffb_state;
+
 int main(int argc, char **argv);
 void handleSignal(int sig);
 
