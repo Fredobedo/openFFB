@@ -210,7 +210,7 @@ bool FFBInitHaptic(char* device_name)
 				
 				FFBCreateHapticEffects();
 				FFBSetGlobalGain(getConfig()->globalGain);
-				FFBSetGlobalAutoCenter(getConfig()->autoCenter);
+				//FFBSetGlobalAutoCenter(getConfig()->autoCenter);
 				return true;
 			}
 			else {
@@ -239,12 +239,11 @@ void FFBCreateHapticEffects()
 	effect->replay.length = HAPTIC_INFINITY; 
 	effect->replay.delay = 0;
 	effect->direction = 0xC000;
-	//effect->replay =1; 
-	//effect->u.constant.level = 0; 			// this is an sint16 => -32768 to 32767
+	
 	effect->u.constant.envelope.attack_length = 0;
-	effect->u.constant.envelope.attack_level = 0;		// -> this one to update
+	effect->u.constant.envelope.attack_level = 0;		
 	effect->u.constant.envelope.fade_length = 0;
-	effect->u.constant.envelope.fade_level = 0;			// -> this one to update
+	effect->u.constant.envelope.fade_level = 0;			
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
 		debug(1," Error creating FF_CONSTANT effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
@@ -259,7 +258,7 @@ void FFBCreateHapticEffects()
 		event.code = effect->id;
 		event.value = 1;
 		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-			fprintf(stderr, "ERROR: starting effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
+			fprintf(stderr, "ERROR: starting FF_CONSTANT effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
 			
 	}
 
@@ -298,7 +297,7 @@ void FFBCreateHapticEffects()
 		event.code = effect->id;
 		event.value = 1;
 		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-			fprintf(stderr, "ERROR: starting effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);	
+			fprintf(stderr, "ERROR: starting FF_PERIODIC FF_SINE effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);	
 	}
 
 	
@@ -308,14 +307,47 @@ void FFBCreateHapticEffects()
 	
 	effect->id = -1;
 	effect->type = FF_FRICTION;
+	effect->u.condition[0].right_saturation = 0x0;
+	effect->u.condition[0].left_saturation = 0x0;
+	effect->u.condition[0].right_coeff = 0x0;
+	effect->u.condition[0].left_coeff = 0x0;
+	effect->u.condition[0].deadband = 0x0;
+	effect->u.condition[0].center = 0x0;
+	effect->u.condition[1] = effect->u.condition[0];
+	effect->trigger.button = 0;
+	effect->trigger.interval = 0;
+	effect->replay.length = HAPTIC_INFINITY;  /* 20 seconds */
+	effect->replay.delay = 0;
+
+	if(ioctl(device_handle, EVIOCSFF, effect))
+		debug(1," Error creating FF_FRICTION  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);	
+	else{
+		supportedFeatures|=FF_FRICTION_LOADED;
+		debug(1, "FF_FRICTION Effect id=%d\n", effect->id);	
+		
+		/* Start effect */
+		memset(&event, 0, sizeof(event));
+		event.type = EV_FF;
+		event.code = effect->id;
+		event.value = 1;
+		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
+			fprintf(stderr, "ERROR: starting FF_FRICTION effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);		
+	}
+
+    /* --- FF_DAMPER --- */
+	effect=&ffb_effects[damper_effect_idx];
+	memset(effect,0,sizeof(ffb_effects[0]));
+	
+	effect->id = -1;
+	effect->type = FF_DAMPER;
 
 	effect->trigger.button = 0;
 	effect->trigger.interval = 0;
 	effect->replay.length = HAPTIC_INFINITY; 
 	effect->replay.delay = 0;
-	effect->direction = 0xC000;
-	//effect->u.condition->left_saturation = 0xFFFF;
-	//effect->u.condition->right_saturation = 0xFFFF;
+	effect->direction = 0x0000; // 0x4000; // 0x8000 -> left, 0xC000-> right
+	effect->u.condition->left_saturation = 0;
+	effect->u.condition->right_saturation = 0;
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
 		debug(1," Error creating FF_FRICTION  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);	
@@ -339,15 +371,11 @@ void FFBCreateHapticEffects()
 	effect->id = -1;
 	effect->type = FF_SPRING;
 
-	effect->u.condition[0].right_saturation = 0x7fff;
-	effect->u.condition[0].left_saturation = 0x7fff;
-	effect->u.condition[0].right_coeff = 0x2000;
-	effect->u.condition[0].left_coeff = 0x2000;
 	effect->u.condition[0].deadband = 0x0;
 	effect->u.condition[0].center = 0x0;
 	effect->trigger.button = 0;
 	effect->trigger.interval = 0;
-	effect->replay.length = HAPTIC_INFINITY;  /* 20 seconds */
+	effect->replay.length = HAPTIC_INFINITY;  
 	effect->replay.delay = 0;
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
@@ -362,7 +390,7 @@ void FFBCreateHapticEffects()
 		event.code = effect->id;
 		event.value = 1;
 		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-			fprintf(stderr, "ERROR: starting effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);		
+			fprintf(stderr, "ERROR: starting FF_SPRING effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);		
 	}
 
     /* --- FF_RUMBLE --- */
@@ -569,13 +597,18 @@ void FFBTriggerConstantEffect(double strength)
  * @left_saturation:  same for the left side
  * @right_coeff:      controls how fast the force grows when the joystick moves
  * @left_coeff:       same for the left side 
+ *  Direction of the effect is encoded as follows:
+ *	  0 deg -> 0x0000 (down)
+ *	  90 deg -> 0x4000 (left)
+ *	  180 deg -> 0x8000 (up)
+ *	  270 deg -> 0xC000 (right)
  */
 void FFBTriggerFrictionEffect(double strength)
 {
-	debug(1, "FFBTriggerFrictionEffect dd\n");
-	if(FF_CONSTANT_LOADED==(supportedFeatures & FF_CONSTANT_LOADED)) 
+	debug(1, "FFBTriggerFrictionEffect d\n");
+	if(FF_FRICTION_LOADED==(supportedFeatures & FF_FRICTION_LOADED)) 
 	{
-		struct ff_effect* effect=&ffb_effects[constant_effect_idx];
+		struct ff_effect* effect=&ffb_effects[friction_effect_idx];
 
 		short minForce = (short)(strength > 0.001 ? (getConfig()->minForce / 100.0 * 32767.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
 		short maxForce = (short)(getConfig()->maxForce / 100.0 * 32767.0);
@@ -584,10 +617,11 @@ void FFBTriggerFrictionEffect(double strength)
 		if (coeff < 0)
 			coeff = 32767;
 
-		effect->u.condition[0].right_saturation = 100; 
-		effect->u.condition[0].left_saturation = 100; 
-		effect->u.condition[0].right_coeff = (short)(coeff);
 		effect->u.condition[0].left_coeff = (short)(coeff);
+		effect->u.condition[0].left_saturation = (short)(coeff * 2.0); 
+		effect->u.condition[0].right_saturation = (short)(coeff * 2.0); 
+		effect->u.condition[0].right_coeff = (short)(coeff);
+		effect->u.condition[1] = effect->u.condition[0];
 
 		/* update effect */
     	if (ioctl(device_handle, EVIOCSFF, effect) < 0)
@@ -694,12 +728,14 @@ void FFBTriggerSpringEffect(double strength)
 		short coeff = (short)(strength * range + minForce);
 		if (coeff < 0)
 			coeff = 32767;
-		
-		effect->u.condition[0].right_saturation = (short)(coeff * 2.0); 
-		effect->u.condition[0].left_saturation = (short)(coeff * 2.0); 
-		effect->u.condition[0].right_coeff = 20000; //(short)(coeff);
-		effect->u.condition[0].left_coeff = 20000; //(short)(coeff);
 
+		effect->u.condition[0].left_coeff = (short)(coeff);
+		effect->u.condition[0].left_saturation = (short)(coeff * 2.0); 
+		effect->u.condition[0].right_saturation = (short)(coeff * 2.0); 
+		effect->u.condition[0].right_coeff = (short)(coeff);
+		effect->u.condition[1] = effect->u.condition[0];
+
+printf("right_saturation=%u, right_coeff=%d\n", effect->u.condition[0].right_saturation, effect->u.condition[0].right_coeff );
 		/* update effect */
     	if (ioctl(device_handle, EVIOCSFF, effect) < 0)
             debug(1, "ERROR: uploading effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
