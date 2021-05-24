@@ -41,15 +41,7 @@ FFBStatus readPacket()
 
 FFBStatus processPacket(unsigned char* packet)
 {
-	
-	debug(2, "\nprocessPacket (hex): %02X %02X %02X %02X %02X %02X\n", 
-					packet[0],
-					packet[1],
-					packet[2],
-					packet[3],
-					packet[4],
-					packet[5]
-			);
+	debug(2, "%02X%02X%02X%02X%02X%02X\n", packet[0],	packet[1], packet[2], packet[3], packet[4], packet[5]);
 
 	inputPacket.startByte 		= packet[0];
 	inputPacket.spring          = ((double)packet[1]+1)/128;
@@ -71,12 +63,8 @@ FFBStatus processPacket(unsigned char* packet)
 
     /* --- friction          from 0x00 to 0x7F -> 128 levels                                                --- */
 	/* --- For now on, I will use Sine effect instead as I can't control the strengh of a froction effect ? --- */
-	debug(2, "previous_rawpacket[2]=%02X, packet[2]=%02X\n",previous_rawpacket[2],packet[2]);
 	if(previous_rawpacket[2]!=packet[2])
 		FFBTriggerFrictionEffect(inputPacket.friction);	
-		//FFBTriggerSineEffect(inputPacket.friction);		
-	
-
 
     /* --- torqueDirection   0x00 = Left, 0x01  = Right                     --- */
     /* --- torquePower       from 0x00 to 0xFF -> 128 levels                --- */
@@ -91,14 +79,9 @@ FFBStatus processPacket(unsigned char* packet)
 
 	/* only copy if there is a diff */
 	if(memcmp(previous_rawpacket, packet,6)!=0){
-		debug(1, "%02X %02X %02X %02X %02X %02X\n", 
-					packet[0],
-					packet[1],
-					packet[2],
-					packet[3],
-					packet[4],
-					packet[5]
-			);
+		if(getConfig()->debugLevel==1)
+			printf("%02X%02X%02X%02X%02X%02X\n", packet[0],	packet[1], packet[2], packet[3], packet[4], packet[5]);
+
 		memcpy(previous_rawpacket, packet, 6);
 	}
 
@@ -108,7 +91,6 @@ FFBStatus processPacket(unsigned char* packet)
 void playCOMInitEffect()
 {
 	debug(2, "playCOMInitEffect!!!\n");
-	/*
 	FFBTriggerConstantEffect(-0.40);
 	usleep(20 * 1000);
 	FFBTriggerConstantEffect(0.0);
@@ -116,15 +98,12 @@ void playCOMInitEffect()
 	FFBTriggerConstantEffect(0.40);
 	usleep(20 * 1000);
 	FFBTriggerConstantEffect(0.0);
-	*/
 }
 
 void playCOMEndEffect()
 {
 	debug(2,"playCOMEndEffect!!!\n");	
-	/*
 	FFBTriggerConstantEffect(0.70);
 	usleep(50 * 1000);
 	FFBTriggerConstantEffect(0.0);
-	*/
 }
