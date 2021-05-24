@@ -135,7 +135,6 @@ int FFBGetAllDevices()
 				
 				NbrOfDevices++;
 			}
-			
 			close(fd);
         }
     }
@@ -164,6 +163,8 @@ void FFBDumpAvailableDevices()
 			}
 		}
 	}
+	else
+		debug(0, "Warning, no haptic device found!\n");
 }
 
 char* FFBGetDevicePath(char* device_name)
