@@ -16,20 +16,20 @@ cmake --install .
 ```
 Please have a look at the help menu to have a first insight on OpenFFB:
 ```
-![alt text](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true)
+![alt text](https://github.com/fredobedo/openFFB/blob/master/openffb_help.jpg?raw=true)
 ```
 ## Test your racing wheel
 First verify that your wheel is detected
 ```
-![alt text](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true)
+![alt text](https://github.com/fredobedo/openFFB/blob/master/openffb_available.jpg?raw=true)
 ```
 Then, test if your linux distribution is supporting your racing wheel 
 ```
-![alt text](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true)
+![alt text](https://github.com/fredobedo/openFFB/blob/master/openffb_supported.jpg?raw=true)
 ```
 Now, you can start OpenFFB.
 ```
-![alt text](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true)
+![alt text](https://github.com/fredobedo/openFFB/blob/master/openffb_start.jpg?raw=true)ue)
 ```
 ## Configuration files
 
