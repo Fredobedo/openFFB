@@ -35,21 +35,13 @@ int main(int argc, char **argv)
   if (parseConfig(CONFIG_PATH) != FFB_CONFIG_STATUS_SUCCESS)
     printf("Warning: No valid openffb config file found, a default is being used\n");
 
-  /* reading game profile settings */
-  char racingProfilePathAndName[256];
-  strcpy(racingProfilePathAndName, DRIVING_PROFILE_PATH);
-  strcat(racingProfilePathAndName, getConfig()->drivingProfile);
-
-  if (parseDrivingProfile(racingProfilePathAndName) != FFB_CONFIG_STATUS_SUCCESS)
-    printf("Warning: No valid game config file found, default FFB settings will be used\n");
-
   /* Initialise the debug output */
   if (!initDebug(localConfig->debugLevel))
   {
     printf("Failed to initialise debug output\n");
   }
 
-    /* Parsing arguments */
+  /* Parsing arguments */
   FFBCLIStatus argumentsStatus = parseArguments(argc, argv);
 
   switch (argumentsStatus)
@@ -62,13 +54,25 @@ int main(int argc, char **argv)
     break;
   }
 
-
   debug(0, "OpenFFB Version "); printVersion();
   debug(0, "  Sega FFB Controller:\t\t%s\n", localConfig->segaFFBControllerPath);
   debug(1, "\nDebug messages will appear below, you are in debug mode %d.\n\n", localConfig->debugLevel);
 
+  /* update config from arguments */
   strcpy(localConfig->hapticName, arguments.haptic_name);
 
+  /* reading game profile settings */
+  if(arguments.game_profile[0]!=0)
+    strcpy(localConfig->gameProfile, arguments.game_profile);
+  
+  char gameProfilePathAndName[256];
+  strcpy(gameProfilePathAndName, DRIVING_PROFILE_PATH);
+  strcat(gameProfilePathAndName, getConfig()->gameProfile);
+
+  if (parseDrivingProfile(gameProfilePathAndName) != FFB_CONFIG_STATUS_SUCCESS)
+    printf("Warning: No valid game config file found, default FFB settings will be used\n");
+
+  /* time to try to connect to racing wheel */
   while(!FFBInitHaptic(localConfig->hapticName) && running){
     debug(0, "Error, can not open device!\n"); 
     sleep(2);

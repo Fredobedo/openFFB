@@ -12,8 +12,8 @@
 typedef struct
 {
     char hapticName[MAX_PATH_LENGTH];
-    char drivingProfilePath[MAX_PATH_LENGTH];
-    char drivingProfile[MAX_PATH_LENGTH];
+    char gameProfilePath[MAX_PATH_LENGTH];
+    char gameProfile[MAX_PATH_LENGTH];
     char segaFFBControllerPath[MAX_PATH_LENGTH];
     int  debugLevel;
 

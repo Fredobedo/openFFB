@@ -24,8 +24,8 @@ char *getNextToken(char *buffer, char *seperator, char **saveptr)
 
 FFBConfig config = {
     .hapticName="",
-    .drivingProfilePath = DRIVING_PROFILE_PATH,
-    .drivingProfile = "generic-driving",
+    .gameProfilePath = DRIVING_PROFILE_PATH,
+    .gameProfile = "generic-driving",
     //.segaFFBControllerPath = "/home/fred/Documents/openFFB/virtualSerialOUT",
     .segaFFBControllerPath = "/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0",
     .debugLevel = 0,
@@ -40,8 +40,8 @@ void DumpConfig()
     printf("------------------------------------------------------------------\n");
     printf("-- Dump configuration:\n");
     printf("------------------------------------------------------------------\n");    
-    printf("drivingProfilePath                 = %s\n", config.drivingProfilePath);
-    printf("drivingProfile                     = %s\n", config.drivingProfile);
+    printf("gameProfilePath                    = %s\n", config.gameProfilePath);
+    printf("gameProfile                        = %s\n", config.gameProfile);
     printf("segaFFBControllerPath              = %s\n", config.segaFFBControllerPath);
     printf("debugLevel                         = %d\n", config.debugLevel);
     printf("minForce                           = %d\n", config.minForce);
@@ -83,7 +83,7 @@ FFBConfigStatus parseConfig(char *path)
             strcpy(config.hapticName, getNextToken(NULL, " ", &saveptr));
 
         else if (strcmp(command, "DEFAULT_DRIVING_PROFILE") == 0)
-            strcpy(config.drivingProfile, getNextToken(NULL, " ", &saveptr));
+            strcpy(config.gameProfile, getNextToken(NULL, " ", &saveptr));
 
         else if (strcmp(command, "DEBUG_MODE") == 0)
             config.debugLevel = atoi(getNextToken(NULL, " ", &saveptr));

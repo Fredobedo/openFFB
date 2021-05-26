@@ -41,7 +41,8 @@ FFBStatus readPacket()
 
 FFBStatus processPacket(unsigned char* packet)
 {
-	debug(2, "%02X%02X%02X%02X%02X%02X\n", packet[0],	packet[1], packet[2], packet[3], packet[4], packet[5]);
+	if(getConfig()->debugLevel==3)
+		printf("%02X%02X%02X%02X%02X%02X\n", packet[0],	packet[1], packet[2], packet[3], packet[4], packet[5]);
 
 	inputPacket.startByte 		= packet[0];
 	inputPacket.spring          = ((double)packet[1]+1)/128;
