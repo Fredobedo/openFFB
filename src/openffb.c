@@ -55,7 +55,7 @@ int main(int argc, char **argv)
   }
 
   debug(0, "OpenFFB Version "); printVersion();
-  debug(0, "  Sega FFB Controller:\t\t%s\n", localConfig->segaFFBControllerPath);
+  debug(0, "Sega FFB Controller: %s\n", localConfig->segaFFBControllerPath);
   debug(1, "\nDebug messages will appear below, you are in debug mode %d.\n\n", localConfig->debugLevel);
 
   /* update config from arguments */
@@ -80,7 +80,6 @@ int main(int argc, char **argv)
 
   if(containArgument(GET_SUPPORTED_EFFECTS)){
     FFBDumpSupportedFeatures();
-        sleep(5);
     return EXIT_SUCCESS;
   }
 

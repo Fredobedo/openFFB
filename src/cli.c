@@ -25,12 +25,12 @@ FFBCLIStatus printUsage()
     debug(0, "  -c,  --configuration                       Displays OpenFFB Configuration\n");
     debug(0, "  -a,  --availableHaptics                    Displays list of haptics\n");
     debug(0, "  -h,  --haptic=[NAME/IDX]                   Haptic Name or index\n");
-    debug(0, "  -gp, --gameProfile=[NAME]                  load game specific settings\n");    
+    debug(0, "  -gp, --gameProfile=[NAME]                  Load game specific settings\n");    
     debug(0, "  -s,  --supportedEffects                    Displays supported effects\n");
     debug(0, "  -t,  --triggerEffect=[TYPE]                Activate 1 of these effects\n");
-    debug(0, "  -f,  --force=[1-100]                       The force (strength) of the effect to activate\n");
-    debug(0, "                                             - SINE\n");
-    debug(0, "                                             - SQUARE\n");
+    debug(0, "  -f,  --force=[1-100]                       Strength of the triggered effect\n");
+    //debug(0, "                                             - SINE\n");
+    //debug(0, "                                             - SQUARE\n");
     //debug(0, "                                         - TRIANGLE\n");            //NOT SUPPORTED YET
     //debug(0, "                                         - SAWUP\n");               //NOT SUPPORTED YET
     //debug(0, "                                         - SAWDOWN\n");             //NOT SUPPORTED YET
@@ -43,22 +43,26 @@ FFBCLIStatus printUsage()
     debug(0, "                                             - AUTOCENTER\n"); 
     debug(0, "                                             - RUMBLE\n"); 
     debug(0, "\n");    
-    debug(0, "   --- NEXT IS FOR DEBUGGING PURPOSE !!!! --- \n");
-    debug(0, "\n"); 
-    debug(0, "  -4,  --4BytesSegaFFBRawRequest=[PACKET]  Activate FFB Effects based on a 4 bytes raw request:\n");
-    debug(0, "                                       - D0 => Spring     (00->7F)\n");
-    debug(0, "                                       - D1 => Friction   (00->7F)\n");
-    debug(0, "                                       - D2 => Constant Torque Direction (Left=00, Right=01) \n");
-    debug(0, "                                       - D3 => Constant Torque Power (00->FF)\n");
-    debug(0, "\n");
-    debug(0, "  -6,  --6BytesSegaFFBRawRequest=[PACKET]  Activate FFB Effects based on a 6 bytes raw request:\n");
-    debug(0, "                                       - D0 => Start byte (80)\n");
-    debug(0, "                                       - D1 => Spring     (00->7F)\n");
-    debug(0, "                                       - D2 => Friction   (00->7F)\n");
-    debug(0, "                                       - D3 => Constant Torque Direction (Left=00, Right=01) \n");
-    debug(0, "                                       - D4 => Constant Torque Power (00->FF)\n");
-    debug(0, "                                       - D5 => CRC        (D1^D2^D3^D4)&7F\n");
-    debug(0, "\n");
+    debug(3, "   --- NEXT IS FOR DEBUGGING PURPOSE !!!! --- \n");
+    debug(3, "\n"); 
+    debug(3, "  -4,  --4BytesSegaFFBRawRequest=[PACKET]  Activate FFB Effects based on a 4 bytes raw request:\n");
+    debug(3, "                                       - D0 => Spring     (00->7F)\n");
+    debug(3, "                                       - D1 => Friction   (00->7F)\n");
+    debug(3, "                                       - D2 => Constant Torque Direction (Left=00, Right=01) \n");
+    debug(3, "                                       - D3 => Constant Torque Power (00->FF)\n");
+    debug(3, "\n");
+    debug(3, "  -6,  --6BytesSegaFFBRawRequest=[PACKET]  Activate FFB Effects based on a 6 bytes raw request:\n");
+    debug(3, "                                       - D0 => Start byte (80)\n");
+    debug(3, "                                       - D1 => Spring     (00->7F)\n");
+    debug(3, "                                       - D2 => Friction   (00->7F)\n");
+    debug(3, "                                       - D3 => Constant Torque Direction (Left=00, Right=01) \n");
+    debug(3, "                                       - D4 => Constant Torque Power (00->FF)\n");
+    debug(3, "                                       - D5 => CRC        (D1^D2^D3^D4)&7F\n");
+    debug(3, "\n");
+    //debug(0, "Examples:\n");
+    //debug(0, "openffb -h=0  -> \n");
+    //debug(0, "openffb -h=0  -> \n");
+
     return FFB_CLI_STATUS_SUCCESS_CLOSE;
 }
 

@@ -41,23 +41,23 @@ FFBConfig config = {
 
 void DumpConfig()
 {
-    printf("------------------------------------------------------------------\n");
+    printf("------------------------------------------------------------------------\n");
     printf("-- Dump configuration:\n");
-    printf("------------------------------------------------------------------\n");    
-    printf("gameProfilePath                    = %s\n", config.gameProfilePath);
-    printf("gameProfile                        = %s\n", config.gameProfile);
-    printf("segaFFBControllerPath              = %s\n", config.segaFFBControllerPath);
-    printf("debugLevel                         = %d\n", config.debugLevel);
-    printf("globalGain                         = %d\n", config.globalGain);
-    printf("autoCenter                         = %d\n", config.autoCenter);
-    printf("minSpring                          = %d\n", config.minSpring);
-    printf("maxSpring                          = %d\n", config.maxSpring);
-    printf("minFriction                        = %d\n", config.minFriction);
-    printf("maxFriction                        = %d\n", config.maxFriction);
-    printf("minTorque                          = %d\n", config.minTorque);
-    printf("maxTorque                          = %d\n", config.maxTorque);    
-    printf("staticSpring                       = %d\n", config.minTorque);
-    printf("staticFriction                     = %d\n", config.maxTorque);     
+    printf("------------------------------------------------------------------------\n");    
+    printf("gameProfilePath       = %s\n", config.gameProfilePath);
+    printf("gameProfile           = %s\n", config.gameProfile);
+    printf("segaFFBControllerPath = %s\n", config.segaFFBControllerPath);
+    printf("debugLevel            = %d\n", config.debugLevel);
+    printf("globalGain            = %d\n", config.globalGain);
+    printf("autoCenter            = %d\n", config.autoCenter);
+    printf("minSpring             = %d\n", config.minSpring);
+    printf("maxSpring             = %d\n", config.maxSpring);
+    printf("minFriction           = %d\n", config.minFriction);
+    printf("maxFriction           = %d\n", config.maxFriction);
+    printf("minTorque             = %d\n", config.minTorque);
+    printf("maxTorque             = %d\n", config.maxTorque);    
+    printf("staticSpring          = %d\n", config.minTorque);
+    printf("staticFriction        = %d\n", config.maxTorque);     
 }
 
 FFBConfig *getConfig()
