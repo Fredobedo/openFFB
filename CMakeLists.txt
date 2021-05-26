@@ -44,8 +44,9 @@ FILE( GLOB_RECURSE Sources src/*.c )
 add_executable( ${PROJECT_NAME} ${Sources} )
 # add_subdirectory(src)
 
-find_package(SDL2 REQUIRED)
-target_link_libraries(openffb ${SDL2_LIBRARY})
+#find_package(SDL2 REQUIRED)
+#target_link_libraries(openffb ${SDL2_LIBRARY})
+target_link_libraries(openffb)
 
 install(TARGETS ${PROJECT_NAME}
 		COMPONENT ${PROJECT_NAME}
