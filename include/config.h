@@ -17,20 +17,25 @@ typedef struct
     char segaFFBControllerPath[MAX_PATH_LENGTH];
     int  debugLevel;
 
-    // All forces /designated within a game/ will be scaled to exist between MinForce and MaxForce
-    // 0-100: you may want to set a min force if your wheel doesn't deliver sufficient forces when values are low
-    int minForce;
-
-    // 0-100: you may want to set a max force below 100 if your wheel's forces are stronger than desired @ 100%
-    int maxForce;
-
-    // Use this function to set the global gain of the specified haptic device.
-    // The user may specify the maximum gain by setting the environment variable SDL_HAPTIC_GAIN_MAX which should be between 0 and 100.
-    // All calls to SDL_HapticSetGain() will scale linearly using SDL_HAPTIC_GAIN_MAX as the maximum.
+    // Use this function to set the global gain of the specified haptic device. (0-100)
     int globalGain;
 
-    //0-100: auto center force
+    //auto center force (0-100)
     int autoCenter;
+
+    // Effects will be scaled here (0-100) 
+    int minSpring;
+    int maxSpring;
+
+    int minFriction;
+    int maxFriction;
+
+    int minTorque;
+    int maxTorque;
+
+    int staticSpring;
+    int staticFriction;
+
 } FFBConfig;
 
 typedef enum

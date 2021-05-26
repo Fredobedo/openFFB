@@ -25,7 +25,7 @@ FFBCLIStatus printUsage()
     debug(0, "  -c,  --configuration                       Displays OpenFFB Configuration\n");
     debug(0, "  -a,  --availableHaptics                    Displays list of haptics\n");
     debug(0, "  -h,  --haptic=[NAME/IDX]                   Haptic Name or index\n");
-    debug(0, "  -gp,  --gameProfile=[NAME]                 load game specific settings\n");    
+    debug(0, "  -gp, --gameProfile=[NAME]                  load game specific settings\n");    
     debug(0, "  -s,  --supportedEffects                    Displays supported effects\n");
     debug(0, "  -t,  --triggerEffect=[TYPE]                Activate 1 of these effects\n");
     debug(0, "  -f,  --force=[1-100]                       The force (strength) of the effect to activate\n");

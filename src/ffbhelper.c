@@ -260,7 +260,6 @@ void FFBCreateHapticEffects()
 		event.value = 1;
 		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
 			fprintf(stderr, "ERROR: starting FF_CONSTANT effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
-			
 	}
 
 	/* --- FF_SINE --- */
@@ -332,7 +331,9 @@ void FFBCreateHapticEffects()
 		event.code = effect->id;
 		event.value = 1;
 		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-			fprintf(stderr, "ERROR: starting FF_FRICTION effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);		
+			fprintf(stderr, "ERROR: starting FF_FRICTION effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);	
+		else if(getConfig()->staticFriction > 0)
+			FFBTriggerFrictionEffect(((double)getConfig()->staticFriction)/100);				
 	}
 
     /* --- FF_DAMPER --- */
@@ -392,6 +393,8 @@ void FFBCreateHapticEffects()
 		event.value = 1;
 		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
 			fprintf(stderr, "ERROR: starting FF_SPRING effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);		
+		else if(getConfig()->staticSpring > 0)
+			FFBTriggerSpringEffect(((double)getConfig()->staticSpring)/100);			
 	}
 
     /* --- FF_RUMBLE --- */
@@ -518,15 +521,12 @@ void FFBTriggerSineEffect(double strength)
 	{
 		struct ff_effect* effect=&ffb_effects[sine_effect_idx];
 
-		short minForce = (short)(strength > 0.001 ? (getConfig()->minForce / 100.0 * 32767.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
-		short maxForce = (short)(getConfig()->maxForce / 100.0 * 32767.0);
+		short minForce = (short)(strength > 0.001 ? (getConfig()->minTorque / 100.0 * 32767.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
+		short maxForce = (short)(getConfig()->maxTorque / 100.0 * 32767.0);
 		short range = maxForce - minForce;
 		short coeff = (short)(strength * range + minForce);
 		if (coeff < 0)
 			coeff = 32767;
-
-		//effect->u.periodic.envelope.attack_level = 0x7fff; 		 
-		//effect->u.periodic.envelope.fade_level =  0x7fff; 		
 
 		effect->u.periodic.magnitude=(short)(coeff);
 
@@ -567,11 +567,11 @@ void FFBTriggerConstantEffect(double strength)
 		else if (strength < -1.0)
 			strength = -1.0;
 
-		int confMinForce = getConfig()->minForce;
-		int confMaxForce = getConfig()->maxForce;
+		int confMinForce = getConfig()->minTorque;
+		int confMaxForce = getConfig()->maxTorque;
 
-		short MinForce = (short)(strength > 0.001 ? (getConfig()->minForce / 100.0 * 32767.0) : 0);
-		short MaxForce = (short)(getConfig()->maxForce / 100.0 * 32767.0);
+		short MinForce = (short)(strength > 0.001 ? (getConfig()->minTorque / 100.0 * 32767.0) : 0);
+		short MaxForce = (short)(getConfig()->maxTorque / 100.0 * 32767.0);
 		short range = MaxForce - MinForce;
 		short level = (short)(strength * range + MinForce);
 
@@ -611,8 +611,8 @@ void FFBTriggerFrictionEffect(double strength)
 	{
 		struct ff_effect* effect=&ffb_effects[friction_effect_idx];
 
-		short minForce = (short)(strength > 0.001 ? (getConfig()->minForce / 100.0 * 32767.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
-		short maxForce = (short)(getConfig()->maxForce / 100.0 * 32767.0);
+		short minForce = (short)(strength > 0.001 ? (getConfig()->minFriction / 100.0 * 32767.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
+		short maxForce = (short)(getConfig()->maxFriction / 100.0 * 32767.0);
 		short range = maxForce - minForce;
 		short coeff = (short)(strength * range + minForce);
 		if (coeff < 0)
@@ -633,44 +633,6 @@ void FFBTriggerFrictionEffect(double strength)
 		debug(1, "-> not ffb_supported, will try default rumble\n");
 		FFBTriggerRumbleEffectDefault(strength);
 	}
-
-
-/*
-
-	debug(1, "TriggerFrictionEffectWithDefaultOption\n");
-	if (ffb_supported & SDL_HAPTIC_FRICTION) {
-		SDL_HapticEffect tempEffect;
-		SDL_memset(&tempEffect, 0, sizeof(SDL_HapticEffect));
-		tempEffect.type = SDL_HAPTIC_FRICTION;
-		tempEffect.condition.type = SDL_HAPTIC_FRICTION;
-		tempEffect.condition.direction.type = SDL_HAPTIC_CARTESIAN;
-		tempEffect.condition.delay = 0;
-		tempEffect.condition.length = isDefault ? SDL_HAPTIC_INFINITY : getConfig()->feedbackLength;
-		tempEffect.condition.left_sat[0] = 0xFFFF;
-		tempEffect.condition.right_sat[0] = 0xFFFF;
-
-		short minForce = (short)(strength > 0.001 ? (getConfig()->minForce / 100.0 * 32767.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
-		short maxForce = (short)(getConfig()->maxForce / 100.0 * 32767.0);
-		short range = maxForce - minForce;
-		short coeff = (short)(strength * range + minForce);
-		if (coeff < 0)
-			coeff = 32767;
-
-		tempEffect.condition.left_coeff[0] = (short)(coeff);
-		tempEffect.condition.right_coeff[0] = (short)(coeff);
-
-		if(SDL_HapticUpdateEffect(haptic, effects.effect_friction_id, &tempEffect)!=0)
-			debug(1, "Error updating effect: %s\n", SDL_GetError());
-		else if(SDL_HapticRunEffect(haptic, effects.effect_friction_id, SDL_HAPTIC_INFINITY)!=0)
-			debug(1, "Error executing effect: %s\n", SDL_GetError());
-		else
-			debug(1,"->success\n");				
-	}
-	else {
-		debug(1, "-> not ffb_supported, will try default rumble\n");
-		TriggerRumbleEffectDefault(strength);
-	}
-	*/
 }
 
 void FFBTriggerRumbleEffectDefault(double strength)
@@ -689,11 +651,8 @@ void FFBTriggerRumbleEffect(double strength, motor_select motor)
 		else if (strength < -1.0)
 			strength = -1.0;
 
-		int confMinForce = getConfig()->minForce;
-		int confMaxForce = getConfig()->maxForce;
-
-		short MinForce = (short)(strength > 0.001 ? (getConfig()->minForce / 100.0 * 32767.0) : 0);
-		short MaxForce = (short)(getConfig()->maxForce / 100.0 * 32767.0);
+		short MinForce = (short)(strength > 0.001 ? (getConfig()->minTorque / 100.0 * 32767.0) : 0);
+		short MaxForce = (short)(getConfig()->maxTorque / 100.0 * 32767.0);
 		short range = MaxForce - MinForce;
 		short level = (short)(strength * range + MinForce);
 
@@ -723,8 +682,8 @@ void FFBTriggerSpringEffect(double strength)
 	if (FF_SPRING_LOADED==(supportedFeatures & FF_SPRING_LOADED))  
 	{
 		struct ff_effect* effect=&ffb_effects[spring_effect_idx];
-		short minForce = (short)(strength > 0.001 ? (getConfig()->minForce / 100.0 * 32767.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
-		short maxForce = (short)(getConfig()->maxForce / 100.0 * 32767.0);
+		short minForce = (short)(strength > 0.001 ? (getConfig()->minSpring / 100.0 * 32767.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
+		short maxForce = (short)(getConfig()->maxSpring / 100.0 * 32767.0);
 		short range = maxForce - minForce;
 		short coeff = (short)(strength * range + minForce);
 		if (coeff < 0)
@@ -736,7 +695,6 @@ void FFBTriggerSpringEffect(double strength)
 		effect->u.condition[0].right_coeff = (short)(coeff);
 		effect->u.condition[1] = effect->u.condition[0];
 
-printf("right_saturation=%u, right_coeff=%d\n", effect->u.condition[0].right_saturation, effect->u.condition[0].right_coeff );
 		/* update effect */
     	if (ioctl(device_handle, EVIOCSFF, effect) < 0)
             debug(1, "ERROR: uploading effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);

@@ -1,0 +1,13 @@
+# Generic FFB effect settings for games not supporting FFB effects (i.e. Crazy Taxi)
+
+# set the global strength of all effects here (0-100)
+GLOBAL_GAIN 100
+
+# adjust a spring effect if necessary here
+STATIC_SPRING 60
+
+# a generic constrant friction effect may also be activated here
+STATIC_FRICTION 40
+
+
+
