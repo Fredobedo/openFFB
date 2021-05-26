@@ -16,22 +16,17 @@ cmake --install .
 ```
 Please have a look at the help menu to have a first insight on OpenFFB:
 ![help](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_help.jpg?raw=true)
-```
-![alt text](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_help.jpg?raw=true)
-```
+
 ## Test your racing wheel
 First verify that your wheel is detected
-```
 ![available]https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_available.jpg?raw=true
-```
+
 Then, test if your linux distribution is supporting your racing wheel 
-```
 ![supported](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_supported.jpg?raw=true)
-```
+
 Now, you can start OpenFFB.
-```
 ![start](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_start.jpg?raw=true)
-```
+
 ## Configuration files
 
 ## Installation drivers for Logitech Racing wheels
