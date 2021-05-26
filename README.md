@@ -19,7 +19,7 @@ Please have a look at the help menu to have a first insight on OpenFFB:
 
 ## Test your racing wheel
 First verify that your wheel is detected
-![available]https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_available.jpg?raw=true
+![available](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_available.jpg?raw=true)
 
 Then, test if your linux distribution is supporting your racing wheel 
 ![supported](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_supported.jpg?raw=true)
@@ -27,7 +27,9 @@ Then, test if your linux distribution is supporting your racing wheel
 Now, you can start OpenFFB.
 ![start](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_start.jpg?raw=true)
 
-## Configuration files
+## Configuration
+You can dump the actual OpenFFB like this:
+![start](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_config.jpg?raw=true)
 
 ## Installation drivers for Logitech Racing wheels
 Most of the Logitech Racing wheels are not supported in Linux (with the exception of the Logitech G29).
