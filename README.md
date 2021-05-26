@@ -1,10 +1,11 @@
 # openFFB
-## Srerequisite
-SDL2
+## Introduction
+
+## Dependencies
 
 ## Installation and Running
-
-rm -r openFFB
+Installation may be doen like this:
+```
 git clone https://github.com/Fredobedo/openFFB
 cd openFFB
 mkdir build
@@ -12,44 +13,32 @@ cd build
 cmake ..
 make
 cmake --install .
-
-sudo apt install git cmake
 ```
-git clone https://github.com/Fredobedo/openFFB
-cd OpenFFB
-make
+Please have a look at the help menu to have a first insight on OpenFFB:
 ```
-To run locally (from inside the root directory):
-```
-sudo ./build/openffb [PARAMETERS]
-```
-
-To install globally and run (from inside the root directory):
-```
-make install
-sudo openffb [PARAMETERS]
-```
-To make OpenJVS run at startup you can use:
-```
-sudo systemctl enable openjvs
-sudo systemctl start openjvs
+![alt text](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true)
 ```
 ## Test your racing wheel
 First verify that your wheel is detected
 ```
-openffb --availableHaptics
+![alt text](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true)
 ```
-Then, test which FFB effects are supported
+Then, test if your linux distribution is supporting your racing wheel 
 ```
-openffb --haptic=driving-force-gt --supportedEffects
+![alt text](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true)
 ```
-Finally, you can test some effects
+Now, you can start OpenFFB.
 ```
-openffb --triggerSDLEffect=SDL_HAPTIC_SPRING
+![alt text](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true)
 ```
+## Configuration files
 
 ## Installation drivers for Logitech Racing wheels
 Most of the Logitech Racing wheels are not supported in Linux (with the exception of the Logitech G29).
 Fortunatelly, 'new-lg4ff' is a custom driver that you can install and which will support most of the FFB effects too.
 More information at https://github.com/berarma/new-lg4ff.
+
+## Integration with OpenJVS
+
+## WiPi: Example of a successfull full integration
 
