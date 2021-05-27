@@ -14,6 +14,16 @@ cmake ..
 make
 cmake --install .
 ```
+file structure after installation:
+
+| Location                                           | Description                                  |
+| -------------------------------------------------- | -------------------------------------------- |
+| /usr/local/bin/openffb                             | Executable                                   |
+| /etc/openffb/config                                | Main configuration file                      |
+| /etc/openffb/games/generic-driving                 | Default FFB effect settings                  |
+| /etc/openffb/games/generic-driving-no-ffb-support  | A game profile for games not supporting FFB  |
+| /etc/openffb/games/initial-d                       | A specific game profile for a game           |
+
 Please have a look at the help menu to have a first insight on OpenFFB:
 ![help](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_help.jpg?raw=true)
 
