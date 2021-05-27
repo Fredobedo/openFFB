@@ -1,14 +1,17 @@
 # openFFB
 ## Introduction
-The goal of this project is to use consumer FFB Racing wheels on Arcade racing cabs/systems.
+The goal of this project is to use consumer FFB Racing wheels on Arcade racing cabs/systems.  
 The user can take an USB Racing Wheel which support Force Feedback effects (i.e. Logitech GT), connect it to a Single Board Computer (i.e. a raspberry PI) and enjoy FFB effects with arcade games:
+
 ![available](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb.jpg?raw=true)
-This can be achieved thanks to an interface between the arcade System and the SBC, called "Sega FFB Controller" that you can get from Aganythe. (c/o https://www.gamoover.net/Forums/index.php?topic=42310.0)
-Please note that this Sega FFB Controller may achieve far more possibilities depending on the firmware we inject, that will not be covered here (i.e. act as an interface between a PC and a racing cab)
+
+This can be achieved thanks to an interface between the arcade System and the SBC, called "Sega FFB Controller" that you can get from Aganythe. (c/o https://www.gamoover.net/Forums/index.php?topic=42310.0)  
+Please note that this Sega FFB Controller may achieve far more possibilities depending on the firmware we inject, that will not be covered here (i.e. act as an interface between a PC and a racing cab)  
 
 ## Dependencies
-You will need a Sega FFB Controller 
-You will need a SBC with at least 2 USB 2.0 connectors (one for the racing wheel and the second for the connection with the Sega FFB Controller). 
+- You will need a Sega FFB Controller.  
+- You will need a SBC with at least 2 USB 2.0 connectors (one for the racing wheel and the second for the connection with the Sega FFB Controller).  
+  
 The solution has been tested only on Raspberry PI for now.
 
 ## Installation and Running
