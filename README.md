@@ -2,17 +2,25 @@
 ## Introduction
 The goal of this project is to use consumer FFB Racing wheels on Arcade racing cabs/systems.  
 The user can take an USB Racing Wheel which support Force Feedback effects (i.e. Logitech GT), connect it to a Single Board Computer (i.e. a raspberry PI) and enjoy FFB effects with arcade games.  
+  
 This can be achieved thanks to an interface between the arcade System and the SBC, called "Sega FFB Controller" that you can get from Aganythe. (c/o https://www.gamoover.net/Forums/index.php?topic=42310.0)  
+  
 Please note that this Sega FFB Controller may achieve far more possibilities depending on the firmware we inject, that will not be covered here (i.e. act as an interface between a PC and a racing cab).    
+  
 ![available](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_1.jpg?raw=true)  
 
-But wait, arcade Systems like Naomi, Chihiro, Triforce, etc. require a JVS connection to a JVS IO Board (arcade controller interface).  
-This is required here in our Use case, so the System can retrieve Wheel's position, pedals, etc.  
+But wait, arcade Systems like Naomi, Chihiro, Triforce, etc. require a connection to a JVS IO Board (arcade controller interface). 
+This is required here in our Use Case, by the System to retrieve Wheel's position, pedals, etc.  
+  
 For this pupose, we use "OpenJVS", a Software JVS IO Board, that also can run on a Raspberry PI.  
+  
 ![available](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_2.jpg?raw=true)  
 
-"Wipi", a Web Application Interface has zlso been created for the best End User experience, helping user in configuring and using "OpenJVS", "OpenFFB" and NetDimm support too.  
+But wait, how can we use it?  
+"Wipi", a Web Application Interface has also been created for the best End User experience, helping users in configuring and using "OpenJVS", "OpenFFB" and has NetDimm support too.  
+  
 "WiPi" can be found as a full image, ready to be used, with all pre-configured, please read below paragraph for more information.  
+  
 ![available](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_3.jpg?raw=true)  
 
 ## Dependencies
