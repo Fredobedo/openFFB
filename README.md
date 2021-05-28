@@ -26,10 +26,14 @@ But wait, how can we use it?
 ## Dependencies
 - You will need a Sega FFB Controller.  
 - You will need a SBC with at least 2 USB 2.0 connectors (one for the racing wheel and the second for the connection with the Sega FFB Controller).  
-- You will need a 32GB McroSD if you plan to use the "Ready to Go WiPi" image for Raspberry PI.
+- You will need a 32GB MicroSD if you plan to use the "Ready to Go WiPi" image for Raspberry PI.
      
 ## Installation and Running
-Installation may be doen like this:
+THE FOLLOWING INFORMATION IS ONLY USEFULL FOR PERSONS WILLING TO INTEGRATE OPENFFB MANUALLY IN THEIR SOLUTION/BUILD.  
+PEOPLE MAY USE THE "READY TO GO WIPI" INSTEAD, WHICH OFFERS ALL NECESSARY WEB INTERFACE TO USE AND MANAGE IT.  
+  
+  
+Installation may be done like this:
 ```
 git clone https://github.com/Fredobedo/openFFB
 cd openFFB
