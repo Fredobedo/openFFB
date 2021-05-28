@@ -5,7 +5,7 @@ The user can take an USB Racing Wheel which support Force Feedback effects (i.e.
   
 This can be achieved thanks to an interface between the arcade System and the SBC, called "Sega FFB Controller" that you can get from Aganythe. (c/o https://www.gamoover.net/Forums/index.php?topic=42310.0)  
   
-Please note that this Sega FFB Controller may achieve far more possibilities depending on the firmware we inject, that will not be covered here (i.e. act as an interface between a PC and a racing cab).    
+Please note that this Sega FFB Controller may achieve far more possibilities depending on the firmware we inject but this will not be covered here (i.e. act as an interface between a PC and a racing cab).    
   
 ![available](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_1.jpg?raw=true)  
 
@@ -26,9 +26,8 @@ But wait, how can we use it?
 ## Dependencies
 - You will need a Sega FFB Controller.  
 - You will need a SBC with at least 2 USB 2.0 connectors (one for the racing wheel and the second for the connection with the Sega FFB Controller).  
-  
-The solution has been tested only on Raspberry PI for now.
-
+- You will need a 32GB McroSD if you plan to use the "Ready to Go WiPi" image for Raspberry PI.
+     
 ## Installation and Running
 Installation may be doen like this:
 ```
@@ -76,3 +75,11 @@ More information at https://github.com/berarma/new-lg4ff.
 
 ## WiPi: Example of a successfull full integration
 
+## External references
+- Sega FFB Controller: https://www.gamoover.net/Forums/index.php?topic=42310.0  
+- OpenJVS: https://github.com/OpenJVS/OpenJVS  
+- WiPi: TBD  
+- new-lg4ff:  https://github.com/berarma/new-lg4ff
+
+## Disclaimer
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
