@@ -25,7 +25,7 @@ But wait, how can we use it?
 
 ## Dependencies
 - You will need a Sega FFB Controller.  
-- You will need a SBC with at least 2 USB 2.0 connectors (one for the racing wheel and the second for the connection with the Sega FFB Controller).  
+- You will need a SBC with at least 2 USB 2.0 ports (one for the racing wheel and the second for the connection with the Sega FFB Controller).  
 - You will need a 32GB MicroSD if you plan to use the "Ready to Go WiPi" image for Raspberry PI.
      
 ## Installation and Running

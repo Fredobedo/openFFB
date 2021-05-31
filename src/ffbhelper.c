@@ -80,10 +80,10 @@ bool FFBCheckIfFFBDevice(int handle)
 	}
 
 	/* force feedback supported? */
-	if (!testBit(FF_RUMBLE, ff_bits))
-		return false;
-	else
+	if (testBit(FF_RUMBLE, ff_bits) || testBit(FF_CONSTANT, ff_bits))
 		return true;
+	else
+		return false;
 }
 
 char* FFBGetHapticSimplifiedName(const char* name)
@@ -124,9 +124,11 @@ int FFBGetAllDevices()
 		char fname[512];
 
         snprintf(fname, sizeof(fname), "%s/%s", DEV_INPUT_EVENT, namelist[i]->d_name);
+		debug(2, "testing device %s\n", fname);
         if ((fd = open(fname, O_RDONLY)) > -1)
         {
 			if(FFBCheckIfFFBDevice(fd)){
+				debug(2, "this is a ffb device\n");
 				strcpy(devices[NbrOfDevices].path, fname);
 				FFBGetDeviceName(fd, devices[NbrOfDevices].realName);
 				strcpy(devices[NbrOfDevices].simplifiedName, FFBGetHapticSimplifiedName(devices[NbrOfDevices].realName));
@@ -135,8 +137,14 @@ int FFBGetAllDevices()
 				
 				NbrOfDevices++;
 			}
+			else
+				debug(2, "not a ffb device\n");
 			close(fd);
         }
+		else
+		{
+			debug(2, "Warning, can not open dc\n");
+		}
     }
     free(namelist);
 
