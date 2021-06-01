@@ -614,7 +614,7 @@ void FFBTriggerConstantEffect(double strength)
  */
 void FFBTriggerFrictionEffect(double strength)
 {
-	debug(1, "FFBTriggerFrictionEffect d\n");
+	debug(1, "FFBTriggerFrictionEffect\n");
 	if(FF_FRICTION_LOADED==(supportedFeatures & FF_FRICTION_LOADED)) 
 	{
 		struct ff_effect* effect=&ffb_effects[friction_effect_idx];

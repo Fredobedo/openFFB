@@ -35,7 +35,7 @@ struct arguments_t {
     char haptic_name[128];
     char game_profile[128];
     struct keyvalue_t{
-        enum mode_t{ NOTE_SET=0, GET_AVAILABLE_HAPTICS, GET_SUPPORTED_EFFECTS, TRIGGER_EFFECT, SET_FORCE, TRIGGER_SEGA_FFB_RAW_REQUEST} mode;
+        enum mode_t{ NOTE_SET=0, GET_AVAILABLE_HAPTICS, LOAD_RAW_EFFECT_FILE, GET_SUPPORTED_EFFECTS, TRIGGER_EFFECT, SET_FORCE, TRIGGER_SEGA_FFB_RAW_REQUEST} mode;
         char value[64];
     }keyvalue[10];
 }arguments;

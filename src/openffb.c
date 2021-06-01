@@ -14,12 +14,13 @@
 
 int running = 1;
 
+
 int main(int argc, char **argv)
 {
   signal(SIGINT, handleSignal);
   FFBConfig *localConfig = getConfig(); 
 
-  void initCOM()
+  void initCOMSegaFFBController()
   {
     debug(1, "Connecting to Sega FFB Controller");
     while(!initFFB(localConfig->segaFFBControllerPath) && running)
@@ -31,6 +32,11 @@ int main(int argc, char **argv)
     debug(1, "\n");
   }
 
+ unsigned char ahex2bin(unsigned char MSB, unsigned char LSB) {  
+    if (MSB > '9') MSB -= 7;          // Convert MSB value to a contiguous range (0x30..0x3F)  
+    if (LSB > '9') LSB -= 7;          // Convert LSB value to a contiguous range (0x30..0x3F)  
+     return (MSB <<4) | (LSB & 0x0F); // Make a result byte  using only low nibbles of MSB and LSB thus neglecting the input register case
+ }  
   /* Read the initial config */
   if (parseConfig(CONFIG_PATH) != FFB_CONFIG_STATUS_SUCCESS)
     printf("Warning: No valid openffb config file found, a default is being used\n");
@@ -100,18 +106,56 @@ int main(int argc, char **argv)
     return EXIT_SUCCESS;
   }
 
-  initCOM();
+  if(containArgument(LOAD_RAW_EFFECT_FILE)){
 
+    FILE *file = fopen(getArgumentValue(LOAD_RAW_EFFECT_FILE), "rb");
+    if (file == NULL) {
+        printf("Error: %s", strerror(errno));
+        return EXIT_FAILURE;
+    }
+    else{
+      int test_prb=0;
+        unsigned char line[1024];
+        while (fgets(line, sizeof(line), file)) {
 
-  debug(2, "Will start the main loop...\n");
+          sprintf(line, "%c%c%c%c%c%c",
+                  ahex2bin(line[0],line[1]),
+                  ahex2bin(line[2],line[3]),
+                  ahex2bin(line[4],line[5]),
+                  ahex2bin(line[6],line[7]),
+                  ahex2bin(line[8],line[9]),
+                  ahex2bin(line[10],line[11]));
+          
+          processPacket(line);
+          usleep(5000);
+/*
+          test_prb++;
+          if(test_prb==100)
+          {
+            test_prb=0;
+            playCOMEndEffect();
+            closeDevice();
+            initCOMSegaFFBController();
+          }
+        */
+      }
+      debug(0, "finished reading file!\n");  
+      sleep(20);
+      return EXIT_SUCCESS;
+    }
+  }
+
+  /* Start COM itialization with Sega FFB controller */
+  initCOMSegaFFBController();
 
   /* Process packets forever */
+  debug(2, "Will start the main loop...\n");
   int current_state=0;
   FFBStatus processingStatus;
   int FFBStatusMinus      = FFB_STATUS_ERROR_TIMEOUT;
   int FFBStatusMinusMinus = FFB_STATUS_ERROR_TIMEOUT;
   
-  int MAX_TIMOUT_COUNT = 4;
+  int MAX_TIMOUT_COUNT = 10;
   int nbrOfTimeOut=0;
 
   int MAX_SUCCESS = 3;
@@ -132,7 +176,7 @@ int main(int argc, char **argv)
         if (nbrOfTimeOut==MAX_TIMOUT_COUNT){
             playCOMEndEffect();
             closeDevice();
-            initCOM();
+            initCOMSegaFFBController();
             nbrOfTimeOut=0;
             current_state=STATE_INIT_FINISHED;
         }

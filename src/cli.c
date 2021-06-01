@@ -59,6 +59,8 @@ FFBCLIStatus printUsage()
     debug(3, "                                       - D4 => Constant Torque Power (00->FF)\n");
     debug(3, "                                       - D5 => CRC        (D1^D2^D3^D4)&7F\n");
     debug(3, "\n");
+    debug(3, "  -lf,  --loadFile=[NAME]                    Load raw input file\n");
+    debug(3, "\n");
     //debug(0, "Examples:\n");
     //debug(0, "openffb -h=0  -> \n");
     //debug(0, "openffb -h=0  -> \n");
@@ -178,6 +180,11 @@ FFBCLIStatus parseArguments(int argc, char **argv)
                 strcpy(arguments.keyvalue[cpKeyValue].value,strtok(NULL, "="));
                 cpKeyValue++;                                    
             }
+            else if ((strcmp(command, "--loadFile") == 0)                    || (strcmp(command, "-lf") == 0)) {
+                arguments.keyvalue[cpKeyValue].mode=LOAD_RAW_EFFECT_FILE;
+                strcpy(arguments.keyvalue[cpKeyValue].value,strtok(NULL, "="));
+                cpKeyValue++;                                    
+            }            
             else if ((strcmp(command, "--4BytesSegaFFBRawRequest") == 0)  || (strcmp(command, "-4") == 0)) {
                 arguments.keyvalue[cpKeyValue].mode=TRIGGER_SEGA_FFB_RAW_REQUEST;
                 token=strtok(NULL, "=");
