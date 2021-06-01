@@ -7,7 +7,8 @@
 #include <sys/ioctl.h>
 #include <dirent.h>
 
-#define HAPTIC_INFINITY 0xFFFF
+#define HAPTIC_INFINITY 0
+//#define HAPTIC_INFINITY 0xFFFF
 
 /* Number of bits for 1 unsigned char */
 #define nBitsPerUchar (sizeof(unsigned char) * 8)
