@@ -92,19 +92,19 @@ FFBStatus processPacket(unsigned char* packet)
 void playCOMInitEffect()
 {
 	debug(2, "playCOMInitEffect!!!\n");
-	FFBTriggerConstantEffect(-0.40);
-	usleep(20 * 1000);
+	FFBTriggerConstantEffect(-0.70);
+	usleep(40 * 1000);
 	FFBTriggerConstantEffect(0.0);
-	usleep(10 * 1000);
-	FFBTriggerConstantEffect(0.40);
 	usleep(20 * 1000);
+	FFBTriggerConstantEffect(0.70);
+	usleep(40 * 1000);
 	FFBTriggerConstantEffect(0.0);
 }
 
 void playCOMEndEffect()
 {
 	debug(2,"playCOMEndEffect!!!\n");	
-	FFBTriggerConstantEffect(0.70);
-	usleep(50 * 1000);
+	FFBTriggerConstantEffect(0.80);
+	usleep(70 * 1000);
 	FFBTriggerConstantEffect(0.0);
 }
