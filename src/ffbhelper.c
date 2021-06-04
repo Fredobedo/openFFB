@@ -5,6 +5,7 @@
 #include <time.h>
     
 #include<stdio.h>
+#include<unistd.h>
 #include<string.h>
 
 #include <linux/input.h>
@@ -53,7 +54,7 @@ bool FFBGetDeviceDriverVersion(int handle, char *deviceVersion)
 	}
 }
 
-bool FFBGetDeviceVendorProductVersion(int handle, char *deviceVendorProductVersion)
+bool FFBGetDeviceVendorProductVersion(int handle, char *deviceVendor, char *deviceProduct, char *deviceVersion)
 {
 	struct input_id device_info;
 
@@ -63,7 +64,9 @@ bool FFBGetDeviceVendorProductVersion(int handle, char *deviceVendorProductVersi
     	return false;
 	}
 	else{
-		snprintf(deviceVendorProductVersion, 42,"%04hx/%04hx/%04hx", device_info.vendor, device_info.product, device_info.version);
+		snprintf(deviceVendor,  5,"%04hx", device_info.vendor);
+		snprintf(deviceProduct, 5,"%04hx", device_info.product);
+		snprintf(deviceVersion, 5,"%04hx", device_info.version);				
 		return true;
 	}
 }
@@ -132,7 +135,11 @@ int FFBGetAllDevices()
 				strcpy(devices[NbrOfDevices].path, fname);
 				FFBGetDeviceName(fd, devices[NbrOfDevices].realName);
 				strcpy(devices[NbrOfDevices].simplifiedName, FFBGetHapticSimplifiedName(devices[NbrOfDevices].realName));
-				FFBGetDeviceVendorProductVersion(fd, devices[NbrOfDevices].vendorProductVersion);
+
+				FFBGetDeviceVendorProductVersion(fd, 
+												devices[NbrOfDevices].vendor, 
+												devices[NbrOfDevices].Product, 
+												devices[NbrOfDevices].Version);
 				FFBGetDeviceDriverVersion(fd, devices[NbrOfDevices].driverVersion);
 				
 				NbrOfDevices++;
@@ -165,7 +172,9 @@ void FFBDumpAvailableDevices()
 			if(devices[i].path){
 				debug(0, "Device[%d] Simplified Name        : %s\n", i, devices[i].simplifiedName);
 				debug(0, "Device[%d] Real Name              : %s\n", i, devices[i].realName);
-				debug(0, "Device[%d] Vendor/Product/Version : %s\n", i, devices[i].vendorProductVersion);
+				debug(0, "Device[%d] Vendor/Product/Version : %s/%s/%s\n", i, devices[i].vendor, 
+																			  devices[i].Product, 
+																			  devices[i].Version);
 				debug(0, "Device[%d] Driver Version         : %s\n", i, devices[i].driverVersion);
 				debug(0, "Device[%d] path                   : %s\n", i, devices[i].path);
 			}
@@ -175,7 +184,7 @@ void FFBDumpAvailableDevices()
 		debug(0, "Warning, no haptic device found!\n");
 }
 
-char* FFBGetDevicePath(char* device_name)
+int FFBGetDeviceIdx(char* device_name)
 {
 	int idxDevice=-1;
 
@@ -201,22 +210,26 @@ char* FFBGetDevicePath(char* device_name)
 		return 0;
 	}
 	else
-		return devices[idxDevice].path;
+		return idxDevice;
 }
 
 bool FFBInitHaptic(char* device_name)
 {
 	if(FFBGetAllDevices()) {
-		char* devicePath=FFBGetDevicePath(device_name);
-		printf("devicePath=%s\n", devicePath);
-		if(devicePath){
+		int idxDevice=FFBGetDeviceIdx(device_name);
+
+		if(idxDevice> -1 && devices[idxDevice].path){
 			unsigned char ffb_supported[1 + FF_MAX/8/sizeof(unsigned char)];
 
-			device_handle = open(devicePath, O_RDWR|O_NONBLOCK);
+			device_handle = open(devices[idxDevice].path, O_RDWR|O_NONBLOCK);
 
 			if (device_handle > -1) {
 				printf("Using device %s.\n\n", device_name);
-				
+
+				/*-- test if it's a logitech Racing wheel (ID_VENDOR=046d) --*/
+				if(strcmp(devices[idxDevice].vendor,"046d")==0)
+					SetLogitechSteeringRange(idxDevice, getConfig()->logitechSteeringRange);
+
 				FFBCreateHapticEffects();
 				FFBSetGlobalGain(getConfig()->globalGain);
 				//FFBSetGlobalAutoCenter(getConfig()->autoCenter);
@@ -768,3 +781,65 @@ void FFBTriggerEffect(unsigned int effect, double strength)
     }
 }
 
+void SetLogitechSteeringRange(int idxDevice, int range)
+{
+	printf("SetLogitechSteeringRange ... \n");
+    struct udev *udev;
+    struct udev_enumerate *enumerate;
+    struct udev_list_entry *udevices, *dev_list_entry;
+    struct udev_device *dev;
+
+    udev = udev_new();
+
+    enumerate = udev_enumerate_new(udev);
+    udev_enumerate_add_match_subsystem(enumerate, "input");
+    udev_enumerate_scan_devices(enumerate);
+    udevices = udev_enumerate_get_list_entry(enumerate);
+
+	bool exitEnum;
+
+    udev_list_entry_foreach(dev_list_entry, udevices) {
+        const char *path;
+
+        path = udev_list_entry_get_name(dev_list_entry);
+        dev = udev_device_new_from_syspath(udev, path);
+
+		if(udev_device_get_devnode(dev) && strcmp(udev_device_get_devnode(dev),devices[idxDevice].path)==0)
+		{
+			debug(2, "Logitech device found, setting range to %d...\n", range);
+
+			// PATH + "/device/device/range"
+			char logitechSysFsRangeFile[256];
+			strcpy(logitechSysFsRangeFile, path);
+  			strcat(logitechSysFsRangeFile, "/device/device/range");
+
+/*
+			printf("logitechSysFsRangeFile=%s\n",logitechSysFsRangeFile);
+			if(access(logitechSysFsRangeFile, F_OK)!=0){
+				debug(2, "This Logitech does not have support for changing Steering Range\n");
+			}
+			else
+			{
+				*/
+			FILE * file = fopen(logitechSysFsRangeFile,"w");
+			
+			if(file!=0){
+				fprintf(file,"%d",  range);
+				fclose (file);
+				debug(2, "Steering Range updated\n");
+			}
+			else{
+				debug(2, "can not set Steering Range, did you start it with 'sudo'?\n");
+			}
+			//}
+			//printf("path=%s\n", path);
+			//printf("udev_device_get_devnode=%s\n", udev_device_get_devnode(dev));
+			break;
+		}
+
+        udev_device_unref(dev);
+    }
+
+    udev_enumerate_unref(enumerate);
+    udev_unref(udev);
+}

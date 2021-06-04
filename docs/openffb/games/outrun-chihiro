@@ -7,14 +7,18 @@ GLOBAL_GAIN 100
 AUTO_CENTER 0
 
 # adjust spring effect if necessary here
-MIN_SPRING 0
+MIN_SPRING 30
 MAX_SPRING 100
 
 # adjust friction effect if necessary here
-MIN_FRICTION 0
+MIN_FRICTION 30
 MAX_FRICTION 100
 
 # adjust torque effect if necessary here
-MIN_TORQUE 0
+MIN_TORQUE 30
 MAX_TORQUE 100
 
+# for those who want to use a Logitech racing wheel which is upported by new-lg4ff
+# and have possible steering range up to 900 degree (i.e. G25, G27),
+# this option can be used to change it on the fly
+LOGITECH_STEERING_RANGE 180

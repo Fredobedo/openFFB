@@ -16,6 +16,7 @@ int initFFB(char *devicePath)
 	//int rc=initDevice(devicePath);
 	if (!initDevice(devicePath))
 		return 0;
+	
 
 	return 1;
 }
@@ -68,7 +69,7 @@ FFBStatus processPacket(unsigned char* packet)
 		FFBTriggerFrictionEffect(inputPacket.friction);	
 
     /* --- torqueDirection   0x00 = Left, 0x01  = Right                     --- */
-    /* --- torquePower       from 0x00 to 0xFF -> 128 levels                --- */
+    /* --- torquePower       from 0x00 to 0x7F -> 128 levels                --- */
 	/* note that torqueDirection is where the wheel is turning                  */
 	if(previous_rawpacket[3]!=packet[3]|| previous_rawpacket[4]!=packet[4] ){
 		if(inputPacket.torqueDirection==0)

@@ -10,3 +10,6 @@ DEBUG_MODE 0
 
 # Setup the Sega FFB Controller device path
 SEGA_FFB_CONTROLLER_PATH /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
+
+
+

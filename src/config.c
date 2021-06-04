@@ -36,7 +36,8 @@ FFBConfig config = {
     .minFriction = 0,
     .maxFriction = 100,
     .minTorque = 0,
-    .maxTorque = 100,    
+    .maxTorque = 100,
+    .logitechSteeringRange = 900,    
 };
 
 void DumpConfig()
@@ -57,7 +58,8 @@ void DumpConfig()
     printf("minTorque             = %d\n", config.minTorque);
     printf("maxTorque             = %d\n", config.maxTorque);    
     printf("staticSpring          = %d\n", config.minTorque);
-    printf("staticFriction        = %d\n", config.maxTorque);     
+    printf("staticFriction        = %d\n", config.maxTorque); 
+    printf("logitechSteeringRange = %d\n", config.logitechSteeringRange);
 }
 
 FFBConfig *getConfig()
@@ -109,6 +111,7 @@ FFBConfigStatus parseConfig(char *path)
 
 FFBConfigStatus parseDrivingProfile(char *path)
 {
+    printf("parseDrivingProfile %s\n", path);
     FILE *file;
     char buffer[MAX_LINE_LENGTH];
     char *saveptr = NULL;
@@ -144,7 +147,9 @@ FFBConfigStatus parseDrivingProfile(char *path)
         else if (strcmp(command, "STATIC_SPRING") == 0)
             config.staticSpring = atoi(getNextToken(NULL, " ", &saveptr));                                       
         else if (strcmp(command, "STATIC_FRICTION") == 0)
-            config.staticFriction = atoi(getNextToken(NULL, " ", &saveptr));               
+            config.staticFriction = atoi(getNextToken(NULL, " ", &saveptr));    
+        else if (strcmp(command, "LOGITECH_STEERING_RANGE") == 0)
+            config.logitechSteeringRange = atoi(getNextToken(NULL, " ", &saveptr)); 
         else
             printf("Error: Unknown configuration command %s\n", command);
     }

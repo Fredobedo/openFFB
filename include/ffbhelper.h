@@ -7,6 +7,13 @@
 #include <sys/ioctl.h>
 #include <dirent.h>
 
+#include <libudev.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <locale.h>
+#include <unistd.h>
+
+
 #define HAPTIC_INFINITY 0
 //#define HAPTIC_INFINITY 0xFFFF
 
@@ -55,7 +62,9 @@ struct device{
 	char realName[256];
 	char simplifiedName[256];
 	char driverVersion[128];
-	char vendorProductVersion[128];	
+	char vendor[6];	
+	char Product[6];	
+	char Version[6];	
 } devices[MAX_DEVICE];
 int NbrOfDevices;
 
@@ -84,13 +93,13 @@ struct ff_effect ffb_effects[MAX_EFFECTS];
 struct input_event play, stop, gain, event;
 
 bool  FFBGetDeviceName(int handle, char *deviceName);
-bool  FFBGetDeviceVendorProductVersion(int handle, char *deviceVendorProductVersion);
+bool  FFBGetDeviceVendorProductVersion(int handle, char *deviceVendor, char *deviceProduct, char *deviceVersion);
 bool  FFBCheckIfFFBDevice(int handle);
 
 char* FFBGetHapticSimplifiedName(const char* name);
 int   FFBisEventDevice(const struct dirent *dir);
 int   FFBGetAllDevices();
-char* FFBGetDevicePath(char* device_name);
+int   FFBGetDeviceIdx(char* device_name);
 
 void  FFBDumpAvailableDevices();
 
@@ -123,5 +132,8 @@ void FFBDumpSupportedFeatures();
 /* --- set global gain and auto center effects --- */
 void FFBSetGlobalGain(int level);
 void FFBSetGlobalAutoCenter(int level);
+
+/* -- the new-lg4ff logitech driver permits to adapt on the fly the steering wheel range -- */
+void SetLogitechSteeringRange(int idxDevice, int range);
 
 #endif

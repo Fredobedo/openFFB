@@ -35,6 +35,7 @@ typedef struct
 
     int staticSpring;
     int staticFriction;
+    int logitechSteeringRange;
 
 } FFBConfig;
 

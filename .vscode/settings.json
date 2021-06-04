@@ -1,5 +1,9 @@
 {
     "files.associations": {
-        "input.h": "c"
+        "input.h": "c",
+        "ioctl.h": "c",
+        "ioctls.h": "c",
+        "libudev.h": "c",
+        "uinput.h": "c"
     }
 }

@@ -18,3 +18,7 @@ MAX_FRICTION 100
 MIN_TORQUE 0
 MAX_TORQUE 100
 
+# for those who want to use a Logitech racing wheel which is upported by new-lg4ff
+# and have possible steering range up to 900 degree (i.e. G25, G27),
+# this option can be used to change it on the fly
+LOGITECH_STEERING_RANGE 360

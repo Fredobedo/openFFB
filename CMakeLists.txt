@@ -46,7 +46,7 @@ add_executable( ${PROJECT_NAME} ${Sources} )
 
 #find_package(SDL2 REQUIRED)
 #target_link_libraries(openffb ${SDL2_LIBRARY})
-target_link_libraries(openffb)
+target_link_libraries(openffb udev)
 
 install(TARGETS ${PROJECT_NAME}
 		COMPONENT ${PROJECT_NAME}
