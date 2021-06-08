@@ -34,7 +34,9 @@ typedef struct
     uint8_t crc;                  // (D1 ^ D2 ^ D3 ^ D4) & 0x7F
 } FFBPacket;
 
-unsigned char previous_rawpacket[6];
+unsigned char rawPacket[SEGA_FFB_CONTROLLER_PACKET_SIZE];
+unsigned char previous_rawpacket[SEGA_FFB_CONTROLLER_PACKET_SIZE];
+unsigned char max_rawpacket[SEGA_FFB_CONTROLLER_PACKET_SIZE];
 
 typedef enum
 {

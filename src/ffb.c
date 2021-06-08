@@ -7,8 +7,9 @@
 #include "ffbhelper.h"
 
 /* The in packet used to read from Sega FFB Controller */
+/* it contains the converted values from serial raw    */
 FFBPacket inputPacket;
-unsigned char rawPacket[SEGA_FFB_CONTROLLER_PACKET_SIZE];
+
 
 int initFFB(char *devicePath)
 {
@@ -28,7 +29,7 @@ int disconnectFFB()
 
 FFBStatus tryResynch()
 {
-	debug(3, "Try resych comm with Sega FFB Controller...\n");
+	debug(2, "Try resych comm with Sega FFB Controller...\n");
 	for(int cp=0; cp < SEGA_FFB_CONTROLLER_PACKET_SIZE; cp++){
 		if(rawPacket[cp]==0x80){
 			int bytesRead = readBytes(rawPacket, SEGA_FFB_CONTROLLER_PACKET_SIZE-cp);
@@ -95,13 +96,21 @@ FFBStatus processPacket(unsigned char* packet)
 	}
 
 	/* --- spring            from 0x00 to 0x7F -> 128 levels --- */
-	if(previous_rawpacket[1]!=packet[1])
+	if(previous_rawpacket[1]!=packet[1]){
 		FFBTriggerSpringEffect(inputPacket.spring);
+
+		if(max_rawpacket[1]<packet[1])
+			max_rawpacket[1]=packet[1];
+	}
 
     /* --- friction          from 0x00 to 0x7F -> 128 levels                                                --- */
 	/* --- For now on, I will use Sine effect instead as I can't control the strengh of a froction effect ? --- */
-	if(previous_rawpacket[2]!=packet[2])
+	if(previous_rawpacket[2]!=packet[2]){
 		FFBTriggerFrictionEffect(inputPacket.friction);	
+
+		if(max_rawpacket[2]<packet[2])
+			max_rawpacket[2]=packet[2];		
+	}
 
     /* --- torqueDirection   0x00 = Left, 0x01  = Right                     --- */
     /* --- torquePower       from 0x00 to 0x7F -> 128 levels                --- */
@@ -111,13 +120,20 @@ FFBStatus processPacket(unsigned char* packet)
 			FFBTriggerConstantEffect(-inputPacket.torquePower);
 		else
 			FFBTriggerConstantEffect(inputPacket.torquePower);
-		
+
+		if(max_rawpacket[4]<packet[4])
+			max_rawpacket[4]=packet[4];			
 	}
 
 	/* only copy if there is a diff */
 	if(memcmp(previous_rawpacket, packet,6)!=0){
 		if(getConfig()->debugLevel==1)
 			printf("%02X%02X%02X%02X%02X%02X\n", packet[0],	packet[1], packet[2], packet[3], packet[4], packet[5]);
+
+		/* for debugging purpose only, see if simulated effects do cover full power range */
+		/* if not, adapt game profile accordingly                                         */
+		if(getConfig()->debugLevel==4)
+			printf("MAX VALUES: %02X%02X%02X[NA]%02X%02X\n", max_rawpacket[0],	max_rawpacket[1], max_rawpacket[2],  max_rawpacket[4], max_rawpacket[5]);
 
 		memcpy(previous_rawpacket, packet, 6);
 	}
