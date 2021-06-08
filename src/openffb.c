@@ -10,10 +10,7 @@
 
 #include "ffbhelper.h"
 
-//void handleSignal(int signal);
-
 int running = 1;
-
 
 int main(int argc, char **argv)
 {
@@ -128,16 +125,6 @@ int main(int argc, char **argv)
           
           processPacket(line);
           usleep(5000);
-/*
-          test_prb++;
-          if(test_prb==100)
-          {
-            test_prb=0;
-            playCOMEndEffect();
-            closeDevice();
-            initCOMSegaFFBController();
-          }
-        */
       }
       debug(0, "finished reading file!\n");  
       sleep(20);
@@ -163,9 +150,16 @@ int main(int argc, char **argv)
 
   while (running)
   {
-    processingStatus = readPacket();
+    if(containArgument(DUMP_RAW_SEGA_FFB_CONTROLLER))
+      processingStatus = readDebugPacket(atoi(getArgumentValue(DUMP_RAW_SEGA_FFB_CONTROLLER))); 
+    else
+      processingStatus = readPacket();
+
     switch (processingStatus)
     {
+      case FFB_STATUS_ERROR_SYNCH_REQUIRED:
+        tryResynch();
+        break;
       case FFB_STATUS_ERROR_CHECKSUM:
         debug(1, "Error: checksum error occoured\n");
         break;

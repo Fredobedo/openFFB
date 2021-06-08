@@ -29,17 +29,9 @@ FFBCLIStatus printUsage()
     debug(0, "  -s,  --supportedEffects                    Displays supported effects\n");
     debug(0, "  -t,  --triggerEffect=[TYPE]                Activate 1 of these effects\n");
     debug(0, "  -f,  --force=[1-100]                       Strength of the triggered effect\n");
-    //debug(0, "                                             - SINE\n");
-    //debug(0, "                                             - SQUARE\n");
-    //debug(0, "                                         - TRIANGLE\n");            //NOT SUPPORTED YET
-    //debug(0, "                                         - SAWUP\n");               //NOT SUPPORTED YET
-    //debug(0, "                                         - SAWDOWN\n");             //NOT SUPPORTED YET
     debug(0, "                                             - CONSTANT\n");
     debug(0, "                                             - SPRING\n"); 
-    //debug(0, "                                         - DAMPER\n");              //NOT SUPPORTED YET
-    //debug(0, "                                         - INERTIA\n");             //NOT SUPPORTED YET
     debug(0, "                                             - FRICTION\n"); 
-    //debug(0, "                                         - RAMP\n");                //NOT SUPPORTED YET
     debug(0, "                                             - AUTOCENTER\n"); 
     debug(0, "                                             - RUMBLE\n"); 
     debug(0, "\n");    
@@ -61,9 +53,8 @@ FFBCLIStatus printUsage()
     debug(3, "\n");
     debug(3, "  -lf,  --loadFile=[NAME]                    Load raw input file\n");
     debug(3, "\n");
-    //debug(0, "Examples:\n");
-    //debug(0, "openffb -h=0  -> \n");
-    //debug(0, "openffb -h=0  -> \n");
+    debug(3, "  -dr,  --dumpRaw=[PACKET_LENGHT]            Dump SEGA FFB Controller packets only\n");
+    debug(3, "\n");
 
     return FFB_CLI_STATUS_SUCCESS_CLOSE;
 }
@@ -163,14 +154,14 @@ FFBCLIStatus parseArguments(int argc, char **argv)
             if ((strcmp(command, "--haptic") == 0)                        || (strcmp(command, "-h") == 0)) {
                 strcpy(arguments.haptic_name, strtok(NULL, "="));
             }              
-            else if ((strcmp(command, "--gameProfile") == 0)         || (strcmp(command, "-gp") == 0)) {
+            else if ((strcmp(command, "--gameProfile") == 0)              || (strcmp(command, "-gp") == 0)) {
                 strcpy(arguments.game_profile, strtok(NULL, "="));
             }
             else if ((strcmp(command, "--supportedEffects") == 0)         || (strcmp(command, "-s") == 0)) {
                 arguments.keyvalue[cpKeyValue].mode=GET_SUPPORTED_EFFECTS;
                 cpKeyValue++;
             }
-            else if ((strcmp(command, "--triggerEffect") == 0)         || (strcmp(command, "-t") == 0)) {
+            else if ((strcmp(command, "--triggerEffect") == 0)            || (strcmp(command, "-t") == 0)) {
                 arguments.keyvalue[cpKeyValue].mode=TRIGGER_EFFECT;
                 strcpy(arguments.keyvalue[cpKeyValue].value,strtok(NULL, "="));
                 cpKeyValue++;
@@ -180,11 +171,16 @@ FFBCLIStatus parseArguments(int argc, char **argv)
                 strcpy(arguments.keyvalue[cpKeyValue].value,strtok(NULL, "="));
                 cpKeyValue++;                                    
             }
-            else if ((strcmp(command, "--loadFile") == 0)                    || (strcmp(command, "-lf") == 0)) {
+            else if ((strcmp(command, "--loadFile") == 0)                 || (strcmp(command, "-lf") == 0)) {
                 arguments.keyvalue[cpKeyValue].mode=LOAD_RAW_EFFECT_FILE;
                 strcpy(arguments.keyvalue[cpKeyValue].value,strtok(NULL, "="));
                 cpKeyValue++;                                    
             }            
+            else if ((strcmp(command, "--dumpRaw") == 0)                  || (strcmp(command, "-dr") == 0)) {
+                arguments.keyvalue[cpKeyValue].mode=DUMP_RAW_SEGA_FFB_CONTROLLER;
+                strcpy(arguments.keyvalue[cpKeyValue].value,strtok(NULL, "="));
+                cpKeyValue++;                                    
+            }
             else if ((strcmp(command, "--4BytesSegaFFBRawRequest") == 0)  || (strcmp(command, "-4") == 0)) {
                 arguments.keyvalue[cpKeyValue].mode=TRIGGER_SEGA_FFB_RAW_REQUEST;
                 token=strtok(NULL, "=");

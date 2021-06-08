@@ -22,6 +22,8 @@
 #define STATUS_CHECKSUM_FAILURE 0x03 // the checksum on the command packet did not match a computed checksum
 #define STATUS_OVERFLOW 0x04         // an overflow occurred while processing the command
 
+#define SEGA_FFB_CONTROLLER_PACKET_SIZE 6
+
 typedef struct
 {
     uint8_t startByte;            // Start byte
@@ -41,11 +43,17 @@ typedef enum
     FFB_STATUS_ERROR_TIMEOUT,
     FFB_STATUS_ERROR_CHECKSUM,
     FFB_STATUS_ERROR_UNSUPPORTED_COMMAND,
+    FFB_STATUS_ERROR_SYNCH_REQUIRED,
 } FFBStatus;
 
 /* --- init haptic device  --- */
 int initFFB(char *devicePath);
 int disconnectFFB();
+
+FFBStatus tryResynch();
+
+/* --- for debugging purpose only --- */
+FFBStatus readDebugPacket(int amount);
 
 /* --- read usb2 serial communication from Sega FFB Controller --- */
 FFBStatus readPacket();

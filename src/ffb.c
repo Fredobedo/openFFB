@@ -8,7 +8,7 @@
 
 /* The in packet used to read from Sega FFB Controller */
 FFBPacket inputPacket;
-unsigned char rawPacket[6];
+unsigned char rawPacket[SEGA_FFB_CONTROLLER_PACKET_SIZE];
 
 int initFFB(char *devicePath)
 {
@@ -26,13 +26,45 @@ int disconnectFFB()
 	return closeDevice();
 }
 
+FFBStatus tryResynch()
+{
+	debug(3, "Try resych comm with Sega FFB Controller...\n");
+	for(int cp=0; cp < SEGA_FFB_CONTROLLER_PACKET_SIZE; cp++){
+		if(rawPacket[cp]==0x80){
+			int bytesRead = readBytes(rawPacket, SEGA_FFB_CONTROLLER_PACKET_SIZE-cp);
+			if (bytesRead < 0){
+				return FFB_STATUS_ERROR_TIMEOUT;
+			}
+			else if (bytesRead < SEGA_FFB_CONTROLLER_PACKET_SIZE-cp)
+			{
+				return FFB_STATUS_ERROR;
+			}
+			return readPacket();
+		}
+	}
+	return FFB_STATUS_ERROR_SYNCH_REQUIRED;
+}
+
+FFBStatus readDebugPacket(int amount)
+{
+	int bytesRead = readBytes(rawPacket, amount);
+	if (bytesRead > 0){
+		for(int cp=0;cp<bytesRead;cp++)
+			printf("%02X",rawPacket[cp]);
+		
+		printf("\n");
+	}
+
+	return FFB_STATUS_SUCCESS;
+}
+
 FFBStatus readPacket()
 {
-	int bytesRead = readBytes(rawPacket, 6);
+	int bytesRead = readBytes(rawPacket, SEGA_FFB_CONTROLLER_PACKET_SIZE);
 	if (bytesRead < 0){
 		return FFB_STATUS_ERROR_TIMEOUT;
 	}
-	else if (bytesRead < 6)
+	else if (bytesRead < SEGA_FFB_CONTROLLER_PACKET_SIZE)
 	{
 		return FFB_STATUS_ERROR;
 	}
@@ -51,6 +83,9 @@ FFBStatus processPacket(unsigned char* packet)
 	inputPacket.torqueDirection = packet[3];
 	inputPacket.torquePower     = ((double)packet[4]+1)/128;
 	inputPacket.crc             = packet[5];
+
+	if(inputPacket.startByte!=0x80)
+		return FFB_STATUS_ERROR_SYNCH_REQUIRED;
 
 	/* --- (D1^D2^D3^D4)&0x7F --- */
 	unsigned char checksum = (packet[1]^packet[2]^packet[3]^packet[4])&0x7F;
