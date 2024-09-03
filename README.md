@@ -71,9 +71,22 @@ You can dump the actual OpenFFB like this:
 ![start](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_config.jpg?raw=true)
 
 ## Installation drivers for Logitech Racing wheels
-Most of the Logitech Racing wheels are not supported in Linux (with the exception of the Logitech G29).
+Most of the Logitech Racing wheels are not supported in Linux.
 Fortunatelly, 'new-lg4ff' is a custom driver that you can install and which will support most of the FFB effects too.
 More information at https://github.com/berarma/new-lg4ff.
+
+This driver is normally present on Wipi distribution but if you want to use another distribution or update the existing Wipi, here is an example of how you can do it:
+- log into wipi with ssh
+- download latest lg4ff release from https://github.com/berarma/new-lg4ff
+- unpack contents t /usr/src/new-lg4ff
+- run sudo dkms install /usr/src/new-lg4ff
+- reboot
+
+PS: Thanks to stefanpausch for mentioning it :)
+
+## Wiring
+Here is a Physicl view of Wiring between a Chihiro System and Sega FFB Controller
+![start](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_chihiro_wire.jpg?raw=true)
 
 ## Integration with OpenJVS
 
