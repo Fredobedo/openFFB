@@ -57,21 +57,17 @@ Please have a look at the help menu to have a first insight on OpenFFB:
 ![help](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_help.jpg?raw=true)
 
 ## Test your racing wheel
-1. First verify that your wheel is detected:
-<br/>
+1. First verify that your wheel is detected:  
 ![available](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_available.jpg?raw=true)
 
-2. Then, test if your linux distribution is supporting FFB effects for your racing wheel:
-<br/>
+2. Then, test if your linux distribution is supporting FFB effects for your racing wheel:  
 ![supported](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_supported.jpg?raw=true)
 
-3. Now, you can start OpenFFB:
-<br/>
+3. Now, you can start OpenFFB:  
 ![start](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_start.jpg?raw=true)
 
 ## Configuration
-You can dump the actual OpenFFB like this:
-<br/>
+You can dump the actual OpenFFB like this:  
 ![start](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_config.jpg?raw=true)
 
 ## Installation drivers for Logitech Racing wheels
@@ -89,8 +85,7 @@ This driver is normally present on Wipi distribution but if you want to use anot
 PS: Thanks to stefanpausch for mentioning it :)
 
 ## Wiring
-Here is a Physical view of Wiring between a Chihiro System and Sega FFB Controller:
-<br/>
+Here is a Physical view of Wiring between a Chihiro System and Sega FFB Controller:  
 ![start](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_chihiro_wire.jpg?raw=true)
 
 ## Integration with OpenJVS
