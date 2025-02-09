@@ -96,44 +96,35 @@ FFBStatus processPacket(unsigned char* packet)
 	}
 
 	/* --- spring            from 0x00 to 0x7F -> 128 levels --- */
-	if(previous_rawpacket[1]!=packet[1]){
-		FFBTriggerSpringEffect(inputPacket.spring);
-
-		if(max_rawpacket[1]<packet[1])
-			max_rawpacket[1]=packet[1];
-	}
+	if(packet[1]==0x0)
+		FFBStopEffect(ffb_effects[spring_effect_idx].id);
+	else
+		FFBTriggerSpringEffect(previous_rawpacket[1]!=packet[1], inputPacket.spring);
 
     /* --- friction          from 0x00 to 0x7F -> 128 levels                                                --- */
 	/* --- For now on, I will use Sine effect instead as I can't control the strengh of a froction effect ? --- */
-	if(previous_rawpacket[2]!=packet[2]){
-		FFBTriggerFrictionEffect(inputPacket.friction);	
-
-		if(max_rawpacket[2]<packet[2])
-			max_rawpacket[2]=packet[2];		
-	}
+	if(packet[2]==0x0)
+		FFBStopEffect(ffb_effects[friction_effect_idx].id);
+	else
+		FFBTriggerFrictionEffect(previous_rawpacket[2]!=packet[2], inputPacket.friction);	
 
     /* --- torqueDirection   0x00 = Left, 0x01  = Right                     --- */
     /* --- torquePower       from 0x00 to 0x7F -> 128 levels                --- */
 	/* note that torqueDirection is where the wheel is turning                  */
-	if(previous_rawpacket[3]!=packet[3]|| previous_rawpacket[4]!=packet[4] ){
+	if(packet[4]==0x0 ){
+		FFBStopEffect(ffb_effects[constant_effect_idx].id);
+	}
+	else{
 		if(inputPacket.torqueDirection==0)
-			FFBTriggerConstantEffect(-inputPacket.torquePower);
+			FFBTriggerConstantEffect(previous_rawpacket[3]!=packet[3]|| previous_rawpacket[4]!=packet[4], -inputPacket.torquePower);
 		else
-			FFBTriggerConstantEffect(inputPacket.torquePower);
-
-		if(max_rawpacket[4]<packet[4])
-			max_rawpacket[4]=packet[4];			
+			FFBTriggerConstantEffect(previous_rawpacket[3]!=packet[3]|| previous_rawpacket[4]!=packet[4], inputPacket.torquePower);
 	}
 
 	/* only copy if there is a diff */
 	if(memcmp(previous_rawpacket, packet,6)!=0){
 		if(getConfig()->debugLevel==1)
 			printf("%02X%02X%02X%02X%02X%02X\n", packet[0],	packet[1], packet[2], packet[3], packet[4], packet[5]);
-
-		/* for debugging purpose only, see if simulated effects do cover full power range */
-		/* if not, adapt game profile accordingly                                         */
-		if(getConfig()->debugLevel==4)
-			printf("MAX VALUES: %02X%02X%02X[NA]%02X%02X\n", max_rawpacket[0],	max_rawpacket[1], max_rawpacket[2],  max_rawpacket[4], max_rawpacket[5]);
 
 		memcpy(previous_rawpacket, packet, 6);
 	}
@@ -144,19 +135,19 @@ FFBStatus processPacket(unsigned char* packet)
 void playCOMInitEffect()
 {
 	debug(2, "playCOMInitEffect!!!\n");
-	FFBTriggerConstantEffect(-0.70);
+	FFBTriggerConstantEffect(true, -0.70);
 	usleep(40 * 1000);
-	FFBTriggerConstantEffect(0.0);
+	FFBTriggerConstantEffect(true, 0.0);
 	usleep(20 * 1000);
-	FFBTriggerConstantEffect(0.70);
+	FFBTriggerConstantEffect(true, 0.70);
 	usleep(40 * 1000);
-	FFBTriggerConstantEffect(0.0);
+	FFBTriggerConstantEffect(true, 0.0);
 }
 
 void playCOMEndEffect()
 {
 	debug(2,"playCOMEndEffect!!!\n");	
-	FFBTriggerConstantEffect(0.80);
+	FFBTriggerConstantEffect(true, 0.80);
 	usleep(70 * 1000);
-	FFBTriggerConstantEffect(0.0);
+	FFBTriggerConstantEffect(true, 0.0);
 }

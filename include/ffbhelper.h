@@ -110,21 +110,23 @@ bool  FFBInitHaptic(char* name);
 
 void  FFBCreateHapticEffects();
 
-void  FFBTriggerConstantEffect(double strength);
+void  FFBTriggerSpringEffect(bool upload, double strength);
+void  FFBTriggerConstantEffect(bool upload, double strength);
+void  FFBTriggerFrictionEffect(bool upload, double strength);
+
 void  FFBTriggerSineEffect(double strength);
-void  FFBTriggerSpringEffect(double strength);
-void  FFBTriggerFrictionEffect(double strength);
 void  FFBTriggerRumbleEffectDefault(double strength);
 void  FFBTriggerRumbleEffect(double strength,  motor_select motor);
 
-
+void FFBStopEffect(int effect_id);
+void FFBStopAllEffects(void);
 
 /* --- generic function for testing --- */
 void FFBTriggerEffect(unsigned int effect,double strength);
-/* --- This will stop the effect if it's running. Effects are automatically destroyed when the device is closed. --- */
-void FFBStopEffect(int effect_id);
-/* --- This will stop all effects if they are running. Effects are automatically destroyed when the device is closed. --- */
-void FFBStopAllEffects(void);
+/* --- This will remove the effect from the device. Effects are automatically destroyed when the device is closed. --- */
+void FFBRemoveEffect(int effect_id);
+/* --- This will remove all effects if they are running. Effects are automatically destroyed when the device is closed. --- */
+void FFBRemoveAllEffects(void);
 
 /* --- dump supported features in the console --- */
 void FFBDumpSupportedFeatures();

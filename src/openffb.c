@@ -7,14 +7,20 @@
 #include "ffb.h"
 #include "config.h"
 #include "debug.h"
+#include <time.h>
 
 #include "ffbhelper.h"
 
 int running = 1;
+clock_t start_time;
+clock_t end_time;
+unsigned long executed_cycles=0;
 
 int main(int argc, char **argv)
 {
   signal(SIGINT, handleSignal);
+  start_time = clock();
+
   FFBConfig *localConfig = getConfig(); 
 
   void initCOMSegaFFBController()
@@ -97,9 +103,8 @@ int main(int argc, char **argv)
   }
 
   if(containArgument(TRIGGER_SEGA_FFB_RAW_REQUEST)){
-
     processPacket(getArgumentValue(TRIGGER_SEGA_FFB_RAW_REQUEST));
-    sleep(20);
+    sleep(2);
     return EXIT_SUCCESS;
   }
 
@@ -150,6 +155,8 @@ int main(int argc, char **argv)
 
   while (running)
   {
+    //executed_cycles++;
+
     if(containArgument(DUMP_RAW_SEGA_FFB_CONTROLLER))
       processingStatus = readDebugPacket(atoi(getArgumentValue(DUMP_RAW_SEGA_FFB_CONTROLLER))); 
     else
@@ -205,6 +212,7 @@ int main(int argc, char **argv)
     debug(2, "Error: Could not disconnect from serial\n");
     return EXIT_FAILURE;
   }
+
   return EXIT_SUCCESS;
 }
 
@@ -212,7 +220,14 @@ void handleSignal(int signal)
 {
   if (signal == 2)
   {
+    /*
+    end_time = clock();
+    double time_taken = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+    debug(1, "\nTime taken: %.2f seconds\n", time_taken);
+    debug(1, "Number of cycles: %lu\n", executed_cycles);
+    */
     debug(2, "\nClosing down OpenFFB...\n");
+    FFBAbortExecution();
     disconnectFFB();
     running = 0;
   }
