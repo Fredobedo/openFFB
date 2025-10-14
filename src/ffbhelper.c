@@ -258,7 +258,7 @@ void FFBCreateHapticEffects()
 
 	effect->trigger.button = 0;
 	effect->trigger.interval = 0;
-	effect->replay.length = 5000; 
+	effect->replay.length = 0; /* default was 5000, let's try infinite*/
 	effect->replay.delay = 0;
 	
 	effect->u.constant.level  = 0;
@@ -329,7 +329,7 @@ void FFBCreateHapticEffects()
 	effect->u.condition[1] = effect->u.condition[0];
 	effect->trigger.button = 0;
 	effect->trigger.interval = 0;
-	effect->replay.length = 5000;  /* 20 seconds */
+	effect->replay.length = 0;  /* set to 20 seconds but will test infinite */
 	effect->replay.delay = 0;
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
@@ -444,6 +444,7 @@ void FFBAbortExecution(void)
     debug(1, "\nAborting program execution.\n");
 	if(device_handle){
 		FFBStopAllEffects();
+		//FFBRemoveAllEffects();
 		close(device_handle);
 	}
 }
@@ -502,7 +503,7 @@ void FFBStopAllEffects()
 {
 	if(device_handle)
 	{
-		for(int cp=0; cp < sizeof(effects_idx)/sizeof(int); cp++)
+		for(int cp=0; cp < sizeof(ffb_effects)/sizeof(struct ff_effect); cp++)
 			FFBStopEffect(ffb_effects[cp].id);
 	}
 }
@@ -517,7 +518,7 @@ void FFBRemoveAllEffects()
 {
 	if(device_handle)
 	{
-		for(int cp=0; cp < sizeof(effects_idx)/sizeof(int); cp++)
+		for(int cp=0; cp < sizeof(ffb_effects)/sizeof(struct ff_effect); cp++)
 			FFBRemoveEffect(ffb_effects[cp].id);
 	}
 }
@@ -573,8 +574,8 @@ void FFBTriggerSpringEffect(bool upload, double strength)
 				coeff = 32767;
 
 			springEffect->u.condition[0].left_coeff = (short)(coeff);
-			springEffect->u.condition[0].left_saturation = (short)(coeff * 2.0); 
-			springEffect->u.condition[0].right_saturation = (short)(coeff * 2.0); 
+			springEffect->u.condition[0].left_saturation = (unsigned short)(coeff * 2.0); 
+			springEffect->u.condition[0].right_saturation = (unsigned short)(coeff * 2.0); 
 			springEffect->u.condition[0].right_coeff = (short)(coeff);
 			springEffect->u.condition[1] = springEffect->u.condition[0];
 
@@ -655,8 +656,8 @@ void FFBTriggerConstantEffect(bool upload, double strength)
 			debug(0,"\nfred: update effect level=%hd", level);
 			*/
 			/* Here we set the two values to the max as the arcade system 'manages" fades                */
-			constantEffect->u.constant.envelope.attack_level =  (short)(strength * 32767.0); /* this one counts! */
-			constantEffect->u.constant.envelope.fade_level =    (short)(strength * 32767.0); /* only to be safe  */
+			constantEffect->u.constant.envelope.attack_level =  (unsigned short)(strength * 65535.0); /* this one counts! */
+			constantEffect->u.constant.envelope.fade_level =    (unsigned short)(strength * 65535.0); /* only to be safe  */
 
 			/* update effect */
 			if (ioctl(device_handle, EVIOCSFF, constantEffect) < 0)
@@ -668,7 +669,7 @@ void FFBTriggerConstantEffect(bool upload, double strength)
 		event.type = EV_FF;
 		event.code = constantEffect->id;
 
-			//STOP PREVIOUS EFFECT
+		//STOP PREVIOUS EFFECT
 		event.value = 0;
 		bool rs=write(device_handle, &event, sizeof(event));
 
@@ -700,7 +701,7 @@ void FFBTriggerConstantEffect(bool upload, double strength)
  */
 void FFBTriggerFrictionEffect(bool upload, double strength)
 {
-	debug(1, "FFBTriggerFrictionEffect\n");
+	debug(1, "FFBTriggerFrictionEffect upload=%d strength=%f\n", upload, strength);
 	if(FF_FRICTION_LOADED==(supportedFeatures & FF_FRICTION_LOADED)) 
 	{
 		struct ff_effect* frictionEffect=&ffb_effects[friction_effect_idx];

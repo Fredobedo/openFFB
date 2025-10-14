@@ -98,14 +98,14 @@ int main(int argc, char **argv)
       Strength=((double)atoi(getArgumentValue(SET_FORCE)))/100;
 
     FFBTriggerEffect(hapticEffectFromString(getArgumentValue(TRIGGER_EFFECT)), Strength);
-    sleep(2);
+    sleep(60);
     return EXIT_SUCCESS;
   }
 
   if(containArgument(TRIGGER_SEGA_FFB_RAW_REQUEST)){
     processPacket(getArgumentValue(TRIGGER_SEGA_FFB_RAW_REQUEST));
-    sleep(2);
-    return EXIT_SUCCESS;
+    sleep(60);
+    return EXIT_SUCCESS ;
   }
 
   if(containArgument(LOAD_RAW_EFFECT_FILE)){

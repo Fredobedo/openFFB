@@ -2,6 +2,11 @@ project(openffb C)
 
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 
+#Using -fcommon for legacy code compatibility"
+if(CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 10)
+    add_compile_options(-fcommon)
+endif()
+
 # Set application to GUI type for Win32 and MacOS
 if(WIN32)
   set(GUI_TYPE WIN32)
