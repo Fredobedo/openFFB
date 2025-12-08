@@ -15,6 +15,6 @@ MIN_FRICTION 0
 MAX_FRICTION 100
 
 # adjust torque effect if necessary here
-MIN_TORQUE 0
+MIN_TORQUE 20
 MAX_TORQUE 100
 

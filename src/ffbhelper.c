@@ -260,11 +260,9 @@ void FFBCreateHapticEffects()
 	effect->trigger.interval = 0;
 	effect->replay.length = 0; /* default was 5000, let's try infinite*/
 	effect->replay.delay = 0;
-	
-	effect->u.constant.level  = 0;
-	
 	effect->direction = 0xC000;
 	
+	effect->u.constant.level  = 0;
 	effect->u.constant.envelope.attack_length = 0;
 	effect->u.constant.envelope.attack_level = 0;		
 	effect->u.constant.envelope.fade_length = 0;
@@ -275,11 +273,6 @@ void FFBCreateHapticEffects()
 	else{
 		supportedFeatures|=FF_CONSTANT_LOADED;
 		debug(1, "FF_CONSTANT Effect id=%d\n", effect->id);
-
-		/* Start effect */
-		/*
-
-		*/
 	}
 
 	/* --- FF_SINE --- */
@@ -288,21 +281,22 @@ void FFBCreateHapticEffects()
 	
 	effect->id = -1;
 	effect->type = FF_PERIODIC;
+	
+	effect->trigger.button = 0;
+	effect->trigger.interval = 0;
+	effect->replay.length = 5000;
+	effect->replay.delay = 0;
+	effect->direction = 0x4000;				/* Along X axis */
 
 	effect->u.periodic.waveform = FF_SINE;
 	effect->u.periodic.period = 100;		/* 0.1 second */
 	effect->u.periodic.magnitude = 0x7fff;	/* 0.5 * Maximum magnitude */
 	effect->u.periodic.offset = 0;
 	effect->u.periodic.phase = 0;
-	effect->direction = 0x4000;				/* Along X axis */
 	effect->u.periodic.envelope.attack_length = 1000;
 	effect->u.periodic.envelope.attack_level = 0; //0x7fff; 		-> this one to update
 	effect->u.periodic.envelope.fade_length = 1000;
 	effect->u.periodic.envelope.fade_level = 0; //0x7fff; 			-> this one to update
-	effect->trigger.button = 0;
-	effect->trigger.interval = 0;
-	effect->replay.length = 5000;
-	effect->replay.delay = 0;
 	effect->u.periodic.magnitude=0;
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
@@ -312,7 +306,6 @@ void FFBCreateHapticEffects()
 		debug(1, "FF_SINE Effect     id=%d\n", effect->id);
 
 	}
-
 	
     /* --- FF_FRICTION --- */
 	effect=&ffb_effects[friction_effect_idx];
@@ -320,6 +313,12 @@ void FFBCreateHapticEffects()
 	
 	effect->id = -1;
 	effect->type = FF_FRICTION;
+
+	effect->trigger.button = 0;
+	effect->trigger.interval = 0;
+	effect->replay.length = 0;  
+	effect->replay.delay = 0;
+
 	effect->u.condition[0].right_saturation = 0x0;
 	effect->u.condition[0].left_saturation = 0x0;
 	effect->u.condition[0].right_coeff = 0x0;
@@ -327,29 +326,13 @@ void FFBCreateHapticEffects()
 	effect->u.condition[0].deadband = 0x0;
 	effect->u.condition[0].center = 0x0;
 	effect->u.condition[1] = effect->u.condition[0];
-	effect->trigger.button = 0;
-	effect->trigger.interval = 0;
-	effect->replay.length = 0;  /* set to 20 seconds but will test infinite */
-	effect->replay.delay = 0;
+
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
 		debug(1," Error creating FF_FRICTION  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);	
 	else{
 		supportedFeatures|=FF_FRICTION_LOADED;
-		debug(1, "FF_FRICTION Effect id=%d\n", effect->id);	
-		
-		/* Start effect */
-		/*
-		memset(&event, 0, sizeof(event));
-		event.type = EV_FF;
-		event.code = effect->id;
-		event.value = 1;
-		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-			fprintf(stderr, "ERROR: starting FF_FRICTION effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);	
-		else if(getConfig()->staticFriction > 0)
-			FFBTriggerFrictionEffect(((double)getConfig()->staticFriction)/100);				
-			
-		*/
+		debug(1, "FF_FRICTION Effect id=%d\n", effect->id);		
 	}
 
     /* --- FF_DAMPER --- */
@@ -364,6 +347,7 @@ void FFBCreateHapticEffects()
 	effect->replay.length = 5000; 
 	effect->replay.delay = 0;
 	effect->direction = 0x0000; // 0x4000; // 0x8000 -> left, 0xC000-> right
+
 	effect->u.condition->left_saturation = 0;
 	effect->u.condition->right_saturation = 0;
 
@@ -372,7 +356,6 @@ void FFBCreateHapticEffects()
 	else{
 		supportedFeatures|=FF_FRICTION_LOADED;
 		debug(1, "FF_FRICTION Effect id=%d\n", effect->id);	
-
 	}
 
     /* --- FF_SPRING --- */
@@ -382,30 +365,19 @@ void FFBCreateHapticEffects()
 	effect->id = -1;
 	effect->type = FF_SPRING;
 
-	effect->u.condition[0].deadband = 0x0;
-	effect->u.condition[0].center = 0x0;
 	effect->trigger.button = 0;
 	effect->trigger.interval = 0;
 	effect->replay.length = HAPTIC_INFINITY;  
 	effect->replay.delay = 0;
+
+	effect->u.condition[0].deadband = 0x0;
+	effect->u.condition[0].center = 0x0;
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
 		debug(1," Error creating FF_SPRING  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);		
 	else{
 		supportedFeatures|=FF_SPRING_LOADED;
 		debug(1, "FF_SPRING Effect   id=%d\n", effect->id);	
-
-		/* Start effect */
-		/*
-		memset(&event, 0, sizeof(event));
-		event.type = EV_FF;
-		event.code = effect->id;
-		event.value = 1;
-		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-			fprintf(stderr, "ERROR: starting FF_SPRING effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);		
-		else if(getConfig()->staticSpring > 0)
-			FFBTriggerSpringEffect(((double)getConfig()->staticSpring)/100);			
-		*/
 	}
 
     /* --- FF_RUMBLE --- */
@@ -415,28 +387,18 @@ void FFBCreateHapticEffects()
 	effect->id = -1;
 	effect->type = FF_RUMBLE;
 
+	effect->replay.length = 1000; 
+	effect->replay.delay = 0;
+
 	effect->u.rumble.strong_magnitude = 0; 
 	effect->u.rumble.weak_magnitude = 0;   
-	effect->replay.length = 5000; 
-	effect->replay.delay = 0;
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
 		debug(1," Error creating FF_SPRING  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);		
 	else{
 		supportedFeatures|=FF_RUMBLE_LOADED;
 		debug(1, "FF_RUMBLE Effect   id=%d\n", effect->id);	
-
-		/* Start effect */
-		/*
-		memset(&event, 0, sizeof(event));
-		event.type = EV_FF;
-		event.code = effect->id;
-		event.value = 1;
-		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-			fprintf(stderr, "ERROR: starting effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
-			*/
 	}
-	
 }
 
 void FFBAbortExecution(void)
