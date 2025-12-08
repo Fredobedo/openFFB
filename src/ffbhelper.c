@@ -232,7 +232,7 @@ bool FFBInitHaptic(char* device_name)
 
 				FFBCreateHapticEffects();
 				FFBSetGlobalGain(getConfig()->globalGain);
-				//FFBSetGlobalAutoCenter(getConfig()->autoCenter);
+				
 				return true;
 			}
 			else {
@@ -258,7 +258,7 @@ void FFBCreateHapticEffects()
 
 	effect->trigger.button = 0;
 	effect->trigger.interval = 0;
-	effect->replay.length = 0; /* default was 5000, let's try infinite*/
+	effect->replay.length = 1000; 
 	effect->replay.delay = 0;
 	effect->direction = 0xC000;
 	
@@ -284,7 +284,7 @@ void FFBCreateHapticEffects()
 	
 	effect->trigger.button = 0;
 	effect->trigger.interval = 0;
-	effect->replay.length = 5000;
+	effect->replay.length = 1000;
 	effect->replay.delay = 0;
 	effect->direction = 0x4000;				/* Along X axis */
 
@@ -316,7 +316,7 @@ void FFBCreateHapticEffects()
 
 	effect->trigger.button = 0;
 	effect->trigger.interval = 0;
-	effect->replay.length = 0;  
+	effect->replay.length = 1000;  
 	effect->replay.delay = 0;
 
 	effect->u.condition[0].right_saturation = 0x0;
@@ -344,7 +344,7 @@ void FFBCreateHapticEffects()
 
 	effect->trigger.button = 0;
 	effect->trigger.interval = 0;
-	effect->replay.length = 5000; 
+	effect->replay.length = 1000; 
 	effect->replay.delay = 0;
 	effect->direction = 0x0000; // 0x4000; // 0x8000 -> left, 0xC000-> right
 
@@ -609,14 +609,6 @@ void FFBTriggerConstantEffect(bool upload, double strength)
 			//a possibility is to set minForce to 25-30 in game profile
 			constantEffect->u.constant.level = level;	
 
-			/*
-			debug(0,"\nfred: update effect confMinForce=%d", confMinForce);
-			debug(0,"\nfred: update effect confMaxForce=%d", confMaxForce);
-			debug(0,"\nfred: update effect MinForce=%hd", MinForce);
-			debug(0,"\nfred: update effect MaxForce=%hd", MaxForce);
-			debug(0,"\nfred: update effect range=%hd", range);
-			debug(0,"\nfred: update effect level=%hd", level);
-			*/
 			/* Here we set the two values to the max as the arcade system 'manages" fades                */
 			constantEffect->u.constant.envelope.attack_level =  (unsigned short)(strength * 65535.0); /* this one counts! */
 			constantEffect->u.constant.envelope.fade_level =    (unsigned short)(strength * 65535.0); /* only to be safe  */
