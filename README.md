@@ -85,16 +85,19 @@ This driver is normally present on Wipi distribution but if you want to use anot
 PS: Thanks to stefanpausch for mentioning it :)
 
 ## Wiring
-Here is a Physical view of Wiring between a Chihiro System and Sega FFB Controller:  
-![start](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_chihiro_wire.jpg?raw=true)
-
+Here is a Physical view of Wiring between a Chihiro System and Sega FFB Controller Basic (inital version):  
+![start](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_chihiro_wire.png?raw=true)
+  
+  
+And here is a Physical view of Wiring between a Naomi System and Sega FFB Controller Pro:  
+![start](https://github.com/Fredobedo/openFFB/blob/master/docs/images/openffb_naomi_wire.png?raw=true)
 ## WiPi: Example of a successfull full integration
 https://youtube.com/shorts/_WRH8y1oFbs?si=pga3aIkp4NRZnSt3
 
 ## External references
 - Sega FFB Controller: https://www.gamoover.net/Forums/index.php?topic=42310.0  
 - OpenJVS: https://github.com/OpenJVS/OpenJVS  
-- WiPi: https://www.arcade-projects.com/threads/naomi-pi-wipi-netbooter-compatible-with-pi-3-4.14019/page-29#post-280860  
+- WiPi64: https://github.com/cassianoperin/WiPiNetbooter64  
 - new-lg4ff:  https://github.com/berarma/new-lg4ff
 
 ## Disclaimer
