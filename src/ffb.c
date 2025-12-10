@@ -101,7 +101,6 @@ FFBStatus processPacket(unsigned char* packet)
 		debug(2, "\nWarning, checksum error\n");
 		return FFB_STATUS_ERROR_CHECKSUM;
 	}
-	
 
 	if(packet[0]==0xFD)
 	{
@@ -136,50 +135,49 @@ FFBStatus processPacket(unsigned char* packet)
 		
 
 	}
-
-	inputPacket.startByte 		= packet[0];
-	inputPacket.spring          = ((double)packet[1]+1)/128;
-	inputPacket.friction        = ((double)packet[2]+1)/128;
-	inputPacket.torqueDirection = packet[3];
-	inputPacket.torquePower     = ((double)packet[4]+1)/128;
-	inputPacket.crc             = packet[5];
-
-
-
-	/* --- spring            from 0x00 to 0x7F -> 128 levels --- */
-	if(packet[1]==0x0)
-		FFBStopEffect(ffb_effects[spring_effect_idx].id);
 	else
-		FFBTriggerSpringEffect(previous_rawpacket[1]!=packet[1], inputPacket.spring);
+	{
+		inputPacket.startByte 		= packet[0];
+		inputPacket.spring          = ((double)packet[1]+1)/128;
+		inputPacket.friction        = ((double)packet[2]+1)/128;
+		inputPacket.torqueDirection = packet[3];
+		inputPacket.torquePower     = ((double)packet[4]+1)/128;
+		inputPacket.crc             = packet[5];
 
-    /* --- friction          from 0x00 to 0x7F -> 128 levels                                                --- */
-	/* --- For now on, I will use Sine effect instead as I can't control the strengh of a froction effect ? --- */
-	if(packet[2]==0x0)
-		FFBStopEffect(ffb_effects[friction_effect_idx].id);
-	else
-		FFBTriggerFrictionEffect(previous_rawpacket[2]!=packet[2], inputPacket.friction);	
-
-    /* --- torqueDirection   0x00 = Left, 0x01  = Right                     --- */
-    /* --- torquePower       from 0x00 to 0x7F -> 128 levels                --- */
-	/* note that torqueDirection is where the wheel is turning                  */
-	if(packet[4]==0x0 ){
-		FFBStopEffect(ffb_effects[constant_effect_idx].id);
-	}
-	else{
-		if(inputPacket.torqueDirection==0)
-			FFBTriggerConstantEffect(previous_rawpacket[3]!=packet[3]|| previous_rawpacket[4]!=packet[4], -inputPacket.torquePower);
+		/* --- spring            from 0x00 to 0x7F -> 128 levels --- */
+		if(packet[1]==0x0)
+			FFBStopEffect(ffb_effects[spring_effect_idx].id);
 		else
-			FFBTriggerConstantEffect(previous_rawpacket[3]!=packet[3]|| previous_rawpacket[4]!=packet[4], inputPacket.torquePower);
+			FFBTriggerSpringEffect(previous_rawpacket[1]!=packet[1], inputPacket.spring);
+
+		/* --- friction          from 0x00 to 0x7F -> 128 levels                                                --- */
+		/* --- For now on, I will use Sine effect instead as I can't control the strengh of a froction effect ? --- */
+		if(packet[2]==0x0)
+			FFBStopEffect(ffb_effects[friction_effect_idx].id);
+		else
+			FFBTriggerFrictionEffect(previous_rawpacket[2]!=packet[2], inputPacket.friction);	
+
+		/* --- torqueDirection   0x00 = Left, 0x01  = Right                     --- */
+		/* --- torquePower       from 0x00 to 0x7F -> 128 levels                --- */
+		/* note that torqueDirection is where the wheel is turning                  */
+		if(packet[4]==0x0 ){
+			FFBStopEffect(ffb_effects[constant_effect_idx].id);
+		}
+		else{
+			if(inputPacket.torqueDirection==0)
+				FFBTriggerConstantEffect(previous_rawpacket[3]!=packet[3]|| previous_rawpacket[4]!=packet[4], -inputPacket.torquePower);
+			else
+				FFBTriggerConstantEffect(previous_rawpacket[3]!=packet[3]|| previous_rawpacket[4]!=packet[4], inputPacket.torquePower);
+		}
+
+		/* only copy if there is a diff */
+		if(memcmp(previous_rawpacket, packet,6)!=0){
+			if(getConfig()->debugLevel==1)
+				printf("%02X%02X%02X%02X%02X%02X\n", packet[0],	packet[1], packet[2], packet[3], packet[4], packet[5]);
+
+			memcpy(previous_rawpacket, packet, 6);
+		}
 	}
-
-	/* only copy if there is a diff */
-	if(memcmp(previous_rawpacket, packet,6)!=0){
-		if(getConfig()->debugLevel==1)
-			printf("%02X%02X%02X%02X%02X%02X\n", packet[0],	packet[1], packet[2], packet[3], packet[4], packet[5]);
-
-		memcpy(previous_rawpacket, packet, 6);
-	}
-
 	return FFB_STATUS_SUCCESS;
 }
 
