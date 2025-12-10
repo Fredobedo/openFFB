@@ -58,6 +58,7 @@ int readBytes(unsigned char *buffer, int amount)
 
 int writeBytes(const unsigned char *buffer, int amount)
 {
+  /*
     fd_set fd_serial;
     struct timeval tv;
 
@@ -75,6 +76,8 @@ int writeBytes(const unsigned char *buffer, int amount)
     if (!FD_ISSET(serialIO, &fd_serial))
         return -2;  // not ready
 
+  */
+ 
     // Perform the actual write
     return write(serialIO, buffer, amount);
 }
