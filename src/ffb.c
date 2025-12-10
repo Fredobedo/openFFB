@@ -10,6 +10,7 @@
 /* it contains the converted values from serial raw    */
 FFBPacket inputPacket;
 
+int wheelPosition=8192;
 
 int initFFB(char *devicePath)
 {
@@ -111,10 +112,13 @@ FFBStatus processPacket(unsigned char* packet)
 		
 			if (getConfig()->SendWheelPositionToMidi==1)
 			{
-				int pos=GetWheelPosition();
-				debug(3, "GET_WHEEL_POSITION: %d\n", pos);
-				replyPacket[1]=(pos >> 7) & 0x7f;
-				replyPacket[2]=pos & 0x7f;
+				int tempPosition=GetWheelPosition();
+				if (tempPosition>-1)
+					wheelPosition=tempPosition;
+
+				debug(3, "GET_WHEEL_POSITION: %d\n", wheelPosition);
+				replyPacket[1]=(wheelPosition >> 7) & 0x7f;
+				replyPacket[2]=wheelPosition & 0x7f;
 				replyPacket[3]=(replyPacket[0] ^ replyPacket[2] ^ replyPacket[3]) & 0x7f;
 			}
 			else
