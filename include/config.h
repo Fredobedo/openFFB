@@ -37,6 +37,7 @@ typedef struct
     int staticFriction;
     int logitechSteeringRange;
 
+    int SendWheelPositionToMidi;
 } FFBConfig;
 
 typedef enum

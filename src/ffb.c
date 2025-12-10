@@ -31,7 +31,7 @@ FFBStatus tryResynch()
 {
 	debug(2, "Try resych comm with Sega FFB Controller...\n");
 	for(int cp=0; cp < SEGA_FFB_CONTROLLER_PACKET_SIZE; cp++){
-		if(rawPacket[cp]==0x80){
+		if(rawPacket[cp]>=0x80){
 			int bytesRead = readBytes(rawPacket, SEGA_FFB_CONTROLLER_PACKET_SIZE-cp);
 			if (bytesRead < 0){
 				return FFB_STATUS_ERROR_TIMEOUT;
@@ -59,6 +59,20 @@ FFBStatus readDebugPacket(int amount)
 	return FFB_STATUS_SUCCESS;
 }
 
+FFBStatus WriteReplyPacket()
+{
+	int bytesWritten = writeBytes(replyPacket, SEGA_FFB_CONTROLLER_REPLY_PACKET_SIZE);
+	if (bytesWritten < 0){
+		return FFB_STATUS_ERROR_TIMEOUT;
+	}
+	else if (bytesWritten < SEGA_FFB_CONTROLLER_REPLY_PACKET_SIZE)	
+	{
+		return FFB_STATUS_ERROR;			
+	}
+	else{
+		return FFB_STATUS_SUCCESS;
+	}
+}
 FFBStatus readPacket()
 {
 	int bytesRead = readBytes(rawPacket, SEGA_FFB_CONTROLLER_PACKET_SIZE);
@@ -77,15 +91,8 @@ FFBStatus processPacket(unsigned char* packet)
 {
 	if(getConfig()->debugLevel==3)
 		printf("%02X%02X%02X%02X%02X%02X\n", packet[0],	packet[1], packet[2], packet[3], packet[4], packet[5]);
-
-	inputPacket.startByte 		= packet[0];
-	inputPacket.spring          = ((double)packet[1]+1)/128;
-	inputPacket.friction        = ((double)packet[2]+1)/128;
-	inputPacket.torqueDirection = packet[3];
-	inputPacket.torquePower     = ((double)packet[4]+1)/128;
-	inputPacket.crc             = packet[5];
-
-	if(inputPacket.startByte!=0x80)
+	
+		if(inputPacket.startByte<0x80)
 		return FFB_STATUS_ERROR_SYNCH_REQUIRED;
 
 	/* --- (D1^D2^D3^D4)&0x7F --- */
@@ -94,6 +101,50 @@ FFBStatus processPacket(unsigned char* packet)
 		debug(2, "\nWarning, checksum error\n");
 		return FFB_STATUS_ERROR_CHECKSUM;
 	}
+	
+
+	if(packet[0]==0xFD)
+	{
+		switch (packet[1])
+		{
+		case GET_WHEEL_POSITION:
+			replyPacket[0]=0x90;
+		
+			if (getConfig()->SendWheelPositionToMidi==1)
+			{
+				int pos=GetWheelPosition();
+				replyPacket[1]=(pos >> 7) & 0x7f;
+				replyPacket[2]=pos & 0x7f;
+				replyPacket[3]=(replyPacket[0] ^ replyPacket[2] ^ replyPacket[3]) & 0x7f;
+			}
+			else
+			{
+				replyPacket[1]=0;
+				replyPacket[2]=0;
+				replyPacket[3]=0;
+			}
+
+			WriteReplyPacket();
+			break;
+		case GET_POWER_LINE:
+			//TO DO
+			break;
+
+		default:
+			break;
+		}
+		
+
+	}
+
+	inputPacket.startByte 		= packet[0];
+	inputPacket.spring          = ((double)packet[1]+1)/128;
+	inputPacket.friction        = ((double)packet[2]+1)/128;
+	inputPacket.torqueDirection = packet[3];
+	inputPacket.torquePower     = ((double)packet[4]+1)/128;
+	inputPacket.crc             = packet[5];
+
+
 
 	/* --- spring            from 0x00 to 0x7F -> 128 levels --- */
 	if(packet[1]==0x0)

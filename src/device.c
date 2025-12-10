@@ -41,26 +41,43 @@ int readBytes(unsigned char *buffer, int amount)
 {
   fd_set fd_serial;
   struct timeval tv;
-//debug(0,"1\n");
   FD_ZERO(&fd_serial);
-//debug(0,"2\n");  
   FD_SET(serialIO, &fd_serial);
 
   tv.tv_sec = 0;
   tv.tv_usec = TIMEOUT_SELECT * 1000;
-//debug(0,"3\n");
   int filesReadyToRead = select(serialIO + 1, &fd_serial, NULL, NULL, &tv);
-//debug(0,"4\n");
   if (filesReadyToRead < 1)
     return -1;
 
   if (!FD_ISSET(serialIO, &fd_serial))
     return -2;
 
-//debug(0,"5\n");
   return read(serialIO, buffer, amount);
 }
 
+int writeBytes(const unsigned char *buffer, int amount)
+{
+    fd_set fd_serial;
+    struct timeval tv;
+
+    FD_ZERO(&fd_serial);
+    FD_SET(serialIO, &fd_serial);
+
+    tv.tv_sec = 0;
+    tv.tv_usec = TIMEOUT_SELECT * 1000;
+
+    // Wait until the fd is ready for writing
+    int filesReadyToWrite = select(serialIO + 1, NULL, &fd_serial, NULL, &tv);
+    if (filesReadyToWrite < 1)
+        return -1;  // timeout or error
+
+    if (!FD_ISSET(serialIO, &fd_serial))
+        return -2;  // not ready
+
+    // Perform the actual write
+    return write(serialIO, buffer, amount);
+}
 
 /* Sets the configuration of the serial port */
 int setSerialAttributes(int fd, int myBaud)

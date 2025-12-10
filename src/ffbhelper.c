@@ -213,6 +213,22 @@ int FFBGetDeviceIdx(char* device_name)
 		return idxDevice;
 }
 
+/*
+ABS_X: max right = 16382
+      mmax_left  = 0 
+*/
+int GetWheelPosition()
+{
+	struct input_event ie;
+	int bytesRead = read(device_handle, &ie, sizeof(struct input_event));
+	if (bytesRead == sizeof(struct input_event)) {
+		if (ie.type == EV_ABS && ie.code == ABS_X) {
+			return ie.value;
+		}
+	}
+	return -1; // Indicate an error or no position available
+}
+
 bool FFBInitHaptic(char* device_name)
 {
 	if(FFBGetAllDevices()) {

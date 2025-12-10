@@ -14,7 +14,7 @@
 #include <sys/ioctl.h>
 #include <stdint.h>
 
-#define SYNC 0x80
+//#define SYNC 0x80
 
 /* Status for the entire packet */
 #define STATUS_SUCCESS 0x01
@@ -22,7 +22,11 @@
 #define STATUS_CHECKSUM_FAILURE 0x03 // the checksum on the command packet did not match a computed checksum
 #define STATUS_OVERFLOW 0x04         // an overflow occurred while processing the command
 
+#define GET_WHEEL_POSITION 0x01
+#define GET_POWER_LINE 0x02
+
 #define SEGA_FFB_CONTROLLER_PACKET_SIZE 6
+#define SEGA_FFB_CONTROLLER_REPLY_PACKET_SIZE 4
 
 typedef struct
 {
@@ -35,6 +39,7 @@ typedef struct
 } FFBPacket;
 
 unsigned char rawPacket[SEGA_FFB_CONTROLLER_PACKET_SIZE];
+unsigned char replyPacket[SEGA_FFB_CONTROLLER_REPLY_PACKET_SIZE];
 unsigned char previous_rawpacket[SEGA_FFB_CONTROLLER_PACKET_SIZE];
 unsigned char max_rawpacket[SEGA_FFB_CONTROLLER_PACKET_SIZE];
 
@@ -59,6 +64,8 @@ FFBStatus readDebugPacket(int amount);
 
 /* --- read usb2 serial communication from Sega FFB Controller --- */
 FFBStatus readPacket();
+
+FFBStatus WriteReplyPacket();
 
 /* --- dispatch Sega FFB Controller request --- */
 FFBStatus processPacket(unsigned char* packet);
