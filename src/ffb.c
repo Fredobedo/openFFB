@@ -63,6 +63,7 @@ FFBStatus readDebugPacket(int amount)
 FFBStatus WriteReplyPacket()
 {
 	int bytesWritten = writeBytes(replyPacket, SEGA_FFB_CONTROLLER_REPLY_PACKET_SIZE);
+	debug(3, "bytesWritten =%d\n", bytesWritten);
 	if (bytesWritten < 0){
 		return FFB_STATUS_ERROR_TIMEOUT;
 	}
