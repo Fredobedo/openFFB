@@ -92,7 +92,7 @@ FFBStatus processPacket(unsigned char* packet)
 	if(getConfig()->debugLevel==3)
 		printf("%02X%02X%02X%02X%02X%02X\n", packet[0],	packet[1], packet[2], packet[3], packet[4], packet[5]);
 	
-		if(inputPacket.startByte<0x80)
+	if(packet[0]<0x80)
 		return FFB_STATUS_ERROR_SYNCH_REQUIRED;
 
 	/* --- (D1^D2^D3^D4)&0x7F --- */
@@ -112,6 +112,7 @@ FFBStatus processPacket(unsigned char* packet)
 			if (getConfig()->SendWheelPositionToMidi==1)
 			{
 				int pos=GetWheelPosition();
+				debug(3, "GET_WHEEL_POSITION: %d\n", pos);
 				replyPacket[1]=(pos >> 7) & 0x7f;
 				replyPacket[2]=pos & 0x7f;
 				replyPacket[3]=(replyPacket[0] ^ replyPacket[2] ^ replyPacket[3]) & 0x7f;
