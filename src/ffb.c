@@ -97,7 +97,7 @@ FFBStatus processPacket(unsigned char* packet)
 
 	/* --- (D1^D2^D3^D4)&0x7F --- */
 	unsigned char checksum = (packet[1]^packet[2]^packet[3]^packet[4])&0x7F;
-	if(checksum!=inputPacket.crc) {
+	if(checksum!=packet[5]) {
 		debug(2, "\nWarning, checksum error\n");
 		return FFB_STATUS_ERROR_CHECKSUM;
 	}
@@ -133,7 +133,6 @@ FFBStatus processPacket(unsigned char* packet)
 		default:
 			break;
 		}
-		
 
 	}
 	else
