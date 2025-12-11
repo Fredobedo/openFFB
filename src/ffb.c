@@ -63,7 +63,7 @@ FFBStatus readDebugPacket(int amount)
 FFBStatus WriteReplyPacket()
 {
 	int bytesWritten = writeBytes(replyPacket, SEGA_FFB_CONTROLLER_REPLY_PACKET_SIZE);
-	debug(3, "bytesWritten =%d\n", bytesWritten);
+
 	if (bytesWritten < 0){
 		return FFB_STATUS_ERROR_TIMEOUT;
 	}
@@ -120,7 +120,7 @@ FFBStatus processPacket(unsigned char* packet)
 				debug(3, "GET_WHEEL_POSITION: %d\n", wheelPosition);
 				replyPacket[1]=(wheelPosition >> 7) & 0x7f;
 				replyPacket[2]=wheelPosition & 0x7f;
-				replyPacket[3]=(replyPacket[0] ^ replyPacket[2] ^ replyPacket[3]) & 0x7f;
+				replyPacket[3]=(replyPacket[0] ^ replyPacket[1] ^ replyPacket[2]) & 0x7f;
 			}
 			else
 			{
