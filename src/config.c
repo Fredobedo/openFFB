@@ -39,6 +39,7 @@ FFBConfig config = {
     .maxTorque = 100,
     .logitechSteeringRange = 900,
     .SendWheelPositionToMidi = 0,
+    .InvertedWheelPosition = 0,
 };
 
 void DumpConfig()
@@ -62,6 +63,7 @@ void DumpConfig()
     printf("staticFriction        = %d\n", config.maxTorque); 
     printf("logitechSteeringRange = %d\n", config.logitechSteeringRange);
     printf("SendWheelPositionToMidi = %d\n", config.SendWheelPositionToMidi);
+    printf("InvertedWheelPosition   = %d\n", config.InvertedWheelPosition);
 }
 
 FFBConfig *getConfig()
@@ -154,6 +156,8 @@ FFBConfigStatus parseDrivingProfile(char *path)
             config.logitechSteeringRange = atoi(getNextToken(NULL, " ", &saveptr)); 
         else if (strcmp(command, "SEND_WHEEL_POSITION_TO_MIDI") == 0)
             config.SendWheelPositionToMidi = atoi(getNextToken(NULL, " ", &saveptr)); 
+        else if (strcmp(command, "INVERTED_WHEEL_POSITION") == 0)
+            config.InvertedWheelPosition = atoi(getNextToken(NULL, " ", &saveptr)); 
         else
             printf("Error: Unknown configuration command %s\n", command);
     }
