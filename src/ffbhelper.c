@@ -234,6 +234,7 @@ int GetWheelPosition()
         return -1;
 
 	int bytesRead = read(device_handle, &event, sizeof(struct input_event));
+	debug(3, "Read %d bytes from device\n", bytesRead);
 	if (bytesRead == sizeof(struct input_event)) {
 		if (event.type == EV_ABS && event.code == ABS_X) {
 			return event.value;
