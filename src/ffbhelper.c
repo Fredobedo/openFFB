@@ -9,6 +9,7 @@
 #include<string.h>
 
 #include <linux/input.h>
+#include <sys/select.h>
 #include <sys/ioctl.h>
 #include <errno.h>
 #include <ctype.h>
@@ -219,11 +220,23 @@ ABS_X: max right = 16382
 */
 int GetWheelPosition()
 {
-	struct input_event ie;
-	int bytesRead = read(device_handle, &ie, sizeof(struct input_event));
+	struct input_event event;
+    fd_set file_descriptor;
+    struct timeval tv;
+
+	FD_ZERO(&file_descriptor);
+    FD_SET(device_handle, &file_descriptor);
+
+    tv.tv_sec = 0;
+    tv.tv_usec = 2 * 1000;
+
+    if (select(device_handle + 1, &file_descriptor, NULL, NULL, &tv) < 1)
+        return -1;
+
+	int bytesRead = read(device_handle, &event, sizeof(struct input_event));
 	if (bytesRead == sizeof(struct input_event)) {
-		if (ie.type == EV_ABS && ie.code == ABS_X) {
-			return ie.value;
+		if (event.type == EV_ABS && event.code == ABS_X) {
+			return event.value;
 		}
 	}
 	return -1; // Indicate an error or no position available
