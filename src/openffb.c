@@ -9,17 +9,56 @@
 #include "debug.h"
 #include <time.h>
 
+
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/file.h>
+#include <errno.h>
+
 #include "ffbhelper.h"
+
+#define PID_FILE "/tmp/openffb.pid"
 
 int running = 1;
 clock_t start_time;
 clock_t end_time;
 unsigned long executed_cycles=0;
 
+int pid_fd;
+
 int main(int argc, char **argv)
 {
   signal(SIGINT, handleSignal);
   start_time = clock();
+
+
+
+  pid_fd = open(PID_FILE, O_RDWR | O_CREAT, 0644);
+  if (pid_fd < 0) {
+      perror("open");
+      return EXIT_FAILURE;
+  }
+
+  /* Try to lock the file */
+  if (flock(pid_fd, LOCK_EX | LOCK_NB) < 0) {
+      if (errno == EWOULDBLOCK) {
+          debug(0, "Program is already running.\n");
+      } else {
+          perror("flock");
+      }
+      close(pid_fd);
+      return EXIT_FAILURE;
+  }
+
+  /* Write PID into file */
+  ftruncate(pid_fd, 0);
+  dprintf(pid_fd, "%d\n", getpid());
+
+  debug(1, "Program started, PID=%d\n", getpid());
+
+
+
 
   FFBConfig *localConfig = getConfig(); 
 
@@ -229,6 +268,10 @@ void handleSignal(int signal)
     debug(2, "\nClosing down OpenFFB...\n");
     FFBAbortExecution();
     disconnectFFB();
+    
+    close(pid_fd);
+    unlink(PID_FILE);
+
     running = 0;
   }
 }
