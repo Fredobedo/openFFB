@@ -108,9 +108,9 @@ FFBStatus processPacket(unsigned char* packet)
 			tempPosition=GetWheelPositionIOCTL();
 		}
 
-		if(tempPosition<150)
+		if(tempPosition<1000)
 			wheelPosition==0;
-		else if (tempPosition>16200)
+		else if (tempPosition>15384)
 			wheelPosition=16384;
 		else
 			wheelPosition=tempPosition;
