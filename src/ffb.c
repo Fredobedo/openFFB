@@ -160,6 +160,9 @@ FFBStatus processPacket(unsigned char* packet)
 
 			WriteReplyPacket();
 			break;
+		case SET_CENTER:
+			FFBSetGlobalAutoCenter(40);
+			break;
 		case GET_POWER_LINE:
 			//TO DO
 			break;

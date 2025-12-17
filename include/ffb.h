@@ -23,7 +23,8 @@
 #define STATUS_OVERFLOW 0x04         // an overflow occurred while processing the command
 
 #define GET_WHEEL_POSITION 0x01
-#define GET_POWER_LINE 0x02
+#define SET_CENTER 0x02
+#define GET_POWER_LINE 0x03
 
 #define SEGA_FFB_CONTROLLER_PACKET_SIZE 6
 #define SEGA_FFB_CONTROLLER_REPLY_PACKET_SIZE 4
