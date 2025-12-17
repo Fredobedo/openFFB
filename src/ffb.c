@@ -110,7 +110,7 @@ FFBStatus processPacket(unsigned char* packet)
 
 		if(tempPosition<1000)
 			wheelPosition==0;
-		else if (tempPosition>15384)
+		else if (tempPosition>15000)
 			wheelPosition=16384;
 		else
 			wheelPosition=tempPosition;
