@@ -99,6 +99,14 @@ FFBStatus readPacket()
 
 FFBStatus processPacket(unsigned char* packet)
 {
+	if (getConfig()->SendWheelPositionToMidi==1)
+	{
+		int tempPosition=GetWheelPosition();
+
+		if (tempPosition>-1)
+			wheelPosition=tempPosition;
+	}
+
 	if(getConfig()->debugLevel==3)
 		printf("%02X%02X%02X%02X%02X%02X\n", packet[0],	packet[1], packet[2], packet[3], packet[4], packet[5]);
 	
@@ -121,17 +129,14 @@ FFBStatus processPacket(unsigned char* packet)
 		
 			if (getConfig()->SendWheelPositionToMidi==1)
 			{
-				int tempPosition=GetWheelPosition();
 				int FinalwheelPosition;
-				
-				if (tempPosition>-1)
-					wheelPosition=tempPosition;
-
-				debug(0, "%lu: GET_WHEEL_POSITION: %d\n", millis(),wheelPosition);
 				
 				if(getConfig()->InvertedWheelPosition==1)
 					FinalwheelPosition=16384 - wheelPosition;
+				else
+					FinalwheelPosition=wheelPosition;
 
+				debug(0, "%lu: GET_POS: %d\n", millis(),FinalwheelPosition);
 
 				replyPacket[1]=(FinalwheelPosition >> 7) & 0x7f;
 				replyPacket[2]=FinalwheelPosition & 0x7f;
