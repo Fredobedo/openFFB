@@ -163,6 +163,12 @@ FFBStatus processPacket(unsigned char* packet)
 		case SET_CENTER:
 			FFBSetGlobalAutoCenter(40);
 			break;
+		case SET_MAX_RIGHT:
+			FFBTriggerConstantEffect(true,0.5);
+			break;
+		case SET_MAX_LEFT:
+			FFBTriggerConstantEffect(true,-0.5);
+			break;
 		case GET_POWER_LINE:
 			//TO DO
 			break;
