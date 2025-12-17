@@ -99,23 +99,6 @@ FFBStatus readPacket()
 
 FFBStatus processPacket(unsigned char* packet)
 {
-	if (getConfig()->SendWheelPositionToMidi==1)
-	{
-		int tempPosition=GetWheelPosition();
-
-		if (tempPosition==-1)
-		{
-			tempPosition=GetWheelPositionIOCTL();
-		}
-
-		if(tempPosition<1500)
-			wheelPosition==0;
-		else if (tempPosition>15500)
-			wheelPosition=16384;
-		else
-			wheelPosition=tempPosition;
-	}
-
 	if(getConfig()->debugLevel==3)
 		printf("%02X%02X%02X%02X%02X%02X\n", packet[0],	packet[1], packet[2], packet[3], packet[4], packet[5]);
 	
@@ -135,15 +118,25 @@ FFBStatus processPacket(unsigned char* packet)
 		{
 		case GET_WHEEL_POSITION:
 			replyPacket[0]=0x90;
-		
+
+			int tempPosition=GetWheelPosition();
+
+			if (tempPosition==-1)
+				tempPosition=GetWheelPositionIOCTL();
+
 			if (getConfig()->SendWheelPositionToMidi==1)
 			{
 				int FinalwheelPosition;
-				
+
 				if(getConfig()->InvertedWheelPosition==1)
 					FinalwheelPosition=16384 - wheelPosition;
 				else
 					FinalwheelPosition=wheelPosition;
+
+				if(FinalwheelPosition<1500)
+					FinalwheelPosition=0;
+				else if (FinalwheelPosition>15500)
+					FinalwheelPosition=16384;
 
 				debug(0, "%lu: GET_POS: %d\n", millis(),FinalwheelPosition);
 
