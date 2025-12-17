@@ -55,7 +55,7 @@ int main(int argc, char **argv)
   ftruncate(pid_fd, 0);
   dprintf(pid_fd, "%d\n", getpid());
 
-  debug(1, "Program started, PID=%d\n", getpid());
+  debug(0, "Program started, PID=%d\n", getpid());
 
 
 
