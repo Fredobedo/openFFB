@@ -214,6 +214,17 @@ int FFBGetDeviceIdx(char* device_name)
 		return idxDevice;
 }
 
+int GetWheelPositionIOCTL()
+{
+	int wheelPosition=-1;
+	struct input_absinfo absinfo;
+
+	if (ioctl(device_handle, EVIOCGABS(ABS_X), &absinfo) >= 0) {
+		wheelPosition = absinfo.value;
+	}
+
+	return wheelPosition;
+}
 /*
 ABS_X: max right = 16382
       mmax_left  = 0 

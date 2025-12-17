@@ -103,15 +103,17 @@ FFBStatus processPacket(unsigned char* packet)
 	{
 		int tempPosition=GetWheelPosition();
 
-		if (tempPosition>-1)
+		if (tempPosition==-1)
 		{
-			if(tempPosition<150)
-				wheelPosition==0;
-			else if (tempPosition>16200)
-				wheelPosition=16384;
-			else
-				wheelPosition=tempPosition;
+			tempPosition=GetWheelPositionIOCTL();
 		}
+
+		if(tempPosition<150)
+			wheelPosition==0;
+		else if (tempPosition>16200)
+			wheelPosition=16384;
+		else
+			wheelPosition=tempPosition;
 	}
 
 	if(getConfig()->debugLevel==3)
