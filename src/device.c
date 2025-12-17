@@ -45,7 +45,7 @@ int readBytes(unsigned char *buffer, int amount)
   FD_SET(serialIO, &fd_serial);
 
   tv.tv_sec = 0;
-  tv.tv_usec = TIMEOUT_SELECT * 2000;
+  tv.tv_usec = TIMEOUT_SELECT * 500;
   int filesReadyToRead = select(serialIO + 1, &fd_serial, NULL, NULL, &tv);
   if (filesReadyToRead < 1)
     return -1;
