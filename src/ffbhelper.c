@@ -393,13 +393,13 @@ void FFBCreateHapticEffects()
 	effect->u.condition->right_saturation = 0;
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
-		debug(1," Error creating FF_FRICTION  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);	
+		debug(1," Error creating FF_DAMPER  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);	
 	else{
 		supportedFeatures|=FF_FRICTION_LOADED;
-		debug(1, "FF_FRICTION Effect id=%d\n", effect->id);	
+		debug(1, "FF_DAMPER Effect id=%d\n", effect->id);	
 	}
 
-    /* --- FF_SPRING --- */
+	/* --- FF_SPRING --- */
 	effect=&ffb_effects[spring_effect_idx];
 	memset(effect,0,sizeof(ffb_effects[0]));
 	
@@ -411,8 +411,14 @@ void FFBCreateHapticEffects()
 	effect->replay.length = HAPTIC_INFINITY;  
 	effect->replay.delay = 0;
 
+	/* Initialize all condition parameters to zero so the spring loads with no force */
 	effect->u.condition[0].deadband = 0x0;
 	effect->u.condition[0].center = 0x0;
+	effect->u.condition[0].left_saturation = 0x0;
+	effect->u.condition[0].right_saturation = 0x0;
+	effect->u.condition[0].left_coeff = 0x0;
+	effect->u.condition[0].right_coeff = 0x0;
+	effect->u.condition[1] = effect->u.condition[0];
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
 		debug(1," Error creating FF_SPRING  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);		
