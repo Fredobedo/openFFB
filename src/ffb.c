@@ -119,7 +119,7 @@ FFBStatus processPacket(unsigned char* packet)
 				if (tempPosition>-1)
 					wheelPosition=tempPosition;
 
-				debug(3, "GET_WHEEL_POSITION: %d\n", wheelPosition);
+				debug(2, "GET_WHEEL_POSITION: %d\n", wheelPosition);
 				
 				if(getConfig()->InvertedWheelPosition==1)
 					FinalwheelPosition=16384 - wheelPosition;
