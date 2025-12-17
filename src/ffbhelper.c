@@ -267,6 +267,8 @@ bool FFBInitHaptic(char* device_name)
 			if (device_handle > -1) {
 				printf("Using device %s.\n\n", device_name);
 
+				FFBSetGlobalAutoCenter(40); 
+
 				/*-- test if it's a logitech Racing wheel (ID_VENDOR=046d) --*/
 				if(strcmp(devices[idxDevice].vendor,"046d")==0)
 					SetLogitechSteeringRange(idxDevice, getConfig()->logitechSteeringRange);
