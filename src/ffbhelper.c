@@ -267,7 +267,6 @@ bool FFBInitHaptic(char* device_name)
 			if (device_handle > -1) {
 				printf("Using device %s.\n\n", device_name);
 
-				FFBSetGlobalAutoCenter(40,1000); 
 
 				/*-- test if it's a logitech Racing wheel (ID_VENDOR=046d) --*/
 				if(strcmp(devices[idxDevice].vendor,"046d")==0)
@@ -275,6 +274,8 @@ bool FFBInitHaptic(char* device_name)
 
 				FFBCreateHapticEffects();
 				FFBSetGlobalGain(getConfig()->globalGain);
+
+				FFBSetGlobalAutoCenter(40,1500); 
 				
 				return true;
 			}
@@ -859,7 +860,7 @@ void FFBTriggerEffect(unsigned int effect, double strength)
             FFBTriggerFrictionEffect(true, strength);
             break;
         case FF_AUTOCENTER:
-            FFBSetGlobalAutoCenter(40, 1000);
+            FFBSetGlobalAutoCenter(40, 1500);
             break;              
         case FF_RUMBLE:
             FFBTriggerRumbleEffectDefault(strength);
