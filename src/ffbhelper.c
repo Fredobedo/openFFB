@@ -830,7 +830,7 @@ void FFBSetGlobalAutoCenter(int level, int duration_ms)
 	}
 
 	/* Keep auto-center for 1 second */
-	usleep(duration_ms);
+	usleep(duration_ms*1000);
 
 	/* Disable auto-center */
 	memset(&event, 0, sizeof(event));
