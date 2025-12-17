@@ -812,20 +812,36 @@ void FFBSetGlobalGain(int level)
 	}
 }
 
-/* --- AutoCenter Global Setting (1-100)--- */
+/* --- AutoCenter Global Setting (1-100) for 1 second only --- */
 void FFBSetGlobalAutoCenter(int level)
 {
-	debug(1, "FFBSetGlobalAutoCenter\n");
+	debug(1, "FFBSetGlobalAutoCenter (temporary 1s)\n");
 	
 	memset(&event, 0, sizeof(event));
 	event.type = EV_FF;
 	event.code = FF_AUTOCENTER;
 	event.value = 0xFFFFUL * level / 100;
+
+	/* Enable autocalibration / auto-center */
+	if (write(device_handle, &event, sizeof(event)) != sizeof(event))
+		debug(1, "ERROR: failed to enable auto centering (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+	else {
+		supportedFeatures |= FF_AUTOCENTER_LOADED;
+	}
+
+	/* Keep auto-center for 1 second */
+	usleep(1000 * 1000);
+
+	/* Disable auto-center */
+	memset(&event, 0, sizeof(event));
+	event.type = EV_FF;
+	event.code = FF_AUTOCENTER;
+	event.value = 0;
 	if (write(device_handle, &event, sizeof(event)) != sizeof(event))
 		debug(1, "ERROR: failed to disable auto centering (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
-	else{
-		supportedFeatures|=FF_AUTOCENTER_LOADED;
-	}		
+	else {
+		supportedFeatures &= ~FF_AUTOCENTER_LOADED;
+	}
 }
 
 void FFBTriggerEffect(unsigned int effect, double strength)
