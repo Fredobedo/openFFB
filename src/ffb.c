@@ -5,12 +5,20 @@
 #include "debug.h"
 #include "device.h"
 #include "ffbhelper.h"
+#include <time.h>
 
 /* The in packet used to read from Sega FFB Controller */
 /* it contains the converted values from serial raw    */
 FFBPacket inputPacket;
 
 int wheelPosition=8192;
+
+static long long millis(void)
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (long long)ts.tv_sec * 1000LL + ts.tv_nsec / 1000000LL;
+}
 
 int initFFB(char *devicePath)
 {
