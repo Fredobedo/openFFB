@@ -11,7 +11,7 @@
 /* it contains the converted values from serial raw    */
 FFBPacket inputPacket;
 
-int wheelPosition=8192;
+//int wheelPosition=8192;
 
 static long long millis(void)
 {
@@ -129,9 +129,9 @@ FFBStatus processPacket(unsigned char* packet)
 				int FinalwheelPosition;
 
 				if(getConfig()->InvertedWheelPosition==1)
-					FinalwheelPosition=16384 - wheelPosition;
+					FinalwheelPosition=16384 - tempPosition;
 				else
-					FinalwheelPosition=wheelPosition;
+					FinalwheelPosition=tempPosition;
 
 				if(FinalwheelPosition<1500)
 					FinalwheelPosition=0;
