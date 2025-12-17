@@ -504,10 +504,12 @@ void FFBStopEffect(int effect_id)
 
 void FFBStopAllEffects()
 {
-	if(device_handle)
+	if(device_handle > 0)
 	{
-		for(int cp=0; cp < sizeof(ffb_effects)/sizeof(struct ff_effect); cp++)
+		int num_effects = sizeof(ffb_effects)/sizeof(struct ff_effect);
+		for(int cp=0; cp < num_effects; cp++)
 			FFBStopEffect(ffb_effects[cp].id);
+
 	}
 }
 
