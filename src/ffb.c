@@ -172,7 +172,9 @@ FFBStatus processPacket(unsigned char* packet)
 		case GET_POWER_LINE:
 			//TO DO
 			break;
-
+		case RESET_DEVICE:
+			FFBStopAllEffects();
+			break;
 		default:
 			break;
 		}
