@@ -267,7 +267,7 @@ bool FFBInitHaptic(char* device_name)
 			if (device_handle > -1) {
 				printf("Using device %s.\n\n", device_name);
 
-				FFBSetGlobalAutoCenter(40); 
+				FFBSetGlobalAutoCenter(40,1000); 
 
 				/*-- test if it's a logitech Racing wheel (ID_VENDOR=046d) --*/
 				if(strcmp(devices[idxDevice].vendor,"046d")==0)
@@ -813,14 +813,14 @@ void FFBSetGlobalGain(int level)
 }
 
 /* --- AutoCenter Global Setting (1-100) for 1 second only --- */
-void FFBSetGlobalAutoCenter(int level)
+void FFBSetGlobalAutoCenter(int level, int duration_ms)
 {
-	debug(1, "FFBSetGlobalAutoCenter (temporary 1s)\n");
+	debug(1, "FFBSetGlobalAutoCenter (temporary)\n");
 	
 	memset(&event, 0, sizeof(event));
 	event.type = EV_FF;
 	event.code = FF_AUTOCENTER;
-	event.value = 0xFFFFUL * level / 100;
+	event.value = 0xFFFFUL * level / 100;	
 
 	/* Enable autocalibration / auto-center */
 	if (write(device_handle, &event, sizeof(event)) != sizeof(event))
@@ -830,7 +830,7 @@ void FFBSetGlobalAutoCenter(int level)
 	}
 
 	/* Keep auto-center for 1 second */
-	usleep(1000 * 1000);
+	usleep(duration_ms);
 
 	/* Disable auto-center */
 	memset(&event, 0, sizeof(event));
@@ -859,7 +859,7 @@ void FFBTriggerEffect(unsigned int effect, double strength)
             FFBTriggerFrictionEffect(true, strength);
             break;
         case FF_AUTOCENTER:
-            FFBSetGlobalAutoCenter(40);
+            FFBSetGlobalAutoCenter(40, 1000);
             break;              
         case FF_RUMBLE:
             FFBTriggerRumbleEffectDefault(strength);

@@ -133,7 +133,7 @@ void FFBDumpSupportedFeatures();
 
 /* --- set global gain and auto center effects --- */
 void FFBSetGlobalGain(int level);
-void FFBSetGlobalAutoCenter(int level);
+void FFBSetGlobalAutoCenter(int level, int duration_ms);
 
 /* -- the new-lg4ff logitech driver permits to adapt on the fly the steering wheel range -- */
 void SetLogitechSteeringRange(int idxDevice, int range);
