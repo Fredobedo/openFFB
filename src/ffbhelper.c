@@ -275,8 +275,8 @@ bool FFBInitHaptic(char* device_name)
 				FFBCreateHapticEffects();
 				FFBSetGlobalGain(getConfig()->globalGain);
 
-				FFBSetGlobalAutoCenter(40,1500); 
-				
+				FFBSetGlobalAutoCenter(40,2000); 
+
 				return true;
 			}
 			else {
@@ -816,33 +816,33 @@ void FFBSetGlobalGain(int level)
 /* --- AutoCenter Global Setting (1-100) for 1 second only --- */
 void FFBSetGlobalAutoCenter(int level, int duration_ms)
 {
-	debug(1, "FFBSetGlobalAutoCenter (temporary)\n");
+	// debug(1, "FFBSetGlobalAutoCenter (temporary)\n");
 	
-	memset(&event, 0, sizeof(event));
-	event.type = EV_FF;
-	event.code = FF_AUTOCENTER;
-	event.value = 0xFFFFUL * level / 100;	
+	// memset(&event, 0, sizeof(event));
+	// event.type = EV_FF;
+	// event.code = FF_AUTOCENTER;
+	// event.value = 0xFFFFUL * level / 100;	
 
-	/* Enable autocalibration / auto-center */
-	if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-		debug(1, "ERROR: failed to enable auto centering (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
-	else {
-		supportedFeatures |= FF_AUTOCENTER_LOADED;
-	}
+	// /* Enable autocalibration / auto-center */
+	// if (write(device_handle, &event, sizeof(event)) != sizeof(event))
+	// 	debug(1, "ERROR: failed to enable auto centering (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+	// else {
+	// 	supportedFeatures |= FF_AUTOCENTER_LOADED;
+	// }
 
-	/* Keep auto-center for 1 second */
-	usleep(duration_ms*1000);
+	// /* Keep auto-center for 1 second */
+	// usleep(duration_ms*1000);
 
-	/* Disable auto-center */
-	memset(&event, 0, sizeof(event));
-	event.type = EV_FF;
-	event.code = FF_AUTOCENTER;
-	event.value = 0;
-	if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-		debug(1, "ERROR: failed to disable auto centering (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
-	else {
-		supportedFeatures &= ~FF_AUTOCENTER_LOADED;
-	}
+	// /* Disable auto-center */
+	// memset(&event, 0, sizeof(event));
+	// event.type = EV_FF;
+	// event.code = FF_AUTOCENTER;
+	// event.value = 0;
+	// if (write(device_handle, &event, sizeof(event)) != sizeof(event))
+	// 	debug(1, "ERROR: failed to disable auto centering (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+	// else {
+	// 	supportedFeatures &= ~FF_AUTOCENTER_LOADED;
+	// }
 }
 
 void FFBTriggerEffect(unsigned int effect, double strength)
