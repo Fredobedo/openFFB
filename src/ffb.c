@@ -154,7 +154,7 @@ FFBStatus processPacket(unsigned char* packet)
 			WriteReplyPacket();
 			break;
 		case SET_CENTER:
-			FFBSetGlobalAutoCenter(30,1500);
+			FFBSetGlobalAutoCenter(40,1500);
 			break;
 		case SET_MAX_RIGHT:
 			FFBTriggerConstantEffect(true,0.3);
@@ -237,5 +237,5 @@ void playCOMEndEffect()
 	FFBTriggerConstantEffect(true, 0.80);
 	usleep(70 * 1000);
 	FFBTriggerConstantEffect(true, 0.0);
-	FFBSetGlobalAutoCenter(30,1000); 
+	FFBSetGlobalAutoCenter(40,1000); 
 }

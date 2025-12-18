@@ -275,7 +275,7 @@ bool FFBInitHaptic(char* device_name)
 				FFBCreateHapticEffects();
 				FFBSetGlobalGain(getConfig()->globalGain);
 
-				FFBSetGlobalAutoCenter(30,2000); 
+				FFBSetGlobalAutoCenter(40,2000); 
 
 				return true;
 			}
@@ -860,7 +860,7 @@ void FFBTriggerEffect(unsigned int effect, double strength)
             FFBTriggerFrictionEffect(true, strength);
             break;
         case FF_AUTOCENTER:
-            FFBSetGlobalAutoCenter(30, 1500);
+            FFBSetGlobalAutoCenter(40, 1500);
             break;              
         case FF_RUMBLE:
             FFBTriggerRumbleEffectDefault(strength);
