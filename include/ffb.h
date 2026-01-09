@@ -28,7 +28,7 @@
 #define SET_CENTER    0xA0
 #define SET_MAX_RIGHT 0xA1  
 #define SET_MAX_LEFT  0xA2
-
+#define NOT_READY     0xFE
 #define RESET_DEVICE  0xFF
 
 #define SEGA_FFB_CONTROLLER_PACKET_SIZE 6

@@ -165,6 +165,9 @@ FFBStatus processPacket(unsigned char* packet)
 		case GET_POWER_LINE:
 			//TO DO
 			break;
+		case NOT_READY:
+			//nothing to do
+			break;
 		case RESET_DEVICE:
 			FFBStopAllEffects();
 			break;
