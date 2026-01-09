@@ -38,7 +38,7 @@ int disconnectFFB()
 
 FFBStatus tryResynch()
 {
-	debug(2, "Try resych comm with Sega FFB Controller...\n");
+	debug(2, "Try resync comm with Sega FFB Controller...\n");
 	for(int cp=0; cp < SEGA_FFB_CONTROLLER_PACKET_SIZE; cp++){
 		if(rawPacket[cp]>=0x80){
 			int bytesRead = readBytes(rawPacket, SEGA_FFB_CONTROLLER_PACKET_SIZE-cp);
@@ -157,10 +157,10 @@ FFBStatus processPacket(unsigned char* packet)
 			FFBSetGlobalAutoCenter(40,1500);
 			break;
 		case SET_MAX_RIGHT:
-			FFBTriggerConstantEffect(true,0.3);
+			FFBTriggerConstantEffect(true,0.2);
 			break;
 		case SET_MAX_LEFT:
-			FFBTriggerConstantEffect(true,-0.3);
+			FFBTriggerConstantEffect(true,-0.2);
 			break;
 		case GET_POWER_LINE:
 			//TO DO

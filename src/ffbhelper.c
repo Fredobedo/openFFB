@@ -636,7 +636,7 @@ void FFBTriggerSpringEffect(bool upload, double strength)
  */
 void FFBTriggerConstantEffect(bool upload, double strength)
 {
-	debug(1, "TriggerConstantEffect\n");
+	debug(1, "FFBTriggerConstantEffect");
 	if(FF_CONSTANT_LOADED==(supportedFeatures & FF_CONSTANT_LOADED)) 
 	{
 		struct ff_effect* constantEffect=&ffb_effects[constant_effect_idx];
