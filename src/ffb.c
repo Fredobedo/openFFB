@@ -138,7 +138,7 @@ FFBStatus processPacket(unsigned char* packet)
 				else if (FinalwheelPosition>15500)
 					FinalwheelPosition=16383;
 
-				debug(0, "%lu: GET_POS: %d\n", millis(),FinalwheelPosition);
+				debug(1, "%lu: GET_POS: %d\n", millis(),FinalwheelPosition);
 
 				replyPacket[1]=(FinalwheelPosition >> 7) & 0x7f;
 				replyPacket[2]=FinalwheelPosition & 0x7f;
