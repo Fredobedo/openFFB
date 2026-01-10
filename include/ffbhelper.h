@@ -114,7 +114,8 @@ void  FFBTriggerSpringEffect(bool upload, double strength);
 void  FFBTriggerConstantEffect(bool upload, double strength);
 void  FFBTriggerFrictionEffect(bool upload, double strength);
 
-void  FFBTriggerSineEffect(double strength);
+//void  FFBTriggerSineEffect(double strength);
+void FFBTriggerSineEffect(bool upload, float freq, float intensity);
 void  FFBTriggerRumbleEffectDefault(double strength);
 void  FFBTriggerRumbleEffect(double strength,  motor_select motor);
 

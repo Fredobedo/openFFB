@@ -112,6 +112,7 @@ FFBStatus processPacket(unsigned char* packet)
 		return FFB_STATUS_ERROR_CHECKSUM;
 	}
 
+	//SPECIAL COMMANDS SENT BY SEGA FFB CONTROLLER
 	if(packet[0]==0xFD)
 	{
 		switch (packet[1])
@@ -176,6 +177,7 @@ FFBStatus processPacket(unsigned char* packet)
 		}
 
 	}
+	//NORMAL COMMAND PACKET FOR FORCE FEEDBACK EFFECTS
 	else
 	{
 		inputPacket.startByte 		= packet[0];
@@ -183,7 +185,9 @@ FFBStatus processPacket(unsigned char* packet)
 		inputPacket.friction        = ((double)packet[2]+1)/128;
 		inputPacket.torqueDirection = packet[3];
 		inputPacket.torquePower     = ((double)packet[4]+1)/128;
-		inputPacket.crc             = packet[5];
+		inputPacket.sineFrequency   = ((double)packet[5]+1)/128;
+		inputPacket.sineIntensity   = ((double)packet[6]+1)/128;
+		inputPacket.crc             = packet[7];
 
 		/* --- spring            from 0x00 to 0x7F -> 128 levels --- */
 		if(packet[1]==0x0)
@@ -211,6 +215,12 @@ FFBStatus processPacket(unsigned char* packet)
 				FFBTriggerConstantEffect(previous_rawpacket[3]!=packet[3]|| previous_rawpacket[4]!=packet[4], inputPacket.torquePower);
 		}
 
+		if(packet[6]==0x0)
+			FFBStopEffect(ffb_effects[sine_effect_idx].id);
+		else
+			FFBTriggerSineEffect(previous_rawpacket[5]!=packet[5]|| previous_rawpacket[6]!=packet[6], inputPacket.sineFrequency*100.0f, inputPacket.sineIntensity);
+
+			
 		/* only copy if there is a diff */
 		if(memcmp(previous_rawpacket, packet,6)!=0){
 			if(getConfig()->debugLevel==1)

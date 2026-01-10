@@ -3,7 +3,8 @@
 #include "ffbhelper.h"
 #include "config.h"
 #include <time.h>
-    
+#include <math.h>
+	
 #include<stdio.h>
 #include<unistd.h>
 #include<string.h>
@@ -545,30 +546,87 @@ void FFBRemoveAllEffects()
  * @phase: 'horizontal' shift
  * @envelope: envelope data
  */
-void FFBTriggerSineEffect(double strength)
+// void FFBTriggerSineEffect(double strength)
+// {
+// 	debug(1, "FFBTriggerSineEffect\n");
+// 	if(FF_SINE_LOADED==(supportedFeatures & FF_SINE_LOADED)) 
+// 	{
+// 		struct ff_effect* effect=&ffb_effects[sine_effect_idx];
+
+// 		short minForce = (short)(strength > 0.001 ? (getConfig()->minTorque / 100.0 * 32767.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
+// 		short maxForce = (short)(getConfig()->maxTorque / 100.0 * 32767.0);
+// 		short range = maxForce - minForce;
+// 		short coeff = (short)(strength * range + minForce);
+// 		if (coeff < 0)
+// 			coeff = 32767;
+
+// 		effect->u.periodic.magnitude = coeff;
+
+// 		/* update effect */
+//     	if (ioctl(device_handle, EVIOCSFF, effect) < 0)
+//             debug(1, "ERROR: uploading effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+// 	}
+// 	else
+// 	{
+// 		debug(1, "-> not ffb_supported, will try default rumble\n");
+// 		FFBTriggerRumbleEffectDefault(strength);
+// 	}
+// }
+
+void FFBTriggerSineEffect(bool upload, float freq, float intensity)
 {
-	debug(1, "FFBTriggerSineEffect\n");
-	if(FF_SINE_LOADED==(supportedFeatures & FF_SINE_LOADED)) 
+	debug(1, "FFBTriggerSineEffect");
+	if(FF_SINE_LOADED == (supportedFeatures & FF_SINE_LOADED)) 
 	{
-		struct ff_effect* effect=&ffb_effects[sine_effect_idx];
+		struct ff_effect* sineEffect = &ffb_effects[sine_effect_idx];
+		if(upload)
+		{
+			// --------------------------
+			// Reuse EXACT same intensity clamping as your constant effect
+			// --------------------------
+			if (intensity > 1.0f)
+				intensity = 1.0f;
+			else if (intensity < -1.0f)
+				intensity = -1.0f;
 
-		short minForce = (short)(strength > 0.001 ? (getConfig()->minTorque / 100.0 * 32767.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
-		short maxForce = (short)(getConfig()->maxTorque / 100.0 * 32767.0);
-		short range = maxForce - minForce;
-		short coeff = (short)(strength * range + minForce);
-		if (coeff < 0)
-			coeff = 32767;
+			// --------------------------
+			// Reuse your proven force scaling logic for Logitech wheel
+			// --------------------------
+			int confMinForce = getConfig()->minTorque;
+			int confMaxForce = getConfig()->maxTorque;
 
-		effect->u.periodic.magnitude=(short)(coeff);
+			short MinForce = (short)(fabs(intensity) > 0.001 ? (confMinForce / 100.0 * 32767.0) : 0);
+			short MaxForce = (short)(getConfig()->maxTorque / 100.0 * 32767.0);
+			short range = MaxForce - MinForce;
+			short magnitude = (short)(intensity * range + MinForce);
 
-		/* update effect */
-    	if (ioctl(device_handle, EVIOCSFF, effect) < 0)
-            debug(1, "ERROR: uploading effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
-	}
-	else
-	{
-		debug(1, "-> not ffb_supported, will try default rumble\n");
-		FFBTriggerRumbleEffectDefault(strength);
+			// --------------------------
+			// Sine-specific parameters
+			// --------------------------
+			// Evdev expects period in MICROSECONDS, not frequency
+			// Clamp frequency to safe valid range for FFB wheels (0.2Hz to 100Hz)
+			if (freq <= 0.0f || freq > 100.0f)
+			{
+				debug(1, "WARNING: Invalid sine frequency, using default 5Hz\n");
+				freq = 5.0f;
+			}
+			unsigned int period_us = (unsigned int)(1000000.0f / freq);
+
+			// Update sine effect parameters
+			sineEffect->u.periodic.magnitude = magnitude;
+			sineEffect->u.periodic.period = period_us;
+
+			// --------------------------
+			// Reuse identical envelope setup from your constant effect
+			// Matches your arcade system's fade handling
+			// --------------------------
+			sineEffect->u.periodic.envelope.attack_level =  (unsigned short)(fabs(intensity) * 65535.0f);
+			sineEffect->u.periodic.envelope.fade_level =    (unsigned short)(fabs(intensity) * 65535.0f);
+
+			/* Upload updated effect to device */
+			if (ioctl(device_handle, EVIOCSFF, sineEffect) < 0)
+				debug(1, "ERROR: uploading sine effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+		}
 	}
 }
 
@@ -866,7 +924,7 @@ void FFBTriggerEffect(unsigned int effect, double strength)
             FFBTriggerRumbleEffectDefault(strength);
             break;  
 		case FF_SINE:
-            FFBTriggerSineEffect(strength);
+            FFBTriggerSineEffect(true,1.0,1.0);
             break;  						
     }
 }

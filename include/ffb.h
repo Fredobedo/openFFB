@@ -17,10 +17,10 @@
 //#define SYNC 0x80
 
 /* Status for the entire packet */
-#define STATUS_SUCCESS 0x01
-#define STATUS_UNSUPPORTED 0x02      // an unsupported command was sent
+#define STATUS_SUCCESS          0x01
+#define STATUS_UNSUPPORTED      0x02 // an unsupported command was sent
 #define STATUS_CHECKSUM_FAILURE 0x03 // the checksum on the command packet did not match a computed checksum
-#define STATUS_OVERFLOW 0x04         // an overflow occurred while processing the command
+#define STATUS_OVERFLOW         0x04 // an overflow occurred while processing the command
 
 #define GET_WHEEL_POSITION 0x01
 #define GET_POWER_LINE     0x02
@@ -31,7 +31,7 @@
 #define NOT_READY     0xFE
 #define RESET_DEVICE  0xFF
 
-#define SEGA_FFB_CONTROLLER_PACKET_SIZE 6
+#define SEGA_FFB_CONTROLLER_PACKET_SIZE       8
 #define SEGA_FFB_CONTROLLER_REPLY_PACKET_SIZE 4
 
 typedef struct
@@ -40,7 +40,9 @@ typedef struct
     double spring;                // from 0x00 to 0x7F -> 128 levels converted to double 0.0 -> 1.0
     double friction;              // from 0x00 to 0x7F -> 128 levels converted to double 0.0 -> 1.0 
     int torqueDirection;          // 0x00 = Left, 0x01  = Right
-    double torquePower;           // from 0x00 to 0xFF -> 128 levels converted to double 0.0 -> 1.0
+    double torquePower;           // from 0x00 to 0x7F -> 128 levels converted to double 0.0 -> 1.0
+    double sineFrequency;        // from 0x00 to 0x7F -> 128 levels converted to double 0.0 -> 1.0
+    double sineIntensity;        // from 0x00 to 0x7F -> 128 levels converted to double 0.0 -> 1.0
     uint8_t crc;                  // (D1 ^ D2 ^ D3 ^ D4) & 0x7F
 } FFBPacket;
 
