@@ -27,13 +27,9 @@ FFBCLIStatus printUsage()
     debug(0, "  -h,  --haptic=[NAME/IDX]                   Haptic Name or index\n");
     debug(0, "  -gp, --gameProfile=[NAME]                  Load game specific settings\n");    
     debug(0, "  -s,  --supportedEffects                    Displays supported effects\n");
-    debug(0, "  -t,  --triggerEffect=[TYPE]                Activate 1 of these effects\n");
+    debug(0, "  -t,  --triggerEffect=[TYPE]                Activate 1 effect: {CONSTANT,SPRING,FRICTION,AUTOCENTER,SINE,RUMBLE}\n"); 
     debug(0, "  -f,  --force=[1-100]                       Strength of the triggered effect\n");
-    debug(0, "                                             - CONSTANT\n");
-    debug(0, "                                             - SPRING\n"); 
-    debug(0, "                                             - FRICTION\n"); 
-    debug(0, "                                             - AUTOCENTER\n"); 
-    debug(0, "                                             - RUMBLE\n"); 
+
     debug(0, "\n");    
     debug(3, "   --- NEXT IS FOR DEBUGGING PURPOSE !!!! --- \n");
     debug(3, "\n"); 
@@ -43,13 +39,24 @@ FFBCLIStatus printUsage()
     debug(3, "                                       - D2 => Constant Torque Direction (Left=00, Right=01) \n");
     debug(3, "                                       - D3 => Constant Torque Power (00->FF)\n");
     debug(3, "\n");
-    debug(3, "  -6,  --6BytesSegaFFBRawRequest=[PACKET]  Activate FFB Effects based on a 6 bytes raw request:\n");
+    debug(3, "  -7,  --7BytesSegaFFBRawRequest=[PACKET]  Activate FFB Effects based on a 7 bytes raw request:\n");
     debug(3, "                                       - D0 => Start byte (80)\n");
     debug(3, "                                       - D1 => Spring     (00->7F)\n");
     debug(3, "                                       - D2 => Friction   (00->7F)\n");
     debug(3, "                                       - D3 => Constant Torque Direction (Left=00, Right=01) \n");
-    debug(3, "                                       - D4 => Constant Torque Power (00->FF)\n");
-    debug(3, "                                       - D5 => CRC        (D1^D2^D3^D4)&7F\n");
+    debug(3, "                                       - D4 => Constant Torque Power (00->7F)\n");
+    debug(3, "                                       - D5 => Sine Frequency (00->7F)\n");
+    debug(3, "                                       - D6 => Sine Intensity (00->7F)\n");
+    debug(3, "\n");
+    debug(3, "  -8,  --8BytesSegaFFBRawRequest=[PACKET]  Activate FFB Effects based on a 8 bytes raw request:\n");
+    debug(3, "                                       - D0 => Start byte (80)\n");
+    debug(3, "                                       - D1 => Spring     (00->7F)\n");
+    debug(3, "                                       - D2 => Friction   (00->7F)\n");
+    debug(3, "                                       - D3 => Constant Torque Direction (Left=00, Right=01) \n");
+    debug(3, "                                       - D4 => Constant Torque Power (00->7F)\n");
+    debug(3, "                                       - D5 => Sine Frequency (00->7F)\n");
+    debug(3, "                                       - D6 => Sine Intensity (00->7F)\n");
+    debug(3, "                                       - D7 => CRC        (D1^D2^D3^D4^D5^D6)&7F\n");
     debug(3, "\n");
     debug(3, "  -lf,  --loadFile=[NAME]                    Load raw input file\n");
     debug(3, "\n");
@@ -144,7 +151,7 @@ FFBCLIStatus parseArguments(int argc, char **argv)
 
     // Store all other requests for a specific hapic here:
     int cpKeyValue=0;
-    for (optind = 1; optind < argc ; optind++) {
+    for (int optind = 1; optind < argc ; optind++) {
         /*  --- Parameters with token --- */
         char *command = strtok(argv[optind], "=:");
         char* token = NULL;
@@ -181,14 +188,16 @@ FFBCLIStatus parseArguments(int argc, char **argv)
                 strcpy(arguments.keyvalue[cpKeyValue].value,strtok(NULL, "="));
                 cpKeyValue++;                                    
             }
+            // Start byte and CRC are not passed in parameter here, it is added in code
             else if ((strcmp(command, "--4BytesSegaFFBRawRequest") == 0)  || (strcmp(command, "-4") == 0)) {
                 arguments.keyvalue[cpKeyValue].mode=TRIGGER_SEGA_FFB_RAW_REQUEST;
                 token=strtok(NULL, "=");
                 
-                unsigned char AsciiHexToBin[4]={ahex2bin(token[0],token[1]),
-                                                ahex2bin(token[2],token[3]),
-                                                ahex2bin(token[4],token[5]),
-                                                ahex2bin(token[6],token[7])};
+                //(Spring, Friction, ConstantTorqueDirection, ConstantTorquePower)
+                unsigned char AsciiHexToBin[4]={ahex2bin(token[0],token[1]),  // D0 => Spring
+                                                ahex2bin(token[2],token[3]),  // D1 => Friction
+                                                ahex2bin(token[4],token[5]),  // D2 => Constant Torque Direction
+                                                ahex2bin(token[6],token[7])}; // D3 => Constant Torque Power
 
                 sprintf(arguments.keyvalue[cpKeyValue].value, "%c%c%c%c%c%c",
                     0x80,
@@ -200,17 +209,44 @@ FFBCLIStatus parseArguments(int argc, char **argv)
                 
                 cpKeyValue++;
             }
-            else if ((strcmp(command, "--6BytesSegaFFBRawRequest") == 0)  || (strcmp(command, "-6") == 0)) {
+            //Start byte is passed but not the CRC here, it is added in code
+            else if ((strcmp(command, "--7BytesSegaFFBRawRequest") == 0)  || (strcmp(command, "-7") == 0)) {
+                arguments.keyvalue[cpKeyValue].mode=TRIGGER_SEGA_FFB_RAW_REQUEST;
+                token=strtok(NULL, "=");
+
+                unsigned char AsciiHexToBin[7]={ahex2bin(token[0],token[1]),   // D0 => Start byte
+                                                ahex2bin(token[2],token[3]),   // D1 => Spring
+                                                ahex2bin(token[4],token[5]),   // D2 => Friction
+                                                ahex2bin(token[6],token[7]),   // D3 => Constant Torque Direction
+                                                ahex2bin(token[8],token[9]),   // D4 => Constant Torque Power
+                                                ahex2bin(token[10],token[11]), // D5 => Sine Frequency
+                                                ahex2bin(token[12],token[13])};// D6 => Sine Intensity
+ 
+                sprintf(arguments.keyvalue[cpKeyValue].value, "%c%c%c%c%c%c%c%c",
+                    AsciiHexToBin[0], 
+                    AsciiHexToBin[1],
+                    AsciiHexToBin[2],
+                    AsciiHexToBin[3],
+                    AsciiHexToBin[4],
+                    AsciiHexToBin[5],
+                    AsciiHexToBin[6],
+                    (AsciiHexToBin[0]^AsciiHexToBin[1]^AsciiHexToBin[2]^AsciiHexToBin[3]^AsciiHexToBin[4]^AsciiHexToBin[5]^AsciiHexToBin[6])&0x7F);
+
+                cpKeyValue++;                
+            }
+            else if ((strcmp(command, "--8BytesSegaFFBRawRequest") == 0)  || (strcmp(command, "-8") == 0)) {
                 arguments.keyvalue[cpKeyValue].mode=TRIGGER_SEGA_FFB_RAW_REQUEST;
                 token=strtok(NULL, "=");
                 
-                sprintf(arguments.keyvalue[cpKeyValue].value, "%c%c%c%c%c%c",
-                                                ahex2bin(token[0],token[1]),
-                                                ahex2bin(token[2],token[3]),
-                                                ahex2bin(token[4],token[5]),
-                                                ahex2bin(token[6],token[7]),
-                                                ahex2bin(token[8],token[9]),
-                                                ahex2bin(token[10],token[11]));
+                sprintf(arguments.keyvalue[cpKeyValue].value, "%c%c%c%c%c%c%c%c",
+                                                ahex2bin(token[0],token[1]),    // D0 => Start byte
+                                                ahex2bin(token[2],token[3]),    // D1 => Spring
+                                                ahex2bin(token[4],token[5]),    // D2 => Friction
+                                                ahex2bin(token[6],token[7]),    // D3 => Constant Torque Direction
+                                                ahex2bin(token[8],token[9]),    // D4 => Constant Torque Power
+                                                ahex2bin(token[10],token[11]),  // D5 => Sine Frequency
+                                                ahex2bin(token[12],token[13]),  // D6 => Sine Intensity
+                                                ahex2bin(token[14],token[15])); // D7 => CRC
                                                 
                 cpKeyValue++;                
             }

@@ -467,7 +467,7 @@ char* FFBCheckEffect(unsigned int check)
 	if (check==(supportedFeatures & check)) 
         return GREEN "-> OK <-" RESET "\n";
     else
-        return RED "Not ffb_supported" RESET "\n";
+        return RED "Not supported" RESET "\n";
 }
 
 void FFBDumpSupportedFeatures()
@@ -487,13 +487,42 @@ void FFBDumpSupportedFeatures()
 	else
     	debug(0, "   Nbr of simultaneous effects the device can play: %d\n",n_effects);
 
+
+#define FF_SINE_LOADED       1U << 0
+#define FF_SQUARE_LOADED     1U << 1
+#define FF_TRIANGLE_LOADED   1U << 2
+#define FF_SAW_UP_LOADED     1U << 3
+#define FF_SAW_DOWN_LOADED   1U << 4
+#define FF_CONSTANT_LOADED   1U << 5
+#define FF_SPRING_LOADED     1U << 6
+#define FF_DAMPER_LOADED     1U << 7
+#define FF_INERTIA_LOADED    1U << 8
+#define FF_FRICTION_LOADED   1U << 9
+#define FF_RAMP_LOADED       1U << 10
+#define FF_CUSTOM_LOADED     1U << 11
+#define FF_GAIN_LOADED       1U << 12
+#define FF_AUTOCENTER_LOADED 1U << 13
+#define FF_RUMBLE_LOADED     1U << 14
+
     debug(0, "\n");
     debug(0, "     ffb_supported constant effect:\n");
     debug(0, "      - constant:     %s", FFBCheckEffect(FF_CONSTANT_LOADED));
     debug(0, "\n");
+	debug(0, "     ffb_supported periodic effects:\n");
+    debug(0, "      - sine:         %s", FFBCheckEffect(FF_SINE_LOADED));
+    debug(0, "      - square:       %s", FFBCheckEffect(FF_SQUARE_LOADED));
+    debug(0, "      - triangle:     %s", FFBCheckEffect(FF_TRIANGLE_LOADED));
+    debug(0, "      - saw_up:       %s", FFBCheckEffect(FF_SAW_UP_LOADED));
+    debug(0, "      - saw_down:     %s", FFBCheckEffect(FF_SAW_DOWN_LOADED));
+    debug(0, "\n");
     debug(0, "     ffb_supported condition effects:\n");
     debug(0, "      - spring:       %s", FFBCheckEffect(FF_SPRING_LOADED));
+	debug(0, "      - damper:       %s", FFBCheckEffect(FF_DAMPER_LOADED));
     debug(0, "      - friction:     %s", FFBCheckEffect(FF_FRICTION_LOADED));
+	debug(0, "      - inertia:      %s", FFBCheckEffect(FF_INERTIA_LOADED));
+    debug(0, "\n");
+	debug(0, "     ffb_supported RAMP effect:\n");
+	debug(0, "      - ramp:         %s", FFBCheckEffect(FF_RAMP_LOADED));
     debug(0, "\n");
     debug(0, "     ffb_supported global features:\n");
     debug(0, "      - gain:        %s", FFBCheckEffect(FF_GAIN_LOADED));
@@ -820,8 +849,11 @@ void FFBTriggerRumbleEffectDefault(double strength)
 
 void FFBTriggerRumbleEffect(double strength, motor_select motor)
 {
+	debug(1, "FFBTriggerRumbleEffect");
 	if(FF_RUMBLE_LOADED==(supportedFeatures & FF_RUMBLE_LOADED)) 
 	{	
+debug(1, "FRED DEBUG:1");
+
 		struct ff_effect* effect=&ffb_effects[rumble_effect_idx];
 
 		if (strength > 1.0)
@@ -845,10 +877,12 @@ void FFBTriggerRumbleEffect(double strength, motor_select motor)
 			effect->u.rumble.strong_magnitude =  level; 
 			effect->u.rumble.weak_magnitude =  level;  
 		}
-
+debug(1, "FRED DEBUG:2");
 		/* update effect */
     	if (ioctl(device_handle, EVIOCSFF, effect) < 0)
             debug(1, "ERROR: uploading effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+
+debug(1, "FRED DEBUG:3");
 	}
 	else
 		debug(1,"FFBTriggerRumbleEffect not supported\n");
