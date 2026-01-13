@@ -334,7 +334,7 @@ void FFBCreateHapticSineEffect()
 	effect->trigger.interval = 0;
 	effect->replay.length = 1000;
 	effect->replay.delay = 0;
-	//effect->direction = 0x4000;				/* Along X axis */ //not sure this is useful for steering wheel
+	effect->direction = 0x4000;				/* Along X axis */ //not sure this is useful for steering wheel
 
 	effect->u.periodic.waveform = FF_SINE;
 	effect->u.periodic.period = 100;		// 0.1 second 
@@ -453,11 +453,15 @@ void  FFBCreateHapticRumbleEffect()
 	effect->id = -1;
 	effect->type = FF_RUMBLE;
 
+	effect->trigger.button = 0;
+	effect->trigger.interval = 0;
 	effect->replay.length = 1000; 
 	effect->replay.delay = 0;
+	effect->direction = 0x4000; // 0x4000 ; // 0x8000 -> left, 0xC000-> right
 
-	effect->u.rumble.strong_magnitude = 0; 
-	effect->u.rumble.weak_magnitude = 0;   
+
+	effect->u.rumble.strong_magnitude = 0x6000; 
+	effect->u.rumble.weak_magnitude = 0x2000;   
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
 		debug(1," Error creating FF_SPRING  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);		
@@ -629,15 +633,13 @@ debug(1, " -> frequency: %.2f Hz, intensity: %.2f", freq, intensity);
 			sineEffect->u.periodic.offset = 0;         // Centered at 0
     		sineEffect->u.periodic.phase = 0;
 
-
-			/* 
-			Frequency Math:
-			The period is defined in milliseconds.
-			Period = 1000 / Frequency(Hz)
-			For 50Hz: 1000 / 50 = 20ms
-    		*/
-    		sineEffect->u.periodic.period = (unsigned short)65535 / 80; //unsigned short (65,535).
-
+			// Frequency Math: Calculate period in microseconds => Period = 1000 / Frequency(Hz)
+			// For 50Hz: 1000 / 50 = 20ms
+			// Clamp value between 5-1000
+			int period_us = (int)(1000.0f / freq); // period in milliseconds
+			if (period_us < 5) period_us = 5;       // it looks like it's the Minimum period of my G27
+			if (period_us > 1000) period_us = 1000; // Maximum period
+			sineEffect->u.periodic.period = period_us; 
 
 debug(1, " -> period: %u us", sineEffect->u.periodic.period);
 

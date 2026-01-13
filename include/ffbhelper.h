@@ -103,31 +103,28 @@ int   FFBGetDeviceIdx(char* device_name);
 
 void  FFBDumpAvailableDevices();
 
-/* --- close haptic and sql quit --- */
-void  FFBAbortExecution(void);
+/* ---   --- */
+bool FFBInitHaptic(char* name);
+void FFBStopAllEffects(void);
+void FFBStopEffect(int effect_id);
+void FFBAbortExecution(void);
 
-bool  FFBInitHaptic(char* name);
+//Creates
+void FFBCreateAllHapticEffects();
+void FFBCreateHapticConstantEffect();
+void FFBCreateHapticSineEffect();
+void FFBCreateHapticFrictionEffect();
+void FFBCreateHapticDamperEffect();
+void FFBCreateHapticSpringEffect();
+void FFBCreateHapticRumbleEffect();
 
-void  FFBCreateAllHapticEffects();
-
-void  FFBCreateHapticConstantEffect();
-void  FFBCreateHapticSineEffect();
-void  FFBCreateHapticFrictionEffect();
-void  FFBCreateHapticDamperEffect();
-void  FFBCreateHapticSpringEffect();
-void  FFBCreateHapticRumbleEffect();
-
-void  FFBTriggerSpringEffect(bool upload, double strength);
-void  FFBTriggerConstantEffect(bool upload, double strength);
-void  FFBTriggerFrictionEffect(bool upload, double strength);
-
-//void  FFBTriggerSineEffect(double strength);
+//Triggers
+void FFBTriggerSpringEffect(bool upload, double strength);
+void FFBTriggerConstantEffect(bool upload, double strength);
+void FFBTriggerFrictionEffect(bool upload, double strength);
 void FFBTriggerSineEffect(bool upload, float freq, float intensity);
 void FFBTriggerRumbleEffectDefault(bool upload, double strength);
 void FFBTriggerRumbleEffect(bool upload, double strength,  motor_select motor);
-
-void FFBStopEffect(int effect_id);
-void FFBStopAllEffects(void);
 
 /* --- generic function for testing --- */
 void FFBTriggerTestEffect(unsigned int effect,double strength);
