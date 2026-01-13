@@ -230,7 +230,7 @@ FFBCLIStatus parseArguments(int argc, char **argv)
                     AsciiHexToBin[4],
                     AsciiHexToBin[5],
                     AsciiHexToBin[6],
-                    (AsciiHexToBin[0]^AsciiHexToBin[1]^AsciiHexToBin[2]^AsciiHexToBin[3]^AsciiHexToBin[4]^AsciiHexToBin[5]^AsciiHexToBin[6])&0x7F);
+                    (AsciiHexToBin[1]^AsciiHexToBin[2]^AsciiHexToBin[3]^AsciiHexToBin[4]^AsciiHexToBin[5]^AsciiHexToBin[6])&0x7F);
 
                 cpKeyValue++;                
             }

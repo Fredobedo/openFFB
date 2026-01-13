@@ -273,7 +273,7 @@ bool FFBInitHaptic(char* device_name)
 				if(strcmp(devices[idxDevice].vendor,"046d")==0)
 					SetLogitechSteeringRange(idxDevice, getConfig()->logitechSteeringRange);
 
-				FFBCreateHapticEffects();
+				FFBCreateAllHapticEffects();
 				FFBSetGlobalGain(getConfig()->globalGain);
 
 				FFBSetGlobalAutoCenter(40,2000); 
@@ -292,9 +292,9 @@ bool FFBInitHaptic(char* device_name)
 		return false;
 }
 
-void FFBCreateHapticEffects()
+void FFBCreateHapticConstantEffect()
 {
-    /* --- FF_CONSTANT --- */
+	/* --- FF_CONSTANT --- */
 	struct ff_effect* effect=&ffb_effects[constant_effect_idx];
 	memset(effect,0,sizeof(ffb_effects[0]));
 	
@@ -319,9 +319,12 @@ void FFBCreateHapticEffects()
 		supportedFeatures|=FF_CONSTANT_LOADED;
 		debug(1, "FF_CONSTANT Effect id=%d\n", effect->id);
 	}
+}
 
+void FFBCreateHapticSineEffect()
+{
 	/* --- FF_SINE --- */
-	effect=&ffb_effects[sine_effect_idx];
+	struct ff_effect* effect=&ffb_effects[sine_effect_idx];
 	memset(effect,0,sizeof(ffb_effects[0]));
 	
 	effect->id = -1;
@@ -331,18 +334,19 @@ void FFBCreateHapticEffects()
 	effect->trigger.interval = 0;
 	effect->replay.length = 1000;
 	effect->replay.delay = 0;
-	effect->direction = 0x4000;				/* Along X axis */
+	//effect->direction = 0x4000;				/* Along X axis */ //not sure this is useful for steering wheel
 
 	effect->u.periodic.waveform = FF_SINE;
-	effect->u.periodic.period = 100;		/* 0.1 second */
-	effect->u.periodic.magnitude = 0x7fff;	/* 0.5 * Maximum magnitude */
+	effect->u.periodic.period = 100;		// 0.1 second 
+	effect->u.periodic.magnitude = 0x4000;	// 0x4000 (max 0x7fff) 
 	effect->u.periodic.offset = 0;
 	effect->u.periodic.phase = 0;
+
 	effect->u.periodic.envelope.attack_length = 1000;
-	effect->u.periodic.envelope.attack_level = 0; //0x7fff; 		-> this one to update
 	effect->u.periodic.envelope.fade_length = 1000;
-	effect->u.periodic.envelope.fade_level = 0; //0x7fff; 			-> this one to update
-	effect->u.periodic.magnitude=0;
+
+	//effect->u.periodic.envelope.attack_level = 0; //0x7fff; 		    -> this one to update
+	//effect->u.periodic.envelope.fade_level = 0; //0x7fff; 			-> this one to update
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
 		debug(1," Error creating FF_PERIODIC FF_SINE effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
@@ -351,9 +355,12 @@ void FFBCreateHapticEffects()
 		debug(1, "FF_SINE Effect     id=%d\n", effect->id);
 
 	}
-	
-    /* --- FF_FRICTION --- */
-	effect=&ffb_effects[friction_effect_idx];
+}
+
+void FFBCreateHapticFrictionEffect()
+{
+	/* --- FF_FRICTION --- */
+	struct ff_effect* effect=&ffb_effects[friction_effect_idx];
 	memset(effect,0,sizeof(ffb_effects[0]));
 	
 	effect->id = -1;
@@ -372,16 +379,18 @@ void FFBCreateHapticEffects()
 	effect->u.condition[0].center = 0x0;
 	effect->u.condition[1] = effect->u.condition[0];
 
-
 	if(ioctl(device_handle, EVIOCSFF, effect))
 		debug(1," Error creating FF_FRICTION  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);	
 	else{
 		supportedFeatures|=FF_FRICTION_LOADED;
 		debug(1, "FF_FRICTION Effect id=%d\n", effect->id);		
 	}
+}
 
-    /* --- FF_DAMPER --- */
-	effect=&ffb_effects[damper_effect_idx];
+void  FFBCreateHapticDamperEffect()
+{
+	/* --- FF_DAMPER --- */
+	struct ff_effect* effect=&ffb_effects[damper_effect_idx];
 	memset(effect,0,sizeof(ffb_effects[0]));
 	
 	effect->id = -1;
@@ -402,9 +411,12 @@ void FFBCreateHapticEffects()
 		supportedFeatures|=FF_FRICTION_LOADED;
 		debug(1, "FF_DAMPER Effect id=%d\n", effect->id);	
 	}
+}
 
+void FFBCreateHapticSpringEffect()
+{
 	/* --- FF_SPRING --- */
-	effect=&ffb_effects[spring_effect_idx];
+	struct ff_effect* effect=&ffb_effects[spring_effect_idx];
 	memset(effect,0,sizeof(ffb_effects[0]));
 	
 	effect->id = -1;
@@ -430,9 +442,12 @@ void FFBCreateHapticEffects()
 		supportedFeatures|=FF_SPRING_LOADED;
 		debug(1, "FF_SPRING Effect   id=%d\n", effect->id);	
 	}
+}
 
-    /* --- FF_RUMBLE --- */
-	effect=&ffb_effects[rumble_effect_idx];
+void  FFBCreateHapticRumbleEffect()
+{
+	/* --- FF_RUMBLE --- */
+	struct ff_effect* effect=&ffb_effects[rumble_effect_idx];
 	memset(effect,0,sizeof(ffb_effects[0]));
 	
 	effect->id = -1;
@@ -450,6 +465,16 @@ void FFBCreateHapticEffects()
 		supportedFeatures|=FF_RUMBLE_LOADED;
 		debug(1, "FF_RUMBLE Effect   id=%d\n", effect->id);	
 	}
+}
+
+void FFBCreateAllHapticEffects()
+{
+	FFBCreateHapticConstantEffect();
+	FFBCreateHapticSineEffect();
+	FFBCreateHapticFrictionEffect();
+	FFBCreateHapticDamperEffect();
+	FFBCreateHapticSpringEffect();
+	FFBCreateHapticRumbleEffect();
 }
 
 void FFBAbortExecution(void)
@@ -567,101 +592,98 @@ void FFBRemoveAllEffects()
 	}
 }
 
-/**
- * @waveform: kind of the effect (wave)
- * @period: period of the wave (ms)
- * @magnitude: peak value
- * @offset: mean value of the wave (roughly)
- * @phase: 'horizontal' shift
- * @envelope: envelope data
- */
-// void FFBTriggerSineEffect(double strength)
-// {
-// 	debug(1, "FFBTriggerSineEffect\n");
-// 	if(FF_SINE_LOADED==(supportedFeatures & FF_SINE_LOADED)) 
-// 	{
-// 		struct ff_effect* effect=&ffb_effects[sine_effect_idx];
 
-// 		short minForce = (short)(strength > 0.001 ? (getConfig()->minTorque / 100.0 * 32767.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
-// 		short maxForce = (short)(getConfig()->maxTorque / 100.0 * 32767.0);
-// 		short range = maxForce - minForce;
-// 		short coeff = (short)(strength * range + minForce);
-// 		if (coeff < 0)
-// 			coeff = 32767;
-
-// 		effect->u.periodic.magnitude = coeff;
-
-// 		/* update effect */
-//     	if (ioctl(device_handle, EVIOCSFF, effect) < 0)
-//             debug(1, "ERROR: uploading effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
-// 	}
-// 	else
-// 	{
-// 		debug(1, "-> not ffb_supported, will try default rumble\n");
-// 		FFBTriggerRumbleEffectDefault(strength);
-// 	}
-// }
-
+// FFBTriggerSineEffect applies or updates a force feedback sine wave effect on a device, 
+// configuring its frequency and intensity, and uploading the effect if supported. 
+// The function manages effect parameters, uploads them to the device, and handles starting or stopping the effect as needed.
 void FFBTriggerSineEffect(bool upload, float freq, float intensity)
 {
 	debug(1, "FFBTriggerSineEffect");
-	if(FF_SINE_LOADED == (supportedFeatures & FF_SINE_LOADED)) 
+	if(FF_SINE_LOADED==(supportedFeatures & FF_SINE_LOADED)) 
 	{
-		struct ff_effect* sineEffect = &ffb_effects[sine_effect_idx];
+debug(1, " -> frequency: %.2f Hz, intensity: %.2f", freq, intensity);
+
+		struct ff_effect* sineEffect=&ffb_effects[sine_effect_idx];
 		if(upload)
 		{
-			// --------------------------
-			// Reuse EXACT same intensity clamping as your constant effect
-			// --------------------------
-			if (intensity > 1.0f)
-				intensity = 1.0f;
-			else if (intensity < -1.0f)
-				intensity = -1.0f;
+		    // Clamp frequency to 0.5Hz to 100Hz (valid for nearly all FFB devices)
+    		if (freq < 0.5f) freq = 0.5f;
+    		if (freq > 100.0f) freq = 100.0f;
 
-			// --------------------------
-			// Reuse your proven force scaling logic for Logitech wheel
-			// --------------------------
-			int confMinForce = getConfig()->minTorque;
-			int confMaxForce = getConfig()->maxTorque;
+			// Clamp intensity to -1.0 to 1.0 (maps to -32767 to 32767 evdev range)
+			if (intensity < -1.0f) intensity = -1.0f;
+			if (intensity > 1.0f) intensity = 1.0f;
 
-			short MinForce = (short)(fabs(intensity) > 0.001 ? (confMinForce / 100.0 * 32767.0) : 0);
-			short MaxForce = (short)(getConfig()->maxTorque / 100.0 * 32767.0);
-			short range = MaxForce - MinForce;
-			short magnitude = (short)(intensity * range + MinForce);
+			// int confMinForce = getConfig()->minTorque;
+			// int confMaxForce = getConfig()->maxTorque;
 
-			// --------------------------
-			// Sine-specific parameters
-			// --------------------------
-			// Evdev expects period in MICROSECONDS, not frequency
-			// Clamp frequency to safe valid range for FFB wheels (0.2Hz to 100Hz)
-			if (freq <= 0.0f || freq > 100.0f)
-			{
-				debug(1, "WARNING: Invalid sine frequency, using default 5Hz\n");
-				freq = 5.0f;
-			}
-			unsigned int period_us = (unsigned int)(1000000.0f / freq);
+			// short MinForce = (short)(intensity > 0.001 ? (confMinForce / 100.0 * 32767.0) : 0);
+			// short MaxForce = (short)(getConfig()->maxTorque / 100.0 * 32767.0);
+			// short range = MaxForce - MinForce;
+			// short level = (short)(intensity * range + MinForce);
+			//sineEffect->u.constant.level = level;	
 
-			// Update sine effect parameters
-			sineEffect->u.periodic.magnitude = magnitude;
-			sineEffect->u.periodic.period = period_us;
+			// Convert frequency (Hz) to period in microseconds
+			//sineEffect->u.periodic.period = (unsigned int)(1000000.0f / freq);
 
-			// --------------------------
-			// Reuse identical envelope setup from your constant effect
-			// Matches your arcade system's fade handling
-			// --------------------------
-			sineEffect->u.periodic.envelope.attack_level =  (unsigned short)(fabs(intensity) * 65535.0f);
-			sineEffect->u.periodic.envelope.fade_level =    (unsigned short)(fabs(intensity) * 65535.0f);
+			sineEffect->u.periodic.offset = 0;         // Centered at 0
+    		sineEffect->u.periodic.phase = 0;
 
-			/* Upload updated effect to device */
+
+			/* 
+			Frequency Math:
+			The period is defined in milliseconds.
+			Period = 1000 / Frequency(Hz)
+			For 50Hz: 1000 / 50 = 20ms
+    		*/
+    		sineEffect->u.periodic.period = (unsigned short)65535 / 80; //unsigned short (65,535).
+
+
+debug(1, " -> period: %u us", sineEffect->u.periodic.period);
+
+			// Map normalized intensity to evdev's signed 16-bit magnitude range
+			sineEffect->u.periodic.magnitude = (short)(intensity * 32767.0f);
+debug(1, " -> magnitude: %d", sineEffect->u.periodic.magnitude);
+
+			// Set envelope to instant attack/fade (no ramp up/down)
+			sineEffect->u.periodic.envelope.attack_length = 0;
+			sineEffect->u.periodic.envelope.fade_length = 0;
+			sineEffect->u.periodic.envelope.attack_level = 0;
+			sineEffect->u.periodic.envelope.fade_level = 0;
+			//sineEffect->u.periodic.custom_len = 100;
+			/* update effect */
 			if (ioctl(device_handle, EVIOCSFF, sineEffect) < 0)
-				debug(1, "ERROR: uploading sine effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+				debug(1, "ERROR: uploading effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
 		}
+
+		
+		memset(&event, 0, sizeof(event));
+		event.type = EV_FF;
+		event.code = sineEffect->id;
+
+		//STOP PREVIOUS EFFECT
+		event.value = 0;
+		bool rs=write(device_handle, &event, sizeof(event));
+
+		//START EFFECT
+		event.value = 1;
+		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
+			fprintf(stderr, "ERROR: starting FF_SINE effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
+
+		write(device_handle, &event, sizeof(event)) != sizeof(event);
+	}
+	else
+	{
+		debug(1, " -> sine effect not supported.\n");
 	}
 }
 
+// FFBTriggerSpringEffect applies or updates a force feedback spring effect on a device, 
+// configuring its strength and uploading the effect if supported; if not supported, it falls back to a default rumble effect. 
+// The function manages effect parameters, uploads them to the device, and handles starting or stopping the effect as needed.
 void FFBTriggerSpringEffect(bool upload, double strength)
 {
-	debug(1, "FFBTriggerSpringEffect\n");
+	debug(1, "FFBTriggerSpringEffect");
 	if(FF_SPRING_LOADED==(supportedFeatures & FF_SPRING_LOADED)) 
 	{
 		struct ff_effect* springEffect=&ffb_effects[spring_effect_idx];
@@ -703,8 +725,7 @@ void FFBTriggerSpringEffect(bool upload, double strength)
 	}
 	else
 	{
-		debug(1, "-> not ffb_supported, will try default rumble\n");
-		FFBTriggerRumbleEffectDefault(strength);
+		debug(1, " -> spring effect not supported.\n");
 	}
 }
 
@@ -775,8 +796,7 @@ void FFBTriggerConstantEffect(bool upload, double strength)
 	}
 	else
 	{
-		debug(1, "-> not ffb_supported, will try default rumble\n");
-		FFBTriggerRumbleEffectDefault(strength);
+		debug(1, " -> constant effect not supported.\n");
 	}
 }
 
@@ -837,55 +857,75 @@ void FFBTriggerFrictionEffect(bool upload, double strength)
 	}
 	else
 	{
-		debug(1, "-> not ffb_supported, will try default rumble\n");
-		FFBTriggerRumbleEffectDefault(strength);
+		debug(1, " -> friction effect not supported.\n");
 	}
 }
 
-void FFBTriggerRumbleEffectDefault(double strength)
+void FFBTriggerRumbleEffectDefault(bool upload, double strength)
 {
-	FFBTriggerRumbleEffect(strength, both_motors);
+	FFBTriggerRumbleEffect(upload, strength, both_motors);
 }
 
-void FFBTriggerRumbleEffect(double strength, motor_select motor)
+void FFBTriggerRumbleEffect(bool upload, double strength, motor_select motor)
 {
+
 	debug(1, "FFBTriggerRumbleEffect");
 	if(FF_RUMBLE_LOADED==(supportedFeatures & FF_RUMBLE_LOADED)) 
-	{	
-debug(1, "FRED DEBUG:1");
+	{
+		struct ff_effect* rumbleEffect=&ffb_effects[rumble_effect_idx];
+		if(upload)
+		{
+			if (strength > 1.0)
+				strength = 1.0;
+			else if (strength < -1.0)
+				strength = -1.0;
 
-		struct ff_effect* effect=&ffb_effects[rumble_effect_idx];
+			short MinForce = (short)(strength > 0.001 ? (getConfig()->minTorque / 100.0 * 32767.0) : 0);
+			short MaxForce = (short)(getConfig()->maxTorque / 100.0 * 32767.0);
+			short range = MaxForce - MinForce;
+			short level = (short)(strength * range + MinForce);
 
-		if (strength > 1.0)
-			strength = 1.0;
-		else if (strength < -1.0)
-			strength = -1.0;
+			switch (motor) {
+				case weak_motor:
+					rumbleEffect->u.rumble.strong_magnitude = 0;
+					rumbleEffect->u.rumble.weak_magnitude = level;
+					break;
+				case strong_motor:
+					rumbleEffect->u.rumble.strong_magnitude = level;
+					rumbleEffect->u.rumble.weak_magnitude = 0;
+					break;
+				case both_motors:
+				default:
+					rumbleEffect->u.rumble.strong_magnitude = level;
+					rumbleEffect->u.rumble.weak_magnitude = level;
+					break;
+			}
 
-		short MinForce = (short)(strength > 0.001 ? (getConfig()->minTorque / 100.0 * 32767.0) : 0);
-		short MaxForce = (short)(getConfig()->maxTorque / 100.0 * 32767.0);
-		short range = MaxForce - MinForce;
-		short level = (short)(strength * range + MinForce);
-
-		if(motor==weak_motor){
-			effect->u.rumble.strong_magnitude =  0; 
-			effect->u.rumble.weak_magnitude =  level;   
-
-			effect->u.rumble.strong_magnitude =  level;
-			effect->u.rumble.weak_magnitude =  0;   
+			/* update effect */
+			if (ioctl(device_handle, EVIOCSFF, rumbleEffect) < 0)
+				debug(1, "ERROR: uploading effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
 		}
-		else {	
-			effect->u.rumble.strong_magnitude =  level; 
-			effect->u.rumble.weak_magnitude =  level;  
-		}
-debug(1, "FRED DEBUG:2");
-		/* update effect */
-    	if (ioctl(device_handle, EVIOCSFF, effect) < 0)
-            debug(1, "ERROR: uploading effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
 
-debug(1, "FRED DEBUG:3");
+		
+		memset(&event, 0, sizeof(event));
+		event.type = EV_FF;
+		event.code = rumbleEffect->id;
+
+		//STOP PREVIOUS EFFECT
+		event.value = 0;
+		bool rs=write(device_handle, &event, sizeof(event));
+
+		//START EFFECT
+		event.value = 1;
+		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
+			fprintf(stderr, "ERROR: starting FF_RUMBLE effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
+
+		write(device_handle, &event, sizeof(event)) != sizeof(event);
 	}
 	else
-		debug(1,"FFBTriggerRumbleEffect not supported\n");
+	{
+		debug(1, " -> rumble effect not supported\n");
+	}	
 }
 
 /* --- set flobal gain for all effects (1-100) --- */
@@ -908,7 +948,7 @@ void FFBSetGlobalGain(int level)
 /* --- AutoCenter Global Setting (1-100) for 1 second only --- */
 void FFBSetGlobalAutoCenter(int level, int duration_ms)
 {
-	debug(1, "FFBSetGlobalAutoCenter (temporary)\n");
+	debug(1, "FFBSetGlobalAutoCenter (during 1 sec)");
 	
 	memset(&event, 0, sizeof(event));
 	event.type = EV_FF;
@@ -932,12 +972,9 @@ void FFBSetGlobalAutoCenter(int level, int duration_ms)
 	event.value = 0;
 	if (write(device_handle, &event, sizeof(event)) != sizeof(event))
 		debug(1, "ERROR: failed to disable auto centering (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
-	// else {
-	// 	supportedFeatures &= ~FF_AUTOCENTER_LOADED;
-	// }
 }
 
-void FFBTriggerEffect(unsigned int effect, double strength)
+void FFBTriggerTestEffect(unsigned int effect, double strength)
 {
 	//debug(0,"FFBTriggerEffect effect=%u, strength=%f\n",effect, strength);
     switch(effect)
@@ -955,10 +992,10 @@ void FFBTriggerEffect(unsigned int effect, double strength)
             FFBSetGlobalAutoCenter(40, 1500);
             break;              
         case FF_RUMBLE:
-            FFBTriggerRumbleEffectDefault(strength);
+            FFBTriggerRumbleEffectDefault(true, strength);
             break;  
 		case FF_SINE:
-            FFBTriggerSineEffect(true,1.0,1.0);
+            FFBTriggerSineEffect(true, 50.0,1.0);
             break;  						
     }
 }

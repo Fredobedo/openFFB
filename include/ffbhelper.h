@@ -51,7 +51,7 @@ unsigned int supportedFeatures;
 #define FF_RUMBLE_LOADED     1U << 14
 
 #define DEV_INPUT_EVENT "/dev/input"
-#define MAX_DEVICE 10
+#define MAX_DEVICE 30
 #define MAX_EFFECTS 16
 
 /* The haptic File descriptor Handle */
@@ -108,7 +108,14 @@ void  FFBAbortExecution(void);
 
 bool  FFBInitHaptic(char* name);
 
-void  FFBCreateHapticEffects();
+void  FFBCreateAllHapticEffects();
+
+void  FFBCreateHapticConstantEffect();
+void  FFBCreateHapticSineEffect();
+void  FFBCreateHapticFrictionEffect();
+void  FFBCreateHapticDamperEffect();
+void  FFBCreateHapticSpringEffect();
+void  FFBCreateHapticRumbleEffect();
 
 void  FFBTriggerSpringEffect(bool upload, double strength);
 void  FFBTriggerConstantEffect(bool upload, double strength);
@@ -116,14 +123,14 @@ void  FFBTriggerFrictionEffect(bool upload, double strength);
 
 //void  FFBTriggerSineEffect(double strength);
 void FFBTriggerSineEffect(bool upload, float freq, float intensity);
-void  FFBTriggerRumbleEffectDefault(double strength);
-void  FFBTriggerRumbleEffect(double strength,  motor_select motor);
+void FFBTriggerRumbleEffectDefault(bool upload, double strength);
+void FFBTriggerRumbleEffect(bool upload, double strength,  motor_select motor);
 
 void FFBStopEffect(int effect_id);
 void FFBStopAllEffects(void);
 
 /* --- generic function for testing --- */
-void FFBTriggerEffect(unsigned int effect,double strength);
+void FFBTriggerTestEffect(unsigned int effect,double strength);
 /* --- This will remove the effect from the device. Effects are automatically destroyed when the device is closed. --- */
 void FFBRemoveEffect(int effect_id);
 /* --- This will remove all effects if they are running. Effects are automatically destroyed when the device is closed. --- */

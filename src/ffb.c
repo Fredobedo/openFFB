@@ -100,14 +100,14 @@ FFBStatus readPacket()
 FFBStatus processPacket(unsigned char* packet)
 {
 	if(getConfig()->debugLevel==3)
-		printf("%02X%02X%02X%02X%02X%02X\n", packet[0],	packet[1], packet[2], packet[3], packet[4], packet[5]);
+		printf("%02X%02X%02X%02X%02X%02X%02X%02X\n", packet[0],packet[1], packet[2], packet[3], packet[4], packet[5], packet[6], packet[7]);
 	
 	if(packet[0]<0x80)
 		return FFB_STATUS_ERROR_SYNCH_REQUIRED;
 
-	/* --- (D1^D2^D3^D4)&0x7F --- */
-	unsigned char checksum = (packet[1]^packet[2]^packet[3]^packet[4])&0x7F;
-	if(checksum!=packet[5]) {
+	/* --- (D1^D2^D3^D4^D5^D6)&0x7F --- */
+	unsigned char checksum = (packet[1]^packet[2]^packet[3]^packet[4]^packet[5]^packet[6])&0x7F;
+	if(checksum!=packet[7]) {
 		debug(2, "\nWarning, checksum error\n");
 		return FFB_STATUS_ERROR_CHECKSUM;
 	}

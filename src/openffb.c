@@ -136,7 +136,7 @@ int main(int argc, char **argv)
     if(containArgument(SET_FORCE))
       Strength=((double)atoi(getArgumentValue(SET_FORCE)))/100;
 
-    FFBTriggerEffect(hapticEffectFromString(getArgumentValue(TRIGGER_EFFECT)), Strength);
+    FFBTriggerTestEffect(hapticEffectFromString(getArgumentValue(TRIGGER_EFFECT)), Strength);
     sleep(60);
     return EXIT_SUCCESS;
   }
