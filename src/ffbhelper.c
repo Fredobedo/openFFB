@@ -409,7 +409,7 @@ void  FFBCreateHapticDamperEffect()
 		debug(1," Error creating FF_DAMPER  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);	
 	else{
 		supportedFeatures|=FF_FRICTION_LOADED;
-		debug(1, "FF_DAMPER Effect id=%d\n", effect->id);	
+		debug(1, "FF_DAMPER Effect   id=%d\n", effect->id);	
 	}
 }
 
@@ -953,7 +953,7 @@ void FFBSetGlobalGain(int level)
 /* --- AutoCenter Global Setting (1-100) for 1 second only --- */
 void FFBSetGlobalAutoCenter(int level, int duration_ms)
 {
-	debug(1, "FFBSetGlobalAutoCenter (during 1 sec)");
+	debug(1, "FFBSetGlobalAutoCenter (during 1 sec)\n");
 	
 	memset(&event, 0, sizeof(event));
 	event.type = EV_FF;
