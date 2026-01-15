@@ -218,15 +218,15 @@ FFBStatus processPacket(unsigned char* packet)
 		if(packet[6]==0x0)
 			FFBStopEffect(ffb_effects[sine_effect_idx].id);
 		else
-			FFBTriggerSineEffect(previous_rawpacket[5]!=packet[5]|| previous_rawpacket[6]!=packet[6], inputPacket.sineFrequency*100.0f, inputPacket.sineIntensity);
+			FFBTriggerSineEffect(previous_rawpacket[5]!=packet[5]|| previous_rawpacket[6]!=packet[6], inputPacket.sineFrequency, inputPacket.sineIntensity);
 
 			
 		/* only copy if there is a diff */
-		if(memcmp(previous_rawpacket, packet,6)!=0){
+		if(memcmp(previous_rawpacket, packet, 8)!=0){
 			if(getConfig()->debugLevel==1)
-				printf("%02X%02X%02X%02X%02X%02X\n", packet[0],	packet[1], packet[2], packet[3], packet[4], packet[5]);
+				printf("%02X%02X%02X%02X%02X%02X%02X%02X\n", packet[0],	packet[1], packet[2], packet[3], packet[4], packet[5], packet[6], packet[7]);
 
-			memcpy(previous_rawpacket, packet, 6);
+			memcpy(previous_rawpacket, packet, 8);
 		}
 	}
 	return FFB_STATUS_SUCCESS;

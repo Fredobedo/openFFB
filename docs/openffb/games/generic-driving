@@ -1,24 +1,38 @@
 # Generic FFB effect settings
 
-# set the global strength of all effects here (0-100)
-GLOBAL_GAIN 100
+# set the global strength of all effects here (default is 100)
+#GLOBAL_GAIN 100
 
-# for the games not supporting FFB effects, you can set a generic auto center effect here (0-100)
+# for the games not supporting FFB effects, you can set a generic auto center effect here (default is 0)
 AUTO_CENTER 1
 
-# adjust spring effect if necessary here
-MIN_SPRING 0
+# adjust spring effect if necessary here (default is 0-100)
+MIN_SPRING 15
 MAX_SPRING 100
 
-# adjust friction effect if necessary here
-MIN_FRICTION 0
+# adjust friction effect if necessary here (default is 0-100)
+MIN_FRICTION 15
 MAX_FRICTION 100
 
-# adjust torque effect if necessary here
-MIN_TORQUE 0
+# adjust torque effect if necessary here (default is 0-100)
+MIN_TORQUE 15
 MAX_TORQUE 100
+
+# adjust sine effect intensity if necessary here (default is 0-100)
+MIN_INTENCITY 15
+MAX_INTENCITY 100
+
+# adjust the period of period effects here if necessary (ex: SINE EFFECT) (default is 1.0)
+#periodAdjustmentFactor 1.0
 
 # for those who want to use a Logitech racing wheel which is upported by new-lg4ff
 # and have possible steering range up to 900 degree (i.e. G25, G27),
 # this option can be used to change it on the fly
 LOGITECH_STEERING_RANGE 360
+
+# As of today, I only see one game (Club Kart) that needs to get wheel position through MIDI interface
+# Other games ust get wheel position from JVS analog reports (default is 0)
+# SEND_WHEEL_POSITION_TO_MIDI 1
+
+#invert wheel position values when sending through MIDI (default is 0)
+# INVERTED_WHEEL_POSITION 1

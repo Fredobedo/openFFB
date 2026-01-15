@@ -37,6 +37,9 @@ FFBConfig config = {
     .maxFriction = 100,
     .minTorque = 0,
     .maxTorque = 100,
+    .minIntensity = 0,
+    .maxIntensity = 100,
+    .periodAdjustmentFactor = 1.0,
     .logitechSteeringRange = 900,
     .SendWheelPositionToMidi = 0,
     .InvertedWheelPosition = 0,
@@ -47,21 +50,24 @@ void DumpConfig()
     printf("------------------------------------------------------------------------\n");
     printf("-- Dump configuration:\n");
     printf("------------------------------------------------------------------------\n");    
-    printf("gameProfilePath       = %s\n", config.gameProfilePath);
-    printf("gameProfile           = %s\n", config.gameProfile);
-    printf("segaFFBControllerPath = %s\n", config.segaFFBControllerPath);
-    printf("debugLevel            = %d\n", config.debugLevel);
-    printf("globalGain            = %d\n", config.globalGain);
-    printf("autoCenter            = %d\n", config.autoCenter);
-    printf("minSpring             = %d\n", config.minSpring);
-    printf("maxSpring             = %d\n", config.maxSpring);
-    printf("minFriction           = %d\n", config.minFriction);
-    printf("maxFriction           = %d\n", config.maxFriction);
-    printf("minTorque             = %d\n", config.minTorque);
-    printf("maxTorque             = %d\n", config.maxTorque);    
-    printf("staticSpring          = %d\n", config.minTorque);
-    printf("staticFriction        = %d\n", config.maxTorque); 
-    printf("logitechSteeringRange = %d\n", config.logitechSteeringRange);
+    printf("gameProfilePath         = %s\n", config.gameProfilePath);
+    printf("gameProfile             = %s\n", config.gameProfile);
+    printf("segaFFBControllerPath   = %s\n", config.segaFFBControllerPath);
+    printf("debugLevel              = %d\n", config.debugLevel);
+    printf("globalGain              = %d\n", config.globalGain);
+    printf("autoCenter              = %d\n", config.autoCenter);
+    printf("minSpring               = %d\n", config.minSpring);
+    printf("maxSpring               = %d\n", config.maxSpring);
+    printf("minFriction             = %d\n", config.minFriction);
+    printf("maxFriction             = %d\n", config.maxFriction);
+    printf("minTorque               = %d\n", config.minTorque);
+    printf("maxTorque               = %d\n", config.maxTorque);  
+    printf("minIntensity            = %d\n", config.minIntensity);
+    printf("maxIntensity            = %d\n", config.maxIntensity);  
+    printf("periodAdjustmentFactor  = %f\n", config.periodAdjustmentFactor);
+    printf("staticSpring            = %d\n", config.minTorque);
+    printf("staticFriction          = %d\n", config.maxTorque); 
+    printf("logitechSteeringRange   = %d\n", config.logitechSteeringRange);
     printf("SendWheelPositionToMidi = %d\n", config.SendWheelPositionToMidi);
     printf("InvertedWheelPosition   = %d\n", config.InvertedWheelPosition);
 }
@@ -148,6 +154,12 @@ FFBConfigStatus parseDrivingProfile(char *path)
             config.minTorque = atoi(getNextToken(NULL, " ", &saveptr));                                       
         else if (strcmp(command, "MAX_TORQUE") == 0)
             config.maxTorque = atoi(getNextToken(NULL, " ", &saveptr));   
+        else if (strcmp(command, "MIN_INTENSITY") == 0)
+            config.minIntensity = atoi(getNextToken(NULL, " ", &saveptr));   
+        else if (strcmp(command, "MAX_INTENSITY") == 0)
+            config.maxIntensity = atoi(getNextToken(NULL, " ", &saveptr));
+        else if (strcmp(command, "PERIOD_ADJUSTMENT") == 0)
+            config.periodAdjustmentFactor = atof(getNextToken(NULL, " ", &saveptr));
         else if (strcmp(command, "STATIC_SPRING") == 0)
             config.staticSpring = atoi(getNextToken(NULL, " ", &saveptr));                                       
         else if (strcmp(command, "STATIC_FRICTION") == 0)

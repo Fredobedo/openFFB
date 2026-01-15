@@ -33,6 +33,11 @@ typedef struct
     int minTorque;
     int maxTorque;
 
+    int minIntensity;
+    int maxIntensity;
+    
+    float periodAdjustmentFactor;
+
     int staticSpring;
     int staticFriction;
     

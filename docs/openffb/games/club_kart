@@ -18,6 +18,21 @@ MAX_FRICTION 100
 MIN_TORQUE 20
 MAX_TORQUE 100
 
+# adjust sine effect intensity if necessary here (default is 0-100)
+MIN_INTENCITY 15
+MAX_INTENCITY 100
+
+# adjust the period of period effects here if necessary (ex: SINE EFFECT) (default is 1.0)
+periodAdjustmentFactor 1.0
+
+# Club Kart use case:
+# As of today, I only see one game (Club Kart) that needs to get wheel position through MIDI interface
+# Other games ust get wheel position from JVS analog reports (default is 0)
+SEND_WHEEL_POSITION_TO_MIDI 1
+
+#invert wheel position values when sending through MIDI (default is 0)
+INVERTED_WHEEL_POSITION 1
+
 LOGITECH_STEERING_RANGE 270
 SEND_WHEEL_POSITION_TO_MIDI 1
 INVERTED_WHEEL_POSITION 1

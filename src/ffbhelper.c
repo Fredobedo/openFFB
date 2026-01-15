@@ -600,52 +600,59 @@ void FFBRemoveAllEffects()
 // FFBTriggerSineEffect applies or updates a force feedback sine wave effect on a device, 
 // configuring its frequency and intensity, and uploading the effect if supported. 
 // The function manages effect parameters, uploads them to the device, and handles starting or stopping the effect as needed.
-void FFBTriggerSineEffect(bool upload, float freq, float intensity)
+void FFBTriggerSineEffect(bool upload, float frequency, float intensity)
 {
 	debug(1, "FFBTriggerSineEffect");
 	if(FF_SINE_LOADED==(supportedFeatures & FF_SINE_LOADED)) 
 	{
-debug(1, " -> frequency: %.2f Hz, intensity: %.2f", freq, intensity);
+debug(1, "\n  -> arg_frequency: %.2f, arg_intensity: %.2f", frequency, intensity);
 
 		struct ff_effect* sineEffect=&ffb_effects[sine_effect_idx];
 		if(upload)
 		{
-		    // Clamp frequency to 0.5Hz to 100Hz (valid for nearly all FFB devices)
-    		if (freq < 0.5f) freq = 0.5f;
-    		if (freq > 100.0f) freq = 100.0f;
+			// to convert from 0.5-1.0 to 50-100Hz
+			frequency*=(360.0f * getConfig()->periodAdjustmentFactor); 
 
-			// Clamp intensity to -1.0 to 1.0 (maps to -32767 to 32767 evdev range)
-			if (intensity < -1.0f) intensity = -1.0f;
-			if (intensity > 1.0f) intensity = 1.0f;
+			//According https://github.com/flyinghead/flycast/blob/master/core/hw/naomi/midiffb.cpp
+			// we see that value of 2 = 1Hz and based on max value of 0x7f, we only have a range 127/2Hz => 0.5(0x01) to 64Hz(0x7F)
+    		//if (frequency < 0.5f) frequency = 0.5f;
+    		//if (frequency > 120.0f) frequency = 120.0f;
+			sineEffect->u.periodic.period= (unsigned short)frequency;
+			//sineEffect->u.periodic.period= (unsigned short)(1000.0f / frequency); // period in milliseconds
 
-			// int confMinForce = getConfig()->minTorque;
-			// int confMaxForce = getConfig()->maxTorque;
 
-			// short MinForce = (short)(intensity > 0.001 ? (confMinForce / 100.0 * 32767.0) : 0);
-			// short MaxForce = (short)(getConfig()->maxTorque / 100.0 * 32767.0);
-			// short range = MaxForce - MinForce;
-			// short level = (short)(intensity * range + MinForce);
-			//sineEffect->u.constant.level = level;	
-
-			// Convert frequency (Hz) to period in microseconds
-			//sineEffect->u.periodic.period = (unsigned int)(1000000.0f / freq);
-
-			sineEffect->u.periodic.offset = 0;         // Centered at 0
-    		sineEffect->u.periodic.phase = 0;
 
 			// Frequency Math: Calculate period in microseconds => Period = 1000 / Frequency(Hz)
 			// For 50Hz: 1000 / 50 = 20ms
 			// Clamp value between 5-1000
-			int period_us = (int)(1000.0f / freq); // period in milliseconds
-			if (period_us < 5) period_us = 5;       // it looks like it's the Minimum period of my G27
-			if (period_us > 1000) period_us = 1000; // Maximum period
-			sineEffect->u.periodic.period = period_us; 
+			// int period_us = (int)(1000.0f / frequency); // period in milliseconds
+			// if (period_us < 5) period_us = 5;       // it looks like it's the Minimum period of my G27
+			// if (period_us > 1000) period_us = 1000; // Maximum period
+			// sineEffect->u.periodic.period = period_us; 
 
-debug(1, " -> period: %u us", sineEffect->u.periodic.period);
+debug(1, "\n  -> frequency converted to period: %ums", sineEffect->u.periodic.period);
 
-			// Map normalized intensity to evdev's signed 16-bit magnitude range
+			// Clamp intensity to -1.0 to 1.0 (maps to -32767 to 32767 evdev range)
+			// rg_intensity: 0.16 -> 0.18*32767=5887 // is the minimum on G27 to feel something which corresponds to 0x16 from Sega FFB
+			if (intensity < -1.0f) intensity = -1.0f;
+			if (intensity > 1.0f) intensity = 1.0f;
+
+			int confMinIntensity = getConfig()->minIntensity;
+			int confMaxIntensity = getConfig()->maxIntensity;
+
+			//let's try to calculate amplitude level based on min/max intensity set in game config
+			//32767 is max for evdev, it's a signed value, so in theory it could be negative too but it makes no sense for sine wave magnitude
+			short MinIntensity = (short)(intensity > 0.001 ? (confMinIntensity / 100.0 * 32767.0) : 0);
+			short MaxIntensity = (short)(confMaxIntensity / 100.0 * 32767.0);
+debug(1, "\n  -> minIntensity: %d, maxIntensity: %d", MinIntensity, MaxIntensity);
+			
+			short range = MaxIntensity - MinIntensity;
+			short level = (short)(intensity * range + MinIntensity);
 			sineEffect->u.periodic.magnitude = (short)(intensity * 32767.0f);
-debug(1, " -> magnitude: %d", sineEffect->u.periodic.magnitude);
+debug(1, "\n  -> intensity converted to magnitude: %d", sineEffect->u.periodic.magnitude);             
+
+			sineEffect->u.periodic.offset = 0;         // Centered at 0
+    		sineEffect->u.periodic.phase = 0;
 
 			// Set envelope to instant attack/fade (no ramp up/down)
 			sineEffect->u.periodic.envelope.attack_length = 0;
@@ -739,10 +746,6 @@ void FFBTriggerSpringEffect(bool upload, double strength)
  *   @fade_level:    level at the end of fade
  *  Constant:
  *   @level:         strength of the effect; may be negative
- * The @attack_level and @fade_level are absolute values; when applying
- * envelope force-feedback core will convert to positive/negative
- * value based on polarity of the default level of the effect.
- * Valid range for the attack and fade levels is 0x0000 - 0x7fff
  */
 void FFBTriggerConstantEffect(bool upload, double strength)
 {
