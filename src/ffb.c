@@ -100,7 +100,7 @@ FFBStatus readPacket()
 FFBStatus processPacket(unsigned char* packet)
 {
 	if(getConfig()->debugLevel==3)
-		printf("%02X%02X%02X%02X%02X%02X%02X%02X\n", packet[0],packet[1], packet[2], packet[3], packet[4], packet[5], packet[6], packet[7]);
+		printf("debug3:%02X%02X%02X%02X%02X%02X%02X%02X\n",packet[0],packet[1],packet[2],packet[3],packet[4],packet[5],packet[6],packet[7]);
 	
 	if(packet[0]<0x80)
 		return FFB_STATUS_ERROR_SYNCH_REQUIRED;
@@ -117,6 +117,7 @@ FFBStatus processPacket(unsigned char* packet)
 	{
 		switch (packet[1])
 		{
+		//0x01
 		case GET_WHEEL_POSITION:
 			replyPacket[0]=0x90;
 
@@ -154,21 +155,27 @@ FFBStatus processPacket(unsigned char* packet)
 
 			WriteReplyPacket();
 			break;
+		//0xA0
 		case SET_CENTER:
 			FFBSetGlobalAutoCenter(40,1500);
 			break;
+		//0xA1
 		case SET_MAX_RIGHT:
 			FFBTriggerConstantEffect(true,0.2);
 			break;
+		//0xA2
 		case SET_MAX_LEFT:
 			FFBTriggerConstantEffect(true,-0.2);
 			break;
+		//0x02
 		case GET_POWER_LINE:
 			//TO DO
 			break;
+		//0xFE
 		case NOT_READY:
 			//nothing to do
 			break;
+		//0xFF
 		case RESET_DEVICE:
 			FFBStopAllEffects();
 			break;
@@ -224,7 +231,7 @@ FFBStatus processPacket(unsigned char* packet)
 		/* only copy if there is a diff */
 		if(memcmp(previous_rawpacket, packet, 8)!=0){
 			if(getConfig()->debugLevel==1)
-				printf("%02X%02X%02X%02X%02X%02X%02X%02X\n", packet[0],	packet[1], packet[2], packet[3], packet[4], packet[5], packet[6], packet[7]);
+				printf("%02X%02X%02X%02X%02X%02X%02X%02X\n",packet[0],packet[1],packet[2],packet[3],packet[4],packet[5],packet[6],packet[7]);
 
 			memcpy(previous_rawpacket, packet, 8);
 		}
