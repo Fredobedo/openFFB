@@ -23,7 +23,7 @@ MIN_INTENSITY 15
 MAX_INTENSITY 100
 
 # adjust the period of period effects here if necessary (ex: SINE EFFECT) (default is 1.0)
-PERIOD_ADJUSTMENT_FACTORFactor 1.0
+PERIOD_ADJUSTMENT_FACTOR 1.0
 
 # Club Kart use case:
 # As of today, I only see one game (Club Kart) that needs to get wheel position through MIDI interface

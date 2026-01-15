@@ -241,7 +241,7 @@ FFBStatus processPacket(unsigned char* packet)
 
 void playCOMInitEffect()
 {
-	debug(2, "playCOMInitEffect:\n  ");
+	debug(2, "playCOMInitEffect:\n  - ");
 	FFBTriggerConstantEffect(true, -0.70);
 	usleep(40 * 1000);
 	debug(2, "\n  - ");
