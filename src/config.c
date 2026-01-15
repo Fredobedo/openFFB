@@ -158,7 +158,7 @@ FFBConfigStatus parseDrivingProfile(char *path)
             config.minIntensity = atoi(getNextToken(NULL, " ", &saveptr));   
         else if (strcmp(command, "MAX_INTENSITY") == 0)
             config.maxIntensity = atoi(getNextToken(NULL, " ", &saveptr));
-        else if (strcmp(command, "PERIOD_ADJUSTMENT") == 0)
+        else if (strcmp(command, "PERIOD_ADJUSTMENT_FACTOR") == 0)
             config.periodAdjustmentFactor = atof(getNextToken(NULL, " ", &saveptr));
         else if (strcmp(command, "STATIC_SPRING") == 0)
             config.staticSpring = atoi(getNextToken(NULL, " ", &saveptr));                                       

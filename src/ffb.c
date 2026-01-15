@@ -222,7 +222,7 @@ FFBStatus processPacket(unsigned char* packet)
 				FFBTriggerConstantEffect(previous_rawpacket[3]!=packet[3]|| previous_rawpacket[4]!=packet[4], inputPacket.torquePower);
 		}
 
-		if(packet[6]==0x0)
+		if(packet[6]==0x0 || packet[5]==0x0)
 			FFBStopEffect(ffb_effects[sine_effect_idx].id);
 		else
 			FFBTriggerSineEffect(previous_rawpacket[5]!=packet[5]|| previous_rawpacket[6]!=packet[6], inputPacket.sineFrequency, inputPacket.sineIntensity);
@@ -241,14 +241,20 @@ FFBStatus processPacket(unsigned char* packet)
 
 void playCOMInitEffect()
 {
-	debug(2, "playCOMInitEffect!!!\n");
+	debug(2, "playCOMInitEffect:\n  ");
 	FFBTriggerConstantEffect(true, -0.70);
 	usleep(40 * 1000);
+	debug(2, "\n  - ");
 	FFBTriggerConstantEffect(true, 0.0);
 	usleep(20 * 1000);
+	debug(2, "\n  - ");
 	FFBTriggerConstantEffect(true, 0.70);
 	usleep(40 * 1000);
+	debug(2, "\n  - ");
 	FFBTriggerConstantEffect(true, 0.0);
+	usleep(40 * 1000);
+	debug(2, "\n");
+	debug(2, "playCOMInitEffect finished.\n");
 }
 
 void playCOMEndEffect()

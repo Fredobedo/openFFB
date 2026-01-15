@@ -19,11 +19,11 @@ MIN_TORQUE 15
 MAX_TORQUE 100
 
 # adjust sine effect intensity if necessary here (default is 0-100)
-MIN_INTENCITY 15
-MAX_INTENCITY 100
+MIN_INTENSITY 15
+MAX_INTENSITY 100
 
 # adjust the period of period effects here if necessary (ex: SINE EFFECT) (default is 1.0)
-#periodAdjustmentFactor 1.0
+#PERIOD_ADJUSTMENT_FACTOR 1.0
 
 # for those who want to use a Logitech racing wheel which is upported by new-lg4ff
 # and have possible steering range up to 900 degree (i.e. G25, G27),
