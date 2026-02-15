@@ -602,10 +602,10 @@ void FFBRemoveAllEffects()
 // The function manages effect parameters, uploads them to the device, and handles starting or stopping the effect as needed.
 void FFBTriggerSineEffect(bool upload, float frequency, float intensity)
 {
-	debug(1, "FFBTriggerSineEffect");
+	debug(0, "FFBTriggerSineEffect");
 	if(FF_SINE_LOADED==(supportedFeatures & FF_SINE_LOADED)) 
 	{
-debug(1, "\n  -> arg_frequency: %.2f, arg_intensity: %.2f", frequency, intensity);
+debug(0, " -> arg_frequency: %.2f, arg_intensity: %.2f\n", frequency, intensity);
 
 		struct ff_effect* sineEffect=&ffb_effects[sine_effect_idx];
 		if(upload)
@@ -630,7 +630,7 @@ debug(1, "\n  -> arg_frequency: %.2f, arg_intensity: %.2f", frequency, intensity
 			// if (period_us > 1000) period_us = 1000; // Maximum period
 			// sineEffect->u.periodic.period = period_us; 
 
-debug(1, "\n  -> frequency converted to period: %ums", sineEffect->u.periodic.period);
+debug(0, " -> frequency converted to period: %ums\n", sineEffect->u.periodic.period);
 
 			// Clamp intensity to -1.0 to 1.0 (maps to -32767 to 32767 evdev range)
 			// rg_intensity: 0.16 -> 0.18*32767=5887 // is the minimum on G27 to feel something which corresponds to 0x16 from Sega FFB
@@ -642,14 +642,14 @@ debug(1, "\n  -> frequency converted to period: %ums", sineEffect->u.periodic.pe
 
 			//let's try to calculate amplitude level based on min/max intensity set in game config
 			//32767 is max for evdev, it's a signed value, so in theory it could be negative too but it makes no sense for sine wave magnitude
-			short MinIntensity = (short)(intensity > 0.001 ? (confMinIntensity / 100.0 * 32767.0) : 0);
+			short MinIntensity = (short)(intensity > 0.001 ? (confMinIntensity / 100.0 * 32767.0) : 0); // if 20 in config=> 6553.4
 			short MaxIntensity = (short)(confMaxIntensity / 100.0 * 32767.0);
-debug(1, "\n  -> minIntensity: %d, maxIntensity: %d", MinIntensity, MaxIntensity);
+debug(0, " -> minIntensity: %d, maxIntensity: %d\n", MinIntensity, MaxIntensity);
 			
-			short range = MaxIntensity - MinIntensity;
-			short level = (short)(intensity * range + MinIntensity);
-			sineEffect->u.periodic.magnitude = (short)(intensity * 32767.0f);
-debug(1, "\n  -> intensity converted to magnitude: %d", sineEffect->u.periodic.magnitude);             
+			short range = MaxIntensity - MinIntensity; // => 26214
+			//short level = (short)(intensity * range + MinIntensity); 
+			sineEffect->u.periodic.magnitude = (short)(((intensity/1.0) * range) + MinIntensity);
+debug(0, " -> intensity converted to magnitude: %d\n", sineEffect->u.periodic.magnitude);             
 
 			sineEffect->u.periodic.offset = 0;         // Centered at 0
     		sineEffect->u.periodic.phase = 0;
@@ -692,7 +692,7 @@ debug(1, "\n  -> intensity converted to magnitude: %d", sineEffect->u.periodic.m
 // The function manages effect parameters, uploads them to the device, and handles starting or stopping the effect as needed.
 void FFBTriggerSpringEffect(bool upload, double strength)
 {
-	debug(1, "FFBTriggerSpringEffect");
+	debug(1, "FFBTriggerSpringEffect\n");
 	if(FF_SPRING_LOADED==(supportedFeatures & FF_SPRING_LOADED)) 
 	{
 		struct ff_effect* springEffect=&ffb_effects[spring_effect_idx];
@@ -749,7 +749,7 @@ void FFBTriggerSpringEffect(bool upload, double strength)
  */
 void FFBTriggerConstantEffect(bool upload, double strength)
 {
-	debug(1, "FFBTriggerConstantEffect");
+	debug(1, "FFBTriggerConstantEffect\n");
 	if(FF_CONSTANT_LOADED==(supportedFeatures & FF_CONSTANT_LOADED)) 
 	{
 		struct ff_effect* constantEffect=&ffb_effects[constant_effect_idx];
@@ -819,7 +819,7 @@ void FFBTriggerConstantEffect(bool upload, double strength)
  */
 void FFBTriggerFrictionEffect(bool upload, double strength)
 {
-	debug(1, "FFBTriggerFrictionEffect");
+	debug(1, "FFBTriggerFrictionEffect\n");
 	//debug(1, "FFBTriggerFrictionEffect upload=%d strength=%f\n", upload, strength);
 	if(FF_FRICTION_LOADED==(supportedFeatures & FF_FRICTION_LOADED)) 
 	{
@@ -874,7 +874,7 @@ void FFBTriggerRumbleEffectDefault(bool upload, double strength)
 void FFBTriggerRumbleEffect(bool upload, double strength, motor_select motor)
 {
 
-	debug(1, "FFBTriggerRumbleEffect");
+	debug(1, "FFBTriggerRumbleEffect\n");
 	if(FF_RUMBLE_LOADED==(supportedFeatures & FF_RUMBLE_LOADED)) 
 	{
 		struct ff_effect* rumbleEffect=&ffb_effects[rumble_effect_idx];

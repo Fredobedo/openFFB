@@ -19,7 +19,7 @@ MIN_TORQUE 20
 MAX_TORQUE 100
 
 # adjust sine effect intensity if necessary here (default is 0-100)
-MIN_INTENSITY 15
+MIN_INTENSITY 20
 MAX_INTENSITY 100
 
 # adjust the period of period effects here if necessary (ex: SINE EFFECT) (default is 1.0)
