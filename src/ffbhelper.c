@@ -611,14 +611,14 @@ debug(0, " -> arg_frequency: %.2f, arg_intensity: %.2f\n", frequency, intensity)
 		if(upload)
 		{
 			// to convert from 0.5-1.0 to 50-100Hz
-			frequency*=(360.0f * getConfig()->periodAdjustmentFactor); 
+			//frequency*=(360.0f * getConfig()->periodAdjustmentFactor); 
 
 			//According https://github.com/flyinghead/flycast/blob/master/core/hw/naomi/midiffb.cpp
 			// we see that value of 2 = 1Hz and based on max value of 0x7f, we only have a range 127/2Hz => 0.5(0x01) to 64Hz(0x7F)
     		//if (frequency < 0.5f) frequency = 0.5f;
     		//if (frequency > 120.0f) frequency = 120.0f;
-			sineEffect->u.periodic.period= (unsigned short)frequency;
-			//sineEffect->u.periodic.period= (unsigned short)(1000.0f / frequency); // period in milliseconds
+			//sineEffect->u.periodic.period= (unsigned short)frequency;
+			sineEffect->u.periodic.period= (unsigned short)(1000.0f / (frequency * 10.0f)); // period in milliseconds
 
 
 
