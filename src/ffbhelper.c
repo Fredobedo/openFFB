@@ -618,7 +618,7 @@ debug(0, " -> arg_frequency: %.2f, arg_intensity: %.2f\n", frequency, intensity)
     		//if (frequency < 0.5f) frequency = 0.5f;
     		//if (frequency > 120.0f) frequency = 120.0f;
 			//sineEffect->u.periodic.period= (unsigned short)frequency;
-			sineEffect->u.periodic.period= (unsigned short)(1000.0f / (frequency * 10.0f)); // period in milliseconds
+			sineEffect->u.periodic.period= (unsigned short)(1000.0f / (frequency * 100.0f)); // period in milliseconds
 
 
 
