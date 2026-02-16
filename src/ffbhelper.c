@@ -642,12 +642,12 @@ debug(0, " -> frequency converted to period: %ums\n", sineEffect->u.periodic.per
 
 			//let's try to calculate amplitude level based on min/max intensity set in game config
 			//32767 is max for evdev, it's a signed value, so in theory it could be negative too but it makes no sense for sine wave magnitude
-			short MinIntensity = (short)(intensity > 0.001 ? (confMinIntensity / 100.0 * 32767.0) : 0); // if 20 in config=> 6553.4
+			//short MinIntensity = (short)(intensity > 0.001 ? (confMinIntensity / 100.0 * 32767.0) : 0); // if 20 in config=> 6553.4
+			short MinIntensity = (short)(confMinIntensity / 100.0 * 32767.0);
 			short MaxIntensity = (short)(confMaxIntensity / 100.0 * 32767.0);
 debug(0, " -> minIntensity: %d, maxIntensity: %d\n", MinIntensity, MaxIntensity);
 			
 			short range = MaxIntensity - MinIntensity; // => 26214
-			//short level = (short)(intensity * range + MinIntensity); 
 			sineEffect->u.periodic.magnitude = (short)(((intensity/1.0) * range) + MinIntensity);
 debug(0, " -> intensity converted to magnitude: %d\n", sineEffect->u.periodic.magnitude);             
 
@@ -1000,7 +1000,7 @@ void FFBTriggerTestEffect(unsigned int effect, double strength)
             FFBTriggerRumbleEffectDefault(true, strength);
             break;  
 		case FF_SINE:
-            FFBTriggerSineEffect(true, 50.0,1.0);
+            FFBTriggerSineEffect(true, 19,0.1);
             break;  						
     }
 }
