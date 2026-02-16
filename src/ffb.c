@@ -192,7 +192,7 @@ FFBStatus processPacket(unsigned char* packet)
 		inputPacket.friction        = ((double)packet[2]+1)/128;
 		inputPacket.torqueDirection = packet[3];
 		inputPacket.torquePower     = ((double)packet[4]+1)/128;
-		inputPacket.sineFrequency   = ((double)packet[5]+1)/128;
+		inputPacket.sineFrequency   = ((double)packet[5])/2;
 		inputPacket.sineIntensity   = ((double)packet[6]+1)/128;
 		inputPacket.crc             = packet[7];
 
