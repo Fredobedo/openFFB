@@ -1000,7 +1000,7 @@ void FFBTriggerTestEffect(unsigned int effect, double strength)
             FFBTriggerRumbleEffectDefault(true, strength);
             break;  
 		case FF_SINE:
-            FFBTriggerSineEffect(true, 19,0.1);
+            FFBTriggerSineEffect(true, 19,0.20);
             break;  						
     }
 }
