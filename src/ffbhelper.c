@@ -702,13 +702,13 @@ void FFBTriggerSpringEffect(bool upload, double strength)
 			short maxForce = (short)(getConfig()->maxSpring / 100.0 * 32767.0);
 			short range = maxForce - minForce;
 			short coeff = (short)(strength * range + minForce);
-			if (coeff < 0)
+			if (coeff > 32767)
 				coeff = 32767;
 
-			springEffect->u.condition[0].left_coeff = (short)(coeff);
-			springEffect->u.condition[0].left_saturation = (unsigned short)(coeff * 2.0); 
-			springEffect->u.condition[0].right_saturation = (unsigned short)(coeff * 2.0); 
 			springEffect->u.condition[0].right_coeff = (short)(coeff);
+			springEffect->u.condition[0].left_coeff = (short)(coeff);
+			springEffect->u.condition[0].right_saturation = (unsigned short)(coeff) * 2; 
+			springEffect->u.condition[0].left_saturation = (unsigned short)(coeff) * 2; 
 			springEffect->u.condition[1] = springEffect->u.condition[0];
 
 			/* update effect */
