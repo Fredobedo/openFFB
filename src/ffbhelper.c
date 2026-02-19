@@ -527,7 +527,7 @@ char* FFBCheckEffect(unsigned int check)
 
 void FFBDumpSupportedFeatures()
 {
-	if(IsLogitechWheel)
+	if(IsLogitechWheel())
 	{
 		debug(0, "------------------------------------------------------------------\n");
         debug(0, "-- Logitech wheel detected, sysfs entries:\n");

@@ -31,8 +31,6 @@ int main(int argc, char **argv)
   signal(SIGINT, handleSignal);
   start_time = clock();
 
-
-
   pid_fd = open(PID_FILE, O_RDWR | O_CREAT, 0644);
   if (pid_fd < 0) {
       perror("open");
@@ -70,11 +68,13 @@ int main(int argc, char **argv)
     debug(1, "\n");
   }
 
- unsigned char ahex2bin(unsigned char MSB, unsigned char LSB) {  
+  unsigned char ahex2bin(unsigned char MSB, unsigned char LSB) 
+  {  
     if (MSB > '9') MSB -= 7;          // Convert MSB value to a contiguous range (0x30..0x3F)  
     if (LSB > '9') LSB -= 7;          // Convert LSB value to a contiguous range (0x30..0x3F)  
      return (MSB <<4) | (LSB & 0x0F); // Make a result byte  using only low nibbles of MSB and LSB thus neglecting the input register case
- }  
+  }  
+
   /* Read the initial config */
   if (parseConfig(CONFIG_PATH) != FFB_CONFIG_STATUS_SUCCESS)
     printf("Warning: No valid openffb config file found, a default is being used\n");
@@ -121,6 +121,9 @@ int main(int argc, char **argv)
     debug(0, "Error, can not open device!\n"); 
     sleep(2);
   }
+
+  if(!running)
+    return EXIT_FAILURE;
 
   if(containArgument(GET_SUPPORTED_EFFECTS)){
     FFBDumpSupportedFeatures();
@@ -187,7 +190,6 @@ int main(int argc, char **argv)
 
   int MAX_SUCCESS = 3;
   int nbrOfSuccess=0;
-
   
   pthread_t wheelPositionThreadID;
   pthread_create(&wheelPositionThreadID, NULL, (void *)wheelPostionThread, NULL);
