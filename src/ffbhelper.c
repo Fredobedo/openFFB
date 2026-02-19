@@ -349,23 +349,23 @@ void FFBCreateHapticSineEffect()
 	effect->id = -1;
 	effect->type = FF_PERIODIC;
 	
+
 	effect->trigger.button = 0;
 	effect->trigger.interval = 0;
-	effect->replay.length = 1000;
+	effect->replay.length = 0;
 	effect->replay.delay = 0;
-	effect->direction = 0x4000;				/* Along X axis */ //not sure this is useful for steering wheel
+	effect->direction = 16384;	
 
 	effect->u.periodic.waveform = FF_SINE;
 	effect->u.periodic.period = 100;		// 0.1 second 
-	effect->u.periodic.magnitude = 0x4000;	// 0x4000 (max 0x7fff) 
+	effect->u.periodic.magnitude = 0x6000;	// 
 	effect->u.periodic.offset = 0;
 	effect->u.periodic.phase = 0;
 
-	effect->u.periodic.envelope.attack_length = 1000;
-	effect->u.periodic.envelope.fade_length = 1000;
-
-	//effect->u.periodic.envelope.attack_level = 0; //0x7fff; 		    -> this one to update
-	//effect->u.periodic.envelope.fade_level = 0; //0x7fff; 			-> this one to update
+	effect->u.periodic.envelope.attack_length = 0;
+	effect->u.periodic.envelope.attack_level = 0;
+	effect->u.periodic.envelope.fade_length = 0;
+	effect->u.periodic.envelope.fade_level = 0;
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
 		debug(2," Error creating FF_PERIODIC FF_SINE effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
@@ -637,8 +637,6 @@ debug(0, " -> arg_frequency: %.2f, arg_intensity: %.2f\n", frequency, intensity)
 		struct ff_effect* sineEffect=&ffb_effects[sine_effect_idx];
 		if(upload)
 		{
-			sineEffect->direction=0x2000;
-			
 			// to convert from 0.5-1.0 to 50-100Hz
 			//frequency*=(360.0f * getConfig()->periodAdjustmentFactor); 
 
@@ -679,15 +677,6 @@ debug(0, " -> minIntensity: %d, maxIntensity: %d\n", MinIntensity, MaxIntensity)
 			short range = MaxIntensity - MinIntensity; // => 26214
 			sineEffect->u.periodic.magnitude = (short)(((intensity/1.0) * range) + MinIntensity);
 debug(0, " -> intensity converted to magnitude: %d\n", sineEffect->u.periodic.magnitude);             
-
-			sineEffect->u.periodic.offset = 0;         // Centered at 0
-    		sineEffect->u.periodic.phase = 0;
-
-			// Set envelope to instant attack/fade (no ramp up/down)
-			sineEffect->u.periodic.envelope.attack_length = 0;
-			sineEffect->u.periodic.envelope.attack_level = 0;
-			sineEffect->u.periodic.envelope.fade_length = 0;
-			sineEffect->u.periodic.envelope.fade_level = 0;
 
 			/* update effect */
 			if (ioctl(device_handle, EVIOCSFF, sineEffect) < 0)
