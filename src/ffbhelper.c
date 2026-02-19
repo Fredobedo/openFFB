@@ -729,8 +729,8 @@ debug(0, " -> strength: %.2f, coeff: %d\n", strength, coeff);
 			springEffect->u.condition[0].left_coeff = (short)(coeff);
 			// springEffect->u.condition[0].right_saturation = (unsigned short)(coeff) * 2; 
 			// springEffect->u.condition[0].left_saturation = (unsigned short)(coeff) * 2; 
-			springEffect->u.condition[0].right_saturation = (maxForce/ 100.0) * 65535.0; 
-			springEffect->u.condition[0].left_saturation =  (maxForce/ 100.0) * 65535.0; 
+			springEffect->u.condition[0].right_saturation = (getConfig()->maxSpring / 100.0) * 65535.0; 
+			springEffect->u.condition[0].left_saturation =  (getConfig()->maxSpring / 100.0) * 65535.0; 
 
 debug(0, " -> right_coeff: %d, left_coeff: %d\n", springEffect->u.condition[0].right_coeff, springEffect->u.condition[0].left_coeff);
 debug(0, " -> right_saturation: %d, left_saturation: %d\n", springEffect->u.condition[0].right_saturation, springEffect->u.condition[0].left_saturation);
@@ -1056,8 +1056,8 @@ void FFBTriggerFrictionEffect(bool upload, double strength)
 
 			frictionEffect->u.condition[0].left_coeff = (short)(coeff);
 			frictionEffect->u.condition[0].right_coeff = (short)(coeff);
-			frictionEffect->u.condition[0].left_saturation = (maxForce/ 100.0) * 65535.0; 
-			frictionEffect->u.condition[0].right_saturation = (maxForce/ 100.0) * 65535.0; 
+			frictionEffect->u.condition[0].left_saturation = (getConfig()->maxSpring / 100.0) * 65535.0; 
+			frictionEffect->u.condition[0].right_saturation = (getConfig()->maxSpring / 100.0) * 65535.0; 
 			frictionEffect->u.condition[1] = frictionEffect->u.condition[0];
 
 			/* update effect */
