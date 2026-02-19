@@ -727,8 +727,10 @@ debug(0, " -> strength: %.2f, coeff: %d\n", strength, coeff);
 
 			springEffect->u.condition[0].right_coeff = (short)(coeff);
 			springEffect->u.condition[0].left_coeff = (short)(coeff);
-			springEffect->u.condition[0].right_saturation = (unsigned short)(coeff) * 2; 
-			springEffect->u.condition[0].left_saturation = (unsigned short)(coeff) * 2; 
+			// springEffect->u.condition[0].right_saturation = (unsigned short)(coeff) * 2; 
+			// springEffect->u.condition[0].left_saturation = (unsigned short)(coeff) * 2; 
+			springEffect->u.condition[0].right_saturation = (maxForce/ 100.0) * 65535.0; 
+			springEffect->u.condition[0].left_saturation =  (maxForce/ 100.0) * 65535.0; 
 
 debug(0, " -> right_coeff: %d, left_coeff: %d\n", springEffect->u.condition[0].right_coeff, springEffect->u.condition[0].left_coeff);
 debug(0, " -> right_saturation: %d, left_saturation: %d\n", springEffect->u.condition[0].right_saturation, springEffect->u.condition[0].left_saturation);
@@ -986,15 +988,11 @@ void FFBTriggerConstantEffect(bool upload, double strength)
 			int confMinForce = getConfig()->minTorque;
 			int confMaxForce = getConfig()->maxTorque;
 
-			short MinForce = (short)(strength > 0.001 ? (confMinForce / 100.0 * 32767.0) : 0);
-			short MaxForce = (short)(getConfig()->maxTorque / 100.0 * 32767.0);
+			short MinForce = (short)(strength > 0.001 ? (confMinForce / 100.0 * 16384.0) : 0);
+			short MaxForce = (short)(getConfig()->maxTorque / 100.0 * 16384.0);
 			short range = MaxForce - MinForce;
 			short level = (short)(strength * range + MinForce);
 
-			//from -32767 to 32767 (max value of a signed short)
-			//the fact is that for my Logitech, effect starts at 10000 until 32767
-			//so, it starts from 28->7F
-			//a possibility is to set minForce to 25-30 in game profile
 			constantEffect->u.constant.level = level;	
 
 			/* Here we set the two values to the max as the arcade system 'manages" fades                */
@@ -1049,17 +1047,17 @@ void FFBTriggerFrictionEffect(bool upload, double strength)
 		struct ff_effect* frictionEffect=&ffb_effects[friction_effect_idx];
 		if(upload)
 		{
-			short minForce = (short)(strength > 0.001 ? (getConfig()->minFriction / 100.0 * 32767.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
-			short maxForce = (short)(getConfig()->maxFriction / 100.0 * 32767.0);
+			short minForce = (short)(strength > 0.001 ? (getConfig()->minFriction / 100.0 * 16384.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
+			short maxForce = (short)(getConfig()->maxFriction / 100.0 * 16384.0);
 			short range = maxForce - minForce;
 			short coeff = (short)(strength * range + minForce);
 			if (coeff < 0)
-				coeff = 32767;
+				coeff = 16384;
 
 			frictionEffect->u.condition[0].left_coeff = (short)(coeff);
-			frictionEffect->u.condition[0].left_saturation = (short)(coeff * 2.0); 
-			frictionEffect->u.condition[0].right_saturation = (short)(coeff * 2.0); 
 			frictionEffect->u.condition[0].right_coeff = (short)(coeff);
+			frictionEffect->u.condition[0].left_saturation = (maxForce/ 100.0) * 65535.0; 
+			frictionEffect->u.condition[0].right_saturation = (maxForce/ 100.0) * 65535.0; 
 			frictionEffect->u.condition[1] = frictionEffect->u.condition[0];
 
 			/* update effect */
@@ -1108,8 +1106,8 @@ void FFBTriggerRumbleEffect(bool upload, double strength, motor_select motor)
 			else if (strength < -1.0)
 				strength = -1.0;
 
-			short MinForce = (short)(strength > 0.001 ? (getConfig()->minTorque / 100.0 * 32767.0) : 0);
-			short MaxForce = (short)(getConfig()->maxTorque / 100.0 * 32767.0);
+			short MinForce = (short)(strength > 0.001 ? (getConfig()->minTorque / 100.0 * 16384.0) : 0);
+			short MaxForce = (short)(getConfig()->maxTorque / 100.0 * 16384.0);
 			short range = MaxForce - MinForce;
 			short level = (short)(strength * range + MinForce);
 
