@@ -716,12 +716,12 @@ void FFBTriggerSpringEffect(bool upload, double strength)
 		struct ff_effect* springEffect=&ffb_effects[spring_effect_idx];
 		if(upload)
 		{
-			short minForce = (short)(strength > 0.001 ? (getConfig()->minSpring / 100.0 * 32767.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
-			short maxForce = (short)(getConfig()->maxSpring / 100.0 * 32767.0);
+			short minForce = (short)(strength > 0.001 ? (getConfig()->minSpring / 100.0 * 16384.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
+			short maxForce = (short)(getConfig()->maxSpring / 100.0 * 16384.0);
 			short range = maxForce - minForce;
 			short coeff = (short)(strength * range + minForce);
-			if (coeff > 32767)
-				coeff = 32767;
+			if (coeff > 16384)
+				coeff = 16384;
 
 debug(0, " -> strength: %.2f, coeff: %d\n", strength, coeff);
 
