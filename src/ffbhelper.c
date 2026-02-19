@@ -408,7 +408,7 @@ void  FFBCreateHapticDamperEffect()
 	if(ioctl(device_handle, EVIOCSFF, effect))
 		debug(1," Error creating FF_DAMPER  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);	
 	else{
-		supportedFeatures|=FF_FRICTION_LOADED;
+		supportedFeatures|=FF_DAMPER_LOADED;
 		debug(1, "FF_DAMPER Effect   id=%d\n", effect->id);	
 	}
 }
@@ -479,6 +479,13 @@ void FFBCreateAllHapticEffects()
 	FFBCreateHapticDamperEffect();
 	FFBCreateHapticSpringEffect();
 	FFBCreateHapticRumbleEffect();
+
+	FFBCreateHapticInertiaEffect();
+	FFBCreateHapticRampEffect();
+	FFBCreateHapticSquareEffect();
+	FFBCreateHapticTriangleEffect();
+	FFBCreateHapticSawUpEffect();
+	FFBCreateHapticSawDownEffect();
 }
 
 void FFBAbortExecution(void)
@@ -610,6 +617,8 @@ debug(0, " -> arg_frequency: %.2f, arg_intensity: %.2f\n", frequency, intensity)
 		struct ff_effect* sineEffect=&ffb_effects[sine_effect_idx];
 		if(upload)
 		{
+			sineEffect->direction=0x2000;
+			
 			// to convert from 0.5-1.0 to 50-100Hz
 			//frequency*=(360.0f * getConfig()->periodAdjustmentFactor); 
 
@@ -656,10 +665,10 @@ debug(0, " -> intensity converted to magnitude: %d\n", sineEffect->u.periodic.ma
 
 			// Set envelope to instant attack/fade (no ramp up/down)
 			sineEffect->u.periodic.envelope.attack_length = 0;
-			sineEffect->u.periodic.envelope.fade_length = 0;
 			sineEffect->u.periodic.envelope.attack_level = 0;
+			sineEffect->u.periodic.envelope.fade_length = 0;
 			sineEffect->u.periodic.envelope.fade_level = 0;
-			//sineEffect->u.periodic.custom_len = 100;
+
 			/* update effect */
 			if (ioctl(device_handle, EVIOCSFF, sineEffect) < 0)
 				debug(1, "ERROR: uploading effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
@@ -705,10 +714,16 @@ void FFBTriggerSpringEffect(bool upload, double strength)
 			if (coeff > 32767)
 				coeff = 32767;
 
+debug(0, " -> strength: %.2f, coeff: %d\n", strength, coeff);
+
 			springEffect->u.condition[0].right_coeff = (short)(coeff);
 			springEffect->u.condition[0].left_coeff = (short)(coeff);
 			springEffect->u.condition[0].right_saturation = (unsigned short)(coeff) * 2; 
 			springEffect->u.condition[0].left_saturation = (unsigned short)(coeff) * 2; 
+
+debug(0, " -> right_coeff: %d, left_coeff: %d\n", springEffect->u.condition[0].right_coeff, springEffect->u.condition[0].left_coeff);
+debug(0, " -> right_saturation: %d, left_saturation: %d\n", springEffect->u.condition[0].right_saturation, springEffect->u.condition[0].left_saturation);
+
 			springEffect->u.condition[1] = springEffect->u.condition[0];
 
 			/* update effect */
@@ -735,6 +750,205 @@ void FFBTriggerSpringEffect(bool upload, double strength)
 	else
 	{
 		debug(1, " -> spring effect not supported.\n");
+	}
+}
+
+
+
+
+void FFBCreateHapticInertiaEffect()
+{
+	/* --- FF_INERTIA --- */
+	struct ff_effect* effect = &ffb_effects[inertia_effect_idx];
+	memset(effect, 0, sizeof(ffb_effects[0]));
+
+	effect->id = -1;
+	effect->type = FF_INERTIA;
+
+	effect->trigger.button = 0;
+	effect->trigger.interval = 0;
+	effect->replay.length = 1000;
+	effect->replay.delay = 0;
+	effect->direction = 0x4000; /* along X axis */
+
+	/* Initialize condition params to zero so inertia loads with no force */
+	effect->u.condition[0].deadband = 0x0;
+	effect->u.condition[0].center = 0x0;
+	effect->u.condition[0].left_saturation = 0xffff;
+	effect->u.condition[0].right_saturation = 0xffff;
+	effect->u.condition[0].left_coeff = 0x4000;
+	effect->u.condition[0].right_coeff = 0x4000;
+	effect->u.condition[1] = effect->u.condition[0];
+
+	if (ioctl(device_handle, EVIOCSFF, effect))
+		debug(1, " Error creating FF_INERTIA effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+	else {
+		supportedFeatures |= FF_INERTIA_LOADED;
+		debug(1, "FF_INERTIA Effect id=%d\n", effect->id);
+	}
+}
+
+void FFBCreateHapticRampEffect()
+{
+	/* --- FF_RAMP --- */
+	struct ff_effect* effect = &ffb_effects[ramp_effect_idx];
+	memset(effect, 0, sizeof(ffb_effects[0]));
+
+	effect->id = -1;
+	effect->type = FF_RAMP;
+
+	effect->trigger.button = 0;
+	effect->trigger.interval = 0;
+	effect->replay.length = 1000;
+	effect->replay.delay = 0;
+	effect->direction = 0x4000; /* along X axis */
+
+	/* default ramp from 0 to 0 (will be updated when uploaded) */
+    effect->u.ramp.start_level = 0x0000;
+    effect->u.ramp.end_level = 0x6000;
+    effect->u.ramp.envelope.attack_length = 0;
+    effect->u.ramp.envelope.attack_level = 0;
+    effect->u.ramp.envelope.fade_length = 0;
+    effect->u.ramp.envelope.fade_level = 0;
+
+	if (ioctl(device_handle, EVIOCSFF, effect))
+		debug(1, " Error creating FF_RAMP effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+	else {
+		supportedFeatures |= FF_RAMP_LOADED;
+		debug(1, "FF_RAMP Effect id=%d\n", effect->id);
+	}
+}
+
+//FRED??
+void FFBCreateHapticSquareEffect()
+{
+	/* --- FF_SQUARE (periodic) --- */
+	struct ff_effect* effect = &ffb_effects[square_effect_idx];
+	memset(effect, 0, sizeof(ffb_effects[0]));
+
+	effect->id = -1;
+	effect->type = FF_PERIODIC;
+
+	effect->trigger.button = 0;
+	effect->trigger.interval = 0;
+	effect->replay.length = 1000;
+	effect->replay.delay = 0;
+	effect->direction = 0x4000; /* along X axis */
+
+	effect->u.periodic.waveform = FF_SQUARE;
+	effect->u.periodic.period = 100;       /* 100 ms default */
+	effect->u.periodic.magnitude = 0x6000; /* default magnitude */
+	effect->u.periodic.offset = 0;
+	effect->u.periodic.phase = 0;
+	effect->u.periodic.envelope.attack_length = 0;
+	effect->u.periodic.envelope.fade_length = 0;
+	effect->u.periodic.envelope.attack_level = 0;
+	effect->u.periodic.envelope.fade_level = 0;
+
+	if (ioctl(device_handle, EVIOCSFF, effect))
+		debug(1, " Error creating FF_PERIODIC FF_SQUARE effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+	else {
+		supportedFeatures |= FF_SQUARE_LOADED;
+		debug(1, "FF_SQUARE Effect id=%d\n", effect->id);
+	}
+}
+
+void FFBCreateHapticTriangleEffect()
+{
+	/* --- FF_TRIANGLE (periodic) --- */
+	struct ff_effect* effect = &ffb_effects[triangle_effect_idx];
+	memset(effect, 0, sizeof(ffb_effects[0]));
+
+	effect->id = -1;
+	effect->type = FF_PERIODIC;
+
+	effect->trigger.button = 0;
+	effect->trigger.interval = 0;
+	effect->replay.length = 1000;
+	effect->replay.delay = 0;
+	effect->direction = 0x4000; /* along X axis */
+
+	effect->u.periodic.waveform = FF_TRIANGLE;
+	effect->u.periodic.period = 100;       /* 100 ms default */
+	effect->u.periodic.magnitude = 0x6000; /* default magnitude */
+	effect->u.periodic.offset = 0;
+	effect->u.periodic.phase = 0;
+	effect->u.periodic.envelope.attack_length = 0;
+	effect->u.periodic.envelope.fade_length = 0;
+	effect->u.periodic.envelope.attack_level = 0;
+	effect->u.periodic.envelope.fade_level = 0;
+
+	if (ioctl(device_handle, EVIOCSFF, effect))
+		debug(1, " Error creating FF_PERIODIC FF_TRIANGLE effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+	else {
+		supportedFeatures |= FF_TRIANGLE_LOADED;
+		debug(1, "FF_TRIANGLE Effect id=%d\n", effect->id);
+	}
+}
+
+void FFBCreateHapticSawUpEffect()
+{
+	/* --- FF_SAW_UP (periodic) --- */
+	struct ff_effect* effect = &ffb_effects[sawtoothup_effect_idx];
+	memset(effect, 0, sizeof(ffb_effects[0]));
+
+	effect->id = -1;
+	effect->type = FF_PERIODIC;
+
+	effect->trigger.button = 0;
+	effect->trigger.interval = 0;
+	effect->replay.length = 1000;
+	effect->replay.delay = 0;
+	effect->direction = 0x4000; /* along X axis */
+
+	effect->u.periodic.waveform = FF_SAW_UP;
+	effect->u.periodic.period = 100;       /* 100 ms default */
+	effect->u.periodic.magnitude = 0x6000; /* default magnitude */
+	effect->u.periodic.offset = 0;
+	effect->u.periodic.phase = 0;
+	effect->u.periodic.envelope.attack_length = 0;
+	effect->u.periodic.envelope.fade_length = 0;
+	effect->u.periodic.envelope.attack_level = 0;
+	effect->u.periodic.envelope.fade_level = 0;
+
+	if (ioctl(device_handle, EVIOCSFF, effect))
+		debug(1, " Error creating FF_PERIODIC FF_SAW_UP effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+	else {
+		supportedFeatures |= FF_SAW_UP_LOADED;
+		debug(1, "FF_SAW_UP Effect id=%d\n", effect->id);
+	}
+}
+
+void FFBCreateHapticSawDownEffect()
+{
+	/* --- FF_SAW_DOWN (periodic) --- */
+	struct ff_effect* effect = &ffb_effects[sawtoothdown_effect_idx];
+	memset(effect, 0, sizeof(ffb_effects[0]));
+
+	effect->id = -1;
+	effect->type = FF_PERIODIC;
+
+	effect->trigger.button = 0;
+	effect->trigger.interval = 0;
+	effect->replay.length = 1000;
+	effect->replay.delay = 0;
+	effect->direction = 0x4000; /* along X axis */
+
+	effect->u.periodic.waveform = FF_SAW_DOWN;
+	effect->u.periodic.period = 100;       /* 100 ms default */
+	effect->u.periodic.magnitude = 0x6000; /* default magnitude */
+	effect->u.periodic.offset = 0;
+	effect->u.periodic.phase = 0;
+	effect->u.periodic.envelope.attack_length = 0;
+	effect->u.periodic.envelope.fade_length = 0;
+	effect->u.periodic.envelope.attack_level = 0;
+	effect->u.periodic.envelope.fade_level = 0;
+
+	if (ioctl(device_handle, EVIOCSFF, effect))
+		debug(1, " Error creating FF_PERIODIC FF_SAW_DOWN effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+	else {
+		supportedFeatures |= FF_SAW_DOWN_LOADED;
+		debug(1, "FF_SAW_DOWN Effect id=%d\n", effect->id);
 	}
 }
 

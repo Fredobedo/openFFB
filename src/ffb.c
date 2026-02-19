@@ -6,12 +6,48 @@
 #include "device.h"
 #include "ffbhelper.h"
 #include <time.h>
+#include <pthread.h>
+#include <stdatomic.h>
 
 /* The in packet used to read from Sega FFB Controller */
 /* it contains the converted values from serial raw    */
 FFBPacket inputPacket;
 
 //int wheelPosition=8192;
+
+atomic_int storedWheelPosition = 8192;
+atomic_bool threadRunning = true;
+
+void wheelPostionThread()
+{
+	while (threadRunning) {
+
+		int FinalwheelPosition;
+		int tempPosition = GetWheelPosition();
+
+		if (tempPosition == -1) 
+			tempPosition = GetWheelPositionIOCTL();
+
+		if(getConfig()->InvertedWheelPosition==1)
+			FinalwheelPosition=16384 - tempPosition;
+		else
+			FinalwheelPosition=tempPosition;
+
+		if(FinalwheelPosition<1500)
+			FinalwheelPosition=0;
+		else if (FinalwheelPosition>15500)
+			FinalwheelPosition=16383;
+
+		atomic_store(&storedWheelPosition, FinalwheelPosition);
+
+		usleep(5 * 1000); // Sleep for 10 milliseconds
+	}
+}
+
+void stopWheelPositionThread()
+{
+	threadRunning = false;
+}
 
 static long long millis(void)
 {
@@ -97,6 +133,9 @@ FFBStatus readPacket()
 	return processPacket(rawPacket);
 }
 
+
+
+
 FFBStatus processPacket(unsigned char* packet)
 {
 	if(getConfig()->debugLevel==3)
@@ -121,29 +160,30 @@ FFBStatus processPacket(unsigned char* packet)
 		case GET_WHEEL_POSITION:
 			replyPacket[0]=0x90;
 
-			int tempPosition=GetWheelPosition();
+			// int tempPosition=GetWheelPosition();
 
-			if (tempPosition==-1)
-				tempPosition=GetWheelPositionIOCTL();
+			// if (tempPosition==-1)
+			// 	tempPosition=GetWheelPositionIOCTL();
 
 			if (getConfig()->SendWheelPositionToMidi==1)
 			{
-				int FinalwheelPosition;
+				// int FinalwheelPosition;
 
-				if(getConfig()->InvertedWheelPosition==1)
-					FinalwheelPosition=16384 - tempPosition;
-				else
-					FinalwheelPosition=tempPosition;
+				// if(getConfig()->InvertedWheelPosition==1)
+				// 	FinalwheelPosition=16384 - tempPosition;
+				// else
+				// 	FinalwheelPosition=tempPosition;
 
-				if(FinalwheelPosition<1500)
-					FinalwheelPosition=0;
-				else if (FinalwheelPosition>15500)
-					FinalwheelPosition=16383;
+				// if(FinalwheelPosition<1500)
+				// 	FinalwheelPosition=0;
+				// else if (FinalwheelPosition>15500)
+				// 	FinalwheelPosition=16383;
 
-				debug(1, "%lu: GET_POS: %d\n", millis(),FinalwheelPosition);
+				int wheelPosition = atomic_load(&storedWheelPosition);
+				debug(1, "%lu: GET_POS: %d\n", millis(),wheelPosition);
 
-				replyPacket[1]=(FinalwheelPosition >> 7) & 0x7f;
-				replyPacket[2]=FinalwheelPosition & 0x7f;
+				replyPacket[1]=(wheelPosition >> 7) & 0x7f;
+				replyPacket[2]=wheelPosition & 0x7f;
 				replyPacket[3]=(replyPacket[0] ^ replyPacket[1] ^ replyPacket[2]) & 0x7f;
 			}
 			else

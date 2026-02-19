@@ -117,6 +117,12 @@ void FFBCreateHapticFrictionEffect();
 void FFBCreateHapticDamperEffect();
 void FFBCreateHapticSpringEffect();
 void FFBCreateHapticRumbleEffect();
+void FFBCreateHapticInertiaEffect();
+void FFBCreateHapticRampEffect();
+void FFBCreateHapticSquareEffect();
+void FFBCreateHapticTriangleEffect();
+void FFBCreateHapticSawUpEffect();
+void FFBCreateHapticSawDownEffect();
 
 //Triggers
 void FFBTriggerSpringEffect(bool upload, double strength);

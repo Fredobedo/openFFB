@@ -14,6 +14,7 @@
 #include <sys/ioctl.h>
 #include <stdint.h>
 
+
 //#define SYNC 0x80
 
 /* Status for the entire packet */
@@ -61,6 +62,8 @@ typedef enum
     FFB_STATUS_ERROR_SYNCH_REQUIRED,
 } FFBStatus;
 
+void wheelPostionThread();
+void stopWheelPositionThread();
 
 /* --- init haptic device  --- */
 int initFFB(char *devicePath);
@@ -82,4 +85,6 @@ FFBStatus processPacket(unsigned char* packet);
 void playCOMInitEffect();
 /* --- openFFB execute an end effect when communication with Sega FFB controller is finished --- */
 void playCOMEndEffect();
+
+
 #endif //FFB_H_

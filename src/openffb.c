@@ -8,8 +8,7 @@
 #include "config.h"
 #include "debug.h"
 #include <time.h>
-
-
+#include <pthread.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -56,9 +55,6 @@ int main(int argc, char **argv)
   dprintf(pid_fd, "%d\n", getpid());
 
   debug(0, "Program started, PID=%d\n", getpid());
-
-
-
 
   FFBConfig *localConfig = getConfig(); 
 
@@ -192,6 +188,10 @@ int main(int argc, char **argv)
   int MAX_SUCCESS = 3;
   int nbrOfSuccess=0;
 
+  
+  pthread_t wheelPositionThreadID;
+  pthread_create(&wheelPositionThreadID, NULL, (void *)wheelPostionThread, NULL);
+
   while (running)
   {
     //executed_cycles++;
@@ -244,6 +244,10 @@ int main(int argc, char **argv)
     FFBStatusMinusMinus = FFBStatusMinus;
     FFBStatusMinus      = processingStatus;
   }
+  
+  /* Stop the wheel position thread */
+  stopWheelPositionThread();
+  pthread_join(wheelPositionThreadID, NULL);
 
   /* Close the file pointer */
   if (!disconnectFFB())
