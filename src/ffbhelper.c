@@ -1260,7 +1260,8 @@ void SetLogitechSteeringRange(int idxDevice, int range)
 			{
 				*/
 			FILE * file = fopen(logitechSysFsRangeFile,"w");
-			
+debug(0, "Opening file %s to set Steering Range\n", logitechSysFsRangeFile);
+
 			if(file!=0){
 				fprintf(file,"%d",  range);
 				fclose (file);
