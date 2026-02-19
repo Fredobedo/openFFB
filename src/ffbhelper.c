@@ -357,7 +357,7 @@ void FFBCreateHapticSineEffect()
 	effect->direction = 16384;	
 
 	effect->u.periodic.waveform = FF_SINE;
-	effect->u.periodic.period = 100;		// 0.1 second 
+	effect->u.periodic.period = 1000;		// 0.1 second 
 	effect->u.periodic.magnitude = 0x6000;	// 
 	effect->u.periodic.offset = 0;
 	effect->u.periodic.phase = 0;
@@ -489,283 +489,6 @@ void  FFBCreateHapticRumbleEffect()
 		debug(2, "FF_RUMBLE Effect   id=%d\n", effect->id);	
 	}
 }
-
-void FFBCreateAllHapticEffects()
-{
-	FFBCreateHapticConstantEffect();
-	FFBCreateHapticSineEffect();
-	FFBCreateHapticFrictionEffect();
-	FFBCreateHapticDamperEffect();
-	FFBCreateHapticSpringEffect();
-	FFBCreateHapticRumbleEffect();
-
-	FFBCreateHapticInertiaEffect();
-	FFBCreateHapticRampEffect();
-	FFBCreateHapticSquareEffect();
-	FFBCreateHapticTriangleEffect();
-	FFBCreateHapticSawUpEffect();
-	FFBCreateHapticSawDownEffect();
-}
-
-void FFBAbortExecution(void)
-{
-    debug(1, "\nAborting program execution.\n");
-	if(device_handle){
-		FFBStopAllEffects();
-		//FFBRemoveAllEffects();
-		close(device_handle);
-	}
-}
-
-char* FFBCheckEffect(unsigned int check)
-{
-	if (check==(supportedFeatures & check)) 
-        return GREEN "-> OK <-" RESET "\n";
-    else
-        return RED "Not supported" RESET "\n";
-}
-
-void FFBDumpSupportedFeatures()
-{
-	if(IsLogitechWheel())
-	{
-		debug(0, "------------------------------------------------------------------\n");
-        debug(0, "-- Logitech wheel detected, sysfs entries:\n");
-        debug(0, "------------------------------------------------------------------\n");
-		debug(0, "      - range: %u\n",GetSYSFSEntry("range"));
-		debug(0, "      - gain: %u\n",GetSYSFSEntry("gain"));
-		debug(0, "      - spring_level: %u\n",GetSYSFSEntry("spring_level"));
-		debug(0, "      - friction_level: %u\n",GetSYSFSEntry("friction_level"));
-		debug(0, "      - autocenter: %u\n",GetSYSFSEntry("autocenter"));
-		debug(0, "      - damper_level: %u\n",GetSYSFSEntry("damper_level"));
-		debug(0, "      - peak_ffb_level: %u\n",GetSYSFSEntry("peak_ffb_level"));
-		debug(0, "      - alternate_modes: %u\n",GetSYSFSEntry("alternate_modes"));	
-		debug(0, "      - combine_pedals: %u\n",GetSYSFSEntry("combine_pedals"));
-		debug(0, "      - ffb_leds: %u\n",GetSYSFSEntry("ffb_leds"));
-		debug(0, "\n");
-	}
-
-    debug(0, "------------------------------------------------------------------\n");
-    debug(0, "-- Checking capabilities:\n");
-    debug(0, "------------------------------------------------------------------\n");
-
-	int n_effects;	
-	if(ioctl(device_handle, EVIOCGEFFECTS, &n_effects))
-		debug(1," Error getting Nbr of programmable effects (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
-	else
-    	debug(0, "   Nbr of programmable effects for this device: %d\n", n_effects);
-
-	if(ioctl(device_handle, EVIOCGEFFECTS, &n_effects))
-		debug(1," Error getting Nbr simultaneous effects (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
-	else
-    	debug(0, "   Nbr of simultaneous effects the device can play: %d\n",n_effects);
-
-    debug(0, "\n");
-    debug(0, "     ffb_supported constant effect:\n");
-    debug(0, "      - constant:     %s", FFBCheckEffect(FF_CONSTANT_LOADED));
-    debug(0, "\n");
-	debug(0, "     ffb_supported periodic effects:\n");
-    debug(0, "      - sine:         %s", FFBCheckEffect(FF_SINE_LOADED));
-    debug(0, "      - square:       %s", FFBCheckEffect(FF_SQUARE_LOADED));
-    debug(0, "      - triangle:     %s", FFBCheckEffect(FF_TRIANGLE_LOADED));
-    debug(0, "      - saw_up:       %s", FFBCheckEffect(FF_SAW_UP_LOADED));
-    debug(0, "      - saw_down:     %s", FFBCheckEffect(FF_SAW_DOWN_LOADED));
-    debug(0, "\n");
-    debug(0, "     ffb_supported condition effects:\n");
-    debug(0, "      - spring:       %s", FFBCheckEffect(FF_SPRING_LOADED));
-	debug(0, "      - damper:       %s", FFBCheckEffect(FF_DAMPER_LOADED));
-    debug(0, "      - friction:     %s", FFBCheckEffect(FF_FRICTION_LOADED));
-	debug(0, "      - inertia:      %s", FFBCheckEffect(FF_INERTIA_LOADED));
-    debug(0, "\n");
-	debug(0, "     ffb_supported RAMP effect:\n");
-	debug(0, "      - ramp:         %s", FFBCheckEffect(FF_RAMP_LOADED));
-    debug(0, "\n");
-    debug(0, "     ffb_supported global features:\n");
-    debug(0, "      - gain:        %s", FFBCheckEffect(FF_GAIN_LOADED));
-    debug(0, "\n");
-	debug(0, "     Rumble ffb_supported:\n");
-    debug(0, "      - rumble:      %s", FFBCheckEffect(FF_RUMBLE_LOADED));
-}
-
-void FFBStopEffect(int effect_id)
-{
-		memset(&event, 0, sizeof(event));
-		event.type = EV_FF;
-		event.code = effect_id;
-		event.value = 0;
-
-		bool rs=write(device_handle, &event, sizeof(event));
-}
-
-void FFBStopAllEffects()
-{
-	if(device_handle > 0)
-	{
-		int num_effects = sizeof(ffb_effects)/sizeof(struct ff_effect);
-		for(int cp=0; cp < num_effects; cp++)
-			FFBStopEffect(ffb_effects[cp].id);
-
-	}
-}
-
-void FFBRemoveEffect(int effect_id)
-{
-    if (ioctl(device_handle, EVIOCRMFF, effect_id) < 0)
-        debug(1, "ERROR: removing effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
-}
-
-void FFBRemoveAllEffects()
-{
-	if(device_handle)
-	{
-		for(int cp=0; cp < sizeof(ffb_effects)/sizeof(struct ff_effect); cp++)
-			FFBRemoveEffect(ffb_effects[cp].id);
-	}
-}
-
-
-// FFBTriggerSineEffect applies or updates a force feedback sine wave effect on a device, 
-// configuring its frequency and intensity, and uploading the effect if supported. 
-// The function manages effect parameters, uploads them to the device, and handles starting or stopping the effect as needed.
-void FFBTriggerSineEffect(bool upload, float frequency, float intensity)
-{
-	debug(0, "FFBTriggerSineEffect");
-	if(FF_SINE_LOADED==(supportedFeatures & FF_SINE_LOADED)) 
-	{
-debug(0, " -> arg_frequency: %.2f, arg_intensity: %.2f\n", frequency, intensity);
-
-		struct ff_effect* sineEffect=&ffb_effects[sine_effect_idx];
-		if(upload)
-		{
-			// to convert from 0.5-1.0 to 50-100Hz
-			//frequency*=(360.0f * getConfig()->periodAdjustmentFactor); 
-
-			//According https://github.com/flyinghead/flycast/blob/master/core/hw/naomi/midiffb.cpp
-			// we see that value of 2 = 1Hz and based on max value of 0x7f, we only have a range 127/2Hz => 0.5(0x01) to 64Hz(0x7F)
-    		//if (frequency < 0.5f) frequency = 0.5f;
-    		//if (frequency > 120.0f) frequency = 120.0f;
-			//sineEffect->u.periodic.period= (unsigned short)frequency;
-			sineEffect->u.periodic.period= (unsigned short)(1000.0f / (frequency/4.0f)); // period in milliseconds
-
-
-
-			// Frequency Math: Calculate period in microseconds => Period = 1000 / Frequency(Hz)
-			// For 50Hz: 1000 / 50 = 20ms
-			// Clamp value between 5-1000
-			// int period_us = (int)(1000.0f / frequency); // period in milliseconds
-			// if (period_us < 5) period_us = 5;       // it looks like it's the Minimum period of my G27
-			// if (period_us > 1000) period_us = 1000; // Maximum period
-			// sineEffect->u.periodic.period = period_us; 
-
-debug(0, " -> frequency converted to period: %ums\n", sineEffect->u.periodic.period);
-
-			// Clamp intensity to -1.0 to 1.0 (maps to -32767 to 32767 evdev range)
-			// rg_intensity: 0.16 -> 0.18*32767=5887 // is the minimum on G27 to feel something which corresponds to 0x16 from Sega FFB
-			if (intensity < -1.0f) intensity = -1.0f;
-			if (intensity > 1.0f) intensity = 1.0f;
-
-			int confMinIntensity = getConfig()->minIntensity;
-			int confMaxIntensity = getConfig()->maxIntensity;
-
-			//let's try to calculate amplitude level based on min/max intensity set in game config
-			//32767 is max for evdev, it's a signed value, so in theory it could be negative too but it makes no sense for sine wave magnitude
-			//short MinIntensity = (short)(intensity > 0.001 ? (confMinIntensity / 100.0 * 32767.0) : 0); // if 20 in config=> 6553.4
-			short MinIntensity = (short)(confMinIntensity / 100.0 * 32767.0);
-			short MaxIntensity = (short)(confMaxIntensity / 100.0 * 32767.0);
-debug(0, " -> minIntensity: %d, maxIntensity: %d\n", MinIntensity, MaxIntensity);
-			
-			short range = MaxIntensity - MinIntensity; // => 26214
-			sineEffect->u.periodic.magnitude = (short)(((intensity/1.0) * range) + MinIntensity);
-debug(0, " -> intensity converted to magnitude: %d\n", sineEffect->u.periodic.magnitude);             
-
-			/* update effect */
-			if (ioctl(device_handle, EVIOCSFF, sineEffect) < 0)
-				debug(1, "ERROR: uploading effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
-		}
-
-		
-		memset(&event, 0, sizeof(event));
-		event.type = EV_FF;
-		event.code = sineEffect->id;
-
-		//STOP PREVIOUS EFFECT
-		event.value = 0;
-		bool rs=write(device_handle, &event, sizeof(event));
-
-		//START EFFECT
-		event.value = 1;
-		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-			fprintf(stderr, "ERROR: starting FF_SINE effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
-
-		write(device_handle, &event, sizeof(event)) != sizeof(event);
-	}
-	else
-	{
-		debug(1, " -> sine effect not supported.\n");
-	}
-}
-
-// FFBTriggerSpringEffect applies or updates a force feedback spring effect on a device, 
-// configuring its strength and uploading the effect if supported; if not supported, it falls back to a default rumble effect. 
-// The function manages effect parameters, uploads them to the device, and handles starting or stopping the effect as needed.
-void FFBTriggerSpringEffect(bool upload, double strength)
-{
-	debug(1, "FFBTriggerSpringEffect\n");
-	if(FF_SPRING_LOADED==(supportedFeatures & FF_SPRING_LOADED)) 
-	{
-		struct ff_effect* springEffect=&ffb_effects[spring_effect_idx];
-		if(upload)
-		{
-			short minForce = (short)(strength > 0.001 ? (getConfig()->minSpring / 100.0 * 16384.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
-			short maxForce = (short)(getConfig()->maxSpring / 100.0 * 16384.0);
-			short range = maxForce - minForce;
-			short coeff = (short)(strength * range + minForce);
-			if (coeff > 16384)
-				coeff = 16384;
-
-debug(0, " -> strength: %.2f, coeff: %d\n", strength, coeff);
-
-			springEffect->u.condition[0].right_coeff = (short)(coeff);
-			springEffect->u.condition[0].left_coeff = (short)(coeff);
-			// springEffect->u.condition[0].right_saturation = (unsigned short)(coeff) * 2; 
-			// springEffect->u.condition[0].left_saturation = (unsigned short)(coeff) * 2; 
-			springEffect->u.condition[0].right_saturation = (getConfig()->maxSpring / 100.0) * 65535.0; 
-			springEffect->u.condition[0].left_saturation =  (getConfig()->maxSpring / 100.0) * 65535.0; 
-
-debug(0, " -> right_coeff: %d, left_coeff: %d\n", springEffect->u.condition[0].right_coeff, springEffect->u.condition[0].left_coeff);
-debug(0, " -> right_saturation: %d, left_saturation: %d\n", springEffect->u.condition[0].right_saturation, springEffect->u.condition[0].left_saturation);
-
-			springEffect->u.condition[1] = springEffect->u.condition[0];
-
-			/* update effect */
-			if (ioctl(device_handle, EVIOCSFF, springEffect) < 0)
-				debug(1, "ERROR: uploading effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
-		}
-
-		
-		memset(&event, 0, sizeof(event));
-		event.type = EV_FF;
-		event.code = springEffect->id;
-
-		//STOP PREVIOUS EFFECT
-		event.value = 0;
-		bool rs=write(device_handle, &event, sizeof(event));
-
-		//START EFFECT
-		event.value = 1;
-		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-			fprintf(stderr, "ERROR: starting FF_CONSTANT effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
-
-		write(device_handle, &event, sizeof(event)) != sizeof(event);
-	}
-	else
-	{
-		debug(1, " -> spring effect not supported.\n");
-	}
-}
-
-
-
 
 void FFBCreateHapticInertiaEffect()
 {
@@ -963,6 +686,279 @@ void FFBCreateHapticSawDownEffect()
 	}
 }
 
+void FFBCreateAllHapticEffects()
+{
+	FFBCreateHapticConstantEffect();
+	FFBCreateHapticSineEffect();
+	FFBCreateHapticFrictionEffect();
+	FFBCreateHapticDamperEffect();
+	FFBCreateHapticSpringEffect();
+	FFBCreateHapticRumbleEffect();
+
+	FFBCreateHapticInertiaEffect();
+	FFBCreateHapticRampEffect();
+	FFBCreateHapticSquareEffect();
+	FFBCreateHapticTriangleEffect();
+	FFBCreateHapticSawUpEffect();
+	FFBCreateHapticSawDownEffect();
+}
+
+void FFBAbortExecution(void)
+{
+    debug(1, "\nAborting program execution.\n");
+	if(device_handle){
+		FFBStopAllEffects();
+		//FFBRemoveAllEffects();
+		close(device_handle);
+	}
+}
+
+char* FFBCheckEffect(unsigned int check)
+{
+	if (check==(supportedFeatures & check)) 
+        return GREEN "-> OK <-" RESET "\n";
+    else
+        return RED "Not supported" RESET "\n";
+}
+
+void FFBDumpSupportedFeatures()
+{
+	if(IsLogitechWheel())
+	{
+		debug(0, "------------------------------------------------------------------\n");
+        debug(0, "-- Logitech wheel detected, sysfs entries:\n");
+        debug(0, "------------------------------------------------------------------\n");
+		debug(0, "      - range: %u\n",GetSYSFSEntry("range"));
+		debug(0, "      - gain: %u\n",GetSYSFSEntry("gain"));
+		debug(0, "      - spring_level: %u\n",GetSYSFSEntry("spring_level"));
+		debug(0, "      - friction_level: %u\n",GetSYSFSEntry("friction_level"));
+		debug(0, "      - autocenter: %u\n",GetSYSFSEntry("autocenter"));
+		debug(0, "      - damper_level: %u\n",GetSYSFSEntry("damper_level"));
+		debug(0, "      - peak_ffb_level: %u\n",GetSYSFSEntry("peak_ffb_level"));
+		debug(0, "      - alternate_modes: %u\n",GetSYSFSEntry("alternate_modes"));	
+		debug(0, "      - combine_pedals: %u\n",GetSYSFSEntry("combine_pedals"));
+		debug(0, "      - ffb_leds: %u\n",GetSYSFSEntry("ffb_leds"));
+		debug(0, "\n");
+	}
+
+    debug(0, "------------------------------------------------------------------\n");
+    debug(0, "-- Checking capabilities:\n");
+    debug(0, "------------------------------------------------------------------\n");
+
+	int n_effects;	
+	if(ioctl(device_handle, EVIOCGEFFECTS, &n_effects))
+		debug(1," Error getting Nbr of programmable effects (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+	else
+    	debug(0, "   Nbr of programmable effects for this device: %d\n", n_effects);
+
+	if(ioctl(device_handle, EVIOCGEFFECTS, &n_effects))
+		debug(1," Error getting Nbr simultaneous effects (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+	else
+    	debug(0, "   Nbr of simultaneous effects the device can play: %d\n",n_effects);
+
+    debug(0, "\n");
+    debug(0, "     ffb_supported constant effect:\n");
+    debug(0, "      - constant:     %s", FFBCheckEffect(FF_CONSTANT_LOADED));
+    debug(0, "\n");
+	debug(0, "     ffb_supported periodic effects:\n");
+    debug(0, "      - sine:         %s", FFBCheckEffect(FF_SINE_LOADED));
+    debug(0, "      - square:       %s", FFBCheckEffect(FF_SQUARE_LOADED));
+    debug(0, "      - triangle:     %s", FFBCheckEffect(FF_TRIANGLE_LOADED));
+    debug(0, "      - saw_up:       %s", FFBCheckEffect(FF_SAW_UP_LOADED));
+    debug(0, "      - saw_down:     %s", FFBCheckEffect(FF_SAW_DOWN_LOADED));
+    debug(0, "\n");
+    debug(0, "     ffb_supported condition effects:\n");
+    debug(0, "      - spring:       %s", FFBCheckEffect(FF_SPRING_LOADED));
+	debug(0, "      - damper:       %s", FFBCheckEffect(FF_DAMPER_LOADED));
+    debug(0, "      - friction:     %s", FFBCheckEffect(FF_FRICTION_LOADED));
+	debug(0, "      - inertia:      %s", FFBCheckEffect(FF_INERTIA_LOADED));
+    debug(0, "\n");
+	debug(0, "     ffb_supported RAMP effect:\n");
+	debug(0, "      - ramp:         %s", FFBCheckEffect(FF_RAMP_LOADED));
+    debug(0, "\n");
+    debug(0, "     ffb_supported global features:\n");
+    debug(0, "      - gain:        %s", FFBCheckEffect(FF_GAIN_LOADED));
+    debug(0, "\n");
+	debug(0, "     Rumble ffb_supported:\n");
+    debug(0, "      - rumble:      %s", FFBCheckEffect(FF_RUMBLE_LOADED));
+}
+
+void FFBStopEffect(int effect_id)
+{
+		memset(&event, 0, sizeof(event));
+		event.type = EV_FF;
+		event.code = effect_id;
+		event.value = 0;
+
+		bool rs=write(device_handle, &event, sizeof(event));
+}
+
+void FFBStopAllEffects()
+{
+	if(device_handle > 0)
+	{
+		int num_effects = sizeof(ffb_effects)/sizeof(struct ff_effect);
+		for(int cp=0; cp < num_effects; cp++)
+			FFBStopEffect(ffb_effects[cp].id);
+
+	}
+}
+
+void FFBRemoveEffect(int effect_id)
+{
+    if (ioctl(device_handle, EVIOCRMFF, effect_id) < 0)
+        debug(1, "ERROR: removing effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+}
+
+void FFBRemoveAllEffects()
+{
+	if(device_handle)
+	{
+		for(int cp=0; cp < sizeof(ffb_effects)/sizeof(struct ff_effect); cp++)
+			FFBRemoveEffect(ffb_effects[cp].id);
+	}
+}
+
+
+// FFBTriggerSineEffect applies or updates a force feedback sine wave effect on a device, 
+// configuring its frequency and intensity, and uploading the effect if supported. 
+// The function manages effect parameters, uploads them to the device, and handles starting or stopping the effect as needed.
+void FFBTriggerSineEffect(bool upload, float frequency, float intensity)
+{
+	debug(0, "FFBTriggerSineEffect");
+	if(FF_SINE_LOADED==(supportedFeatures & FF_SINE_LOADED)) 
+	{
+		debug(0, " -> arg_frequency: %.2f, arg_intensity: %.2f\n", frequency, intensity);
+
+		struct ff_effect* sineEffect=&ffb_effects[sine_effect_idx];
+		if(upload)
+		{
+			// to convert from 0.5-1.0 to 50-100Hz
+			//frequency*=(360.0f * getConfig()->periodAdjustmentFactor); 
+
+			//According https://github.com/flyinghead/flycast/blob/master/core/hw/naomi/midiffb.cpp
+			// we see that value of 2 = 1Hz and based on max value of 0x7f, we only have a range 127/2Hz => 0.5(0x01) to 64Hz(0x7F)
+    		//if (frequency < 0.5f) frequency = 0.5f;
+    		//if (frequency > 120.0f) frequency = 120.0f;
+			//sineEffect->u.periodic.period= (unsigned short)frequency;
+			sineEffect->u.periodic.period= (unsigned short)(1000.0f / (frequency/4.0f)); // period in milliseconds
+
+
+
+			// Frequency Math: Calculate period in microseconds => Period = 1000 / Frequency(Hz)
+			// For 50Hz: 1000 / 50 = 20ms
+			// Clamp value between 5-1000
+			// int period_us = (int)(1000.0f / frequency); // period in milliseconds
+			// if (period_us < 5) period_us = 5;       // it looks like it's the Minimum period of my G27
+			// if (period_us > 1000) period_us = 1000; // Maximum period
+			// sineEffect->u.periodic.period = period_us; 
+
+			debug(3, " -> frequency converted to period: %ums\n", sineEffect->u.periodic.period);
+
+			// Clamp intensity to -1.0 to 1.0 (maps to -32767 to 32767 evdev range)
+			// rg_intensity: 0.16 -> 0.18*32767=5887 // is the minimum on G27 to feel something which corresponds to 0x16 from Sega FFB
+			if (intensity < -1.0f) intensity = -1.0f;
+			if (intensity > 1.0f) intensity = 1.0f;
+
+			int confMinIntensity = getConfig()->minIntensity;
+			int confMaxIntensity = getConfig()->maxIntensity;
+
+			//let's try to calculate amplitude level based on min/max intensity set in game config
+			//32767 is max for evdev, it's a signed value, so in theory it could be negative too but it makes no sense for sine wave magnitude
+			//short MinIntensity = (short)(intensity > 0.001 ? (confMinIntensity / 100.0 * 32767.0) : 0); // if 20 in config=> 6553.4
+			short MinIntensity = (short)(confMinIntensity / 100.0 * 32767.0);
+			short MaxIntensity = (short)(confMaxIntensity / 100.0 * 32767.0);
+			debug(3, " -> minIntensity: %d, maxIntensity: %d\n", MinIntensity, MaxIntensity);
+			
+			short range = MaxIntensity - MinIntensity; // => 26214
+			sineEffect->u.periodic.magnitude = (short)(((intensity/1.0) * range) + MinIntensity);
+			debug(3, " -> intensity converted to magnitude: %d\n", sineEffect->u.periodic.magnitude);             
+
+			/* update effect */
+			if (ioctl(device_handle, EVIOCSFF, sineEffect) < 0)
+				debug(1, "ERROR: uploading effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+		}
+
+		
+		memset(&event, 0, sizeof(event));
+		event.type = EV_FF;
+		event.code = sineEffect->id;
+
+		//STOP PREVIOUS EFFECT
+		event.value = 0;
+		bool rs=write(device_handle, &event, sizeof(event));
+
+		//START EFFECT
+		event.value = 1;
+		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
+			fprintf(stderr, "ERROR: starting FF_SINE effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
+
+		write(device_handle, &event, sizeof(event)) != sizeof(event);
+	}
+	else
+	{
+		debug(1, " -> sine effect not supported.\n");
+	}
+}
+
+// FFBTriggerSpringEffect applies or updates a force feedback spring effect on a device, 
+// configuring its strength and uploading the effect if supported; if not supported, it falls back to a default rumble effect. 
+// The function manages effect parameters, uploads them to the device, and handles starting or stopping the effect as needed.
+void FFBTriggerSpringEffect(bool upload, double strength)
+{
+	debug(1, "FFBTriggerSpringEffect\n");
+	if(FF_SPRING_LOADED==(supportedFeatures & FF_SPRING_LOADED)) 
+	{
+		struct ff_effect* springEffect=&ffb_effects[spring_effect_idx];
+		if(upload)
+		{
+			short minForce = (short)(strength > 0.001 ? (getConfig()->minSpring / 100.0 * 16384.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
+			short maxForce = (short)(getConfig()->maxSpring / 100.0 * 16384.0);
+			short range = maxForce - minForce;
+			short coeff = (short)(strength * range + minForce);
+			if (coeff > 16384)
+				coeff = 16384;
+
+			debug(3, " -> strength: %.2f, coeff: %d\n", strength, coeff);
+
+			springEffect->u.condition[0].right_coeff = (short)(coeff);
+			springEffect->u.condition[0].left_coeff = (short)(coeff);
+			// springEffect->u.condition[0].right_saturation = (unsigned short)(coeff) * 2; 
+			// springEffect->u.condition[0].left_saturation = (unsigned short)(coeff) * 2; 
+			springEffect->u.condition[0].right_saturation = (getConfig()->maxSpring / 100.0) * 65535.0; 
+			springEffect->u.condition[0].left_saturation =  (getConfig()->maxSpring / 100.0) * 65535.0; 
+			debug(3, " -> right_coeff: %d, left_coeff: %d\n", springEffect->u.condition[0].right_coeff, springEffect->u.condition[0].left_coeff);
+			debug(3, " -> right_saturation: %d, left_saturation: %d\n", springEffect->u.condition[0].right_saturation, springEffect->u.condition[0].left_saturation);
+
+			springEffect->u.condition[1] = springEffect->u.condition[0];
+
+			/* update effect */
+			if (ioctl(device_handle, EVIOCSFF, springEffect) < 0)
+				debug(1, "ERROR: uploading effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+		}
+
+		
+		memset(&event, 0, sizeof(event));
+		event.type = EV_FF;
+		event.code = springEffect->id;
+
+		//STOP PREVIOUS EFFECT
+		event.value = 0;
+		bool rs=write(device_handle, &event, sizeof(event));
+
+		//START EFFECT
+		event.value = 1;
+		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
+			fprintf(stderr, "ERROR: starting FF_CONSTANT effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
+
+		write(device_handle, &event, sizeof(event)) != sizeof(event);
+	}
+	else
+	{
+		debug(1, " -> spring effect not supported.\n");
+	}
+}
+
 /**
  * Generic force-feedback effect envelope (struct ff_envelope):
  *   @attack_length: duration of the attack (ms)
@@ -994,10 +990,12 @@ void FFBTriggerConstantEffect(bool upload, double strength)
 			short level = (short)(strength * range + MinForce);
 
 			constantEffect->u.constant.level = level;	
+			debug(3, " -> strength: %.2f, level: %d\n", strength, constantEffect->u.constant.level);
 
 			/* Here we set the two values to the max as the arcade system 'manages" fades                */
 			constantEffect->u.constant.envelope.attack_level =  (unsigned short)(strength * 65535.0); /* this one counts! */
 			constantEffect->u.constant.envelope.fade_level =    (unsigned short)(strength * 65535.0); /* only to be safe  */
+			debug(3, " -> attack_level: %d, fade_level: %d\n", constantEffect->u.constant.envelope.attack_level, constantEffect->u.constant.envelope.fade_level);
 
 			/* update effect */
 			if (ioctl(device_handle, EVIOCSFF, constantEffect) < 0)
@@ -1056,8 +1054,12 @@ void FFBTriggerFrictionEffect(bool upload, double strength)
 
 			frictionEffect->u.condition[0].left_coeff = (short)(coeff);
 			frictionEffect->u.condition[0].right_coeff = (short)(coeff);
+			debug(3, " -> strength: %.2f, coeff: %d\n", strength, coeff);
+
 			frictionEffect->u.condition[0].left_saturation = (getConfig()->maxSpring / 100.0) * 65535.0; 
 			frictionEffect->u.condition[0].right_saturation = (getConfig()->maxSpring / 100.0) * 65535.0; 
+			debug(3, " -> left_saturation: %d, right_saturation: %d\n", frictionEffect->u.condition[0].left_saturation, frictionEffect->u.condition[0].right_saturation);
+
 			frictionEffect->u.condition[1] = frictionEffect->u.condition[0];
 
 			/* update effect */
