@@ -146,9 +146,14 @@ void FFBDumpSupportedFeatures();
 void FFBSetGlobalGain(int level);
 void FFBSetGlobalAutoCenter(int level, int duration_ms);
 
-/* -- the new-lg4ff logitech driver permits to adapt on the fly the steering wheel range -- */
-void SetLogitechSteeringRange(int idxDevice, int range);
+bool SetLogitechSysFsDirectory(int idxDevice);
+
+unsigned short GetSYSFSEntry(const char* entryName);
+void SetSYSFSEntry(const char* entryName, int entryValue);
+
 
 int GetWheelPositionIOCTL();
 int GetWheelPosition();
+
+bool IsLogitechWheel();
 #endif

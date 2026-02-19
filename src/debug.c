@@ -32,3 +32,7 @@ void debugBuffer(int level, unsigned char *buffer, int length)
 }
 
 
+int GetDebugLevel()
+{
+    return globalLevel;
+}

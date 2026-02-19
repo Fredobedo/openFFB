@@ -30,6 +30,13 @@ some links:
 #define LONG_BITS (sizeof(long) * 8)
 struct ff_effect effect;
 
+bool LogitechWheelDetected=false;
+
+bool IsLogitechWheel()
+{
+	return LogitechWheelDetected;
+}	
+
 bool FFBGetDeviceName(int handle, char *deviceName)
 {
 	int version;
@@ -266,13 +273,25 @@ bool FFBInitHaptic(char* device_name)
 			device_handle = open(devices[idxDevice].path, O_RDWR|O_NONBLOCK);
 
 			if (device_handle > -1) {
-				printf("Using device %s.\n\n", device_name);
-
+				debug(2, "Using device %s.\n\n", device_name);
 
 				/*-- test if it's a logitech Racing wheel (ID_VENDOR=046d) --*/
 				if(strcmp(devices[idxDevice].vendor,"046d")==0)
-					SetLogitechSteeringRange(idxDevice, getConfig()->logitechSteeringRange);
+				{
+					if(SetLogitechSysFsDirectory(idxDevice))
+					{
+						LogitechWheelDetected=true;
 
+						debug(2, "SetLogitechSysFsDirectory success\n");
+						
+						debug(2, "SetLogitechSteeringRange ... \n");
+						SetSYSFSEntry("range", getConfig()->logitechSteeringRange);
+					}
+					else
+					{
+						debug(2, "SetLogitechSysFsDirectory failed\n");
+					}
+				}
 				FFBCreateAllHapticEffects();
 				FFBSetGlobalGain(getConfig()->globalGain);
 
@@ -314,10 +333,10 @@ void FFBCreateHapticConstantEffect()
 	effect->u.constant.envelope.fade_level = 0;			
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
-		debug(1," Error creating FF_CONSTANT effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+		debug(2," Error creating FF_CONSTANT effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
 	else{
 		supportedFeatures|=FF_CONSTANT_LOADED;
-		debug(1, "FF_CONSTANT Effect id=%d\n", effect->id);
+		debug(2, "FF_CONSTANT Effect id=%d\n", effect->id);
 	}
 }
 
@@ -349,10 +368,10 @@ void FFBCreateHapticSineEffect()
 	//effect->u.periodic.envelope.fade_level = 0; //0x7fff; 			-> this one to update
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
-		debug(1," Error creating FF_PERIODIC FF_SINE effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+		debug(2," Error creating FF_PERIODIC FF_SINE effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
 	else{
 		supportedFeatures|=FF_SINE_LOADED;
-		debug(1, "FF_SINE Effect     id=%d\n", effect->id);
+		debug(2, "FF_SINE Effect     id=%d\n", effect->id);
 
 	}
 }
@@ -380,10 +399,10 @@ void FFBCreateHapticFrictionEffect()
 	effect->u.condition[1] = effect->u.condition[0];
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
-		debug(1," Error creating FF_FRICTION  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);	
+		debug(2," Error creating FF_FRICTION  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);	
 	else{
 		supportedFeatures|=FF_FRICTION_LOADED;
-		debug(1, "FF_FRICTION Effect id=%d\n", effect->id);		
+		debug(2, "FF_FRICTION Effect id=%d\n", effect->id);		
 	}
 }
 
@@ -406,10 +425,10 @@ void  FFBCreateHapticDamperEffect()
 	effect->u.condition->right_saturation = 0;
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
-		debug(1," Error creating FF_DAMPER  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);	
+		debug(2," Error creating FF_DAMPER  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);	
 	else{
 		supportedFeatures|=FF_DAMPER_LOADED;
-		debug(1, "FF_DAMPER Effect   id=%d\n", effect->id);	
+		debug(2, "FF_DAMPER Effect   id=%d\n", effect->id);	
 	}
 }
 
@@ -437,10 +456,10 @@ void FFBCreateHapticSpringEffect()
 	effect->u.condition[1] = effect->u.condition[0];
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
-		debug(1," Error creating FF_SPRING  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);		
+		debug(2," Error creating FF_SPRING  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);		
 	else{
 		supportedFeatures|=FF_SPRING_LOADED;
-		debug(1, "FF_SPRING Effect   id=%d\n", effect->id);	
+		debug(2, "FF_SPRING Effect   id=%d\n", effect->id);	
 	}
 }
 
@@ -464,10 +483,10 @@ void  FFBCreateHapticRumbleEffect()
 	effect->u.rumble.weak_magnitude = 0x2000;   
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
-		debug(1," Error creating FF_SPRING  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);		
+		debug(2," Error creating FF_RUMBLE  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);		
 	else{
 		supportedFeatures|=FF_RUMBLE_LOADED;
-		debug(1, "FF_RUMBLE Effect   id=%d\n", effect->id);	
+		debug(2, "FF_RUMBLE Effect   id=%d\n", effect->id);	
 	}
 }
 
@@ -508,6 +527,24 @@ char* FFBCheckEffect(unsigned int check)
 
 void FFBDumpSupportedFeatures()
 {
+	if(IsLogitechWheel)
+	{
+		debug(0, "------------------------------------------------------------------\n");
+        debug(0, "-- Logitech wheel detected, sysfs entries:\n");
+        debug(0, "------------------------------------------------------------------\n");
+		debug(0, "      - range: %u\n",GetSYSFSEntry("range"));
+		debug(0, "      - gain: %u\n",GetSYSFSEntry("gain"));
+		debug(0, "      - spring_level: %u\n",GetSYSFSEntry("spring_level"));
+		debug(0, "      - friction_level: %u\n",GetSYSFSEntry("friction_level"));
+		debug(0, "      - autocenter: %u\n",GetSYSFSEntry("autocenter"));
+		debug(0, "      - damper_level: %u\n",GetSYSFSEntry("damper_level"));
+		debug(0, "      - peak_ffb_level: %u\n",GetSYSFSEntry("peak_ffb_level"));
+		debug(0, "      - alternate_modes: %u\n",GetSYSFSEntry("alternate_modes"));	
+		debug(0, "      - combine_pedals: %u\n",GetSYSFSEntry("combine_pedals"));
+		debug(0, "      - ffb_leds: %u\n",GetSYSFSEntry("ffb_leds"));
+		debug(0, "\n");
+	}
+
     debug(0, "------------------------------------------------------------------\n");
     debug(0, "-- Checking capabilities:\n");
     debug(0, "------------------------------------------------------------------\n");
@@ -522,23 +559,6 @@ void FFBDumpSupportedFeatures()
 		debug(1," Error getting Nbr simultaneous effects (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
 	else
     	debug(0, "   Nbr of simultaneous effects the device can play: %d\n",n_effects);
-
-
-#define FF_SINE_LOADED       1U << 0
-#define FF_SQUARE_LOADED     1U << 1
-#define FF_TRIANGLE_LOADED   1U << 2
-#define FF_SAW_UP_LOADED     1U << 3
-#define FF_SAW_DOWN_LOADED   1U << 4
-#define FF_CONSTANT_LOADED   1U << 5
-#define FF_SPRING_LOADED     1U << 6
-#define FF_DAMPER_LOADED     1U << 7
-#define FF_INERTIA_LOADED    1U << 8
-#define FF_FRICTION_LOADED   1U << 9
-#define FF_RAMP_LOADED       1U << 10
-#define FF_CUSTOM_LOADED     1U << 11
-#define FF_GAIN_LOADED       1U << 12
-#define FF_AUTOCENTER_LOADED 1U << 13
-#define FF_RUMBLE_LOADED     1U << 14
 
     debug(0, "\n");
     debug(0, "     ffb_supported constant effect:\n");
@@ -781,10 +801,10 @@ void FFBCreateHapticInertiaEffect()
 	effect->u.condition[1] = effect->u.condition[0];
 
 	if (ioctl(device_handle, EVIOCSFF, effect))
-		debug(1, " Error creating FF_INERTIA effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+		debug(2, " Error creating FF_INERTIA effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
 	else {
 		supportedFeatures |= FF_INERTIA_LOADED;
-		debug(1, "FF_INERTIA Effect id=%d\n", effect->id);
+		debug(2, "FF_INERTIA Effect id=%d\n", effect->id);
 	}
 }
 
@@ -812,10 +832,10 @@ void FFBCreateHapticRampEffect()
     effect->u.ramp.envelope.fade_level = 0;
 
 	if (ioctl(device_handle, EVIOCSFF, effect))
-		debug(1, " Error creating FF_RAMP effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+		debug(2, " Error creating FF_RAMP effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
 	else {
 		supportedFeatures |= FF_RAMP_LOADED;
-		debug(1, "FF_RAMP Effect id=%d\n", effect->id);
+		debug(2, "FF_RAMP Effect id=%d\n", effect->id);
 	}
 }
 
@@ -846,10 +866,10 @@ void FFBCreateHapticSquareEffect()
 	effect->u.periodic.envelope.fade_level = 0;
 
 	if (ioctl(device_handle, EVIOCSFF, effect))
-		debug(1, " Error creating FF_PERIODIC FF_SQUARE effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+		debug(2, " Error creating FF_PERIODIC FF_SQUARE effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
 	else {
 		supportedFeatures |= FF_SQUARE_LOADED;
-		debug(1, "FF_SQUARE Effect id=%d\n", effect->id);
+		debug(2, "FF_SQUARE Effect id=%d\n", effect->id);
 	}
 }
 
@@ -879,10 +899,10 @@ void FFBCreateHapticTriangleEffect()
 	effect->u.periodic.envelope.fade_level = 0;
 
 	if (ioctl(device_handle, EVIOCSFF, effect))
-		debug(1, " Error creating FF_PERIODIC FF_TRIANGLE effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+		debug(2, " Error creating FF_PERIODIC FF_TRIANGLE effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
 	else {
 		supportedFeatures |= FF_TRIANGLE_LOADED;
-		debug(1, "FF_TRIANGLE Effect id=%d\n", effect->id);
+		debug(2, "FF_TRIANGLE Effect id=%d\n", effect->id);
 	}
 }
 
@@ -912,10 +932,10 @@ void FFBCreateHapticSawUpEffect()
 	effect->u.periodic.envelope.fade_level = 0;
 
 	if (ioctl(device_handle, EVIOCSFF, effect))
-		debug(1, " Error creating FF_PERIODIC FF_SAW_UP effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+		debug(2, " Error creating FF_PERIODIC FF_SAW_UP effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
 	else {
 		supportedFeatures |= FF_SAW_UP_LOADED;
-		debug(1, "FF_SAW_UP Effect id=%d\n", effect->id);
+		debug(2, "FF_SAW_UP Effect id=%d\n", effect->id);
 	}
 }
 
@@ -945,10 +965,10 @@ void FFBCreateHapticSawDownEffect()
 	effect->u.periodic.envelope.fade_level = 0;
 
 	if (ioctl(device_handle, EVIOCSFF, effect))
-		debug(1, " Error creating FF_PERIODIC FF_SAW_DOWN effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+		debug(2, " Error creating FF_PERIODIC FF_SAW_DOWN effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
 	else {
 		supportedFeatures |= FF_SAW_DOWN_LOADED;
-		debug(1, "FF_SAW_DOWN Effect id=%d\n", effect->id);
+		debug(2, "FF_SAW_DOWN Effect id=%d\n", effect->id);
 	}
 }
 
@@ -1219,9 +1239,68 @@ void FFBTriggerTestEffect(unsigned int effect, double strength)
     }
 }
 
-void SetLogitechSteeringRange(int idxDevice, int range)
+// alternate_modes
+// combine_pedals  
+// damper_level  
+// ffb_leds        
+// gain
+// real_id            
+// spring_level
+// autocenter       
+// country
+// friction_level
+// peak_ffb_level  
+// range  
+// report_descriptor
+char logitechSysFsDirectory[256];
+
+unsigned short GetSYSFSEntry(const char* entryName)
 {
-	printf("SetLogitechSteeringRange ... \n");
+	char logitechSysFsFile[256];
+	strcpy(logitechSysFsFile, logitechSysFsDirectory);
+  	strcat(logitechSysFsFile, entryName);
+
+	debug(3, "Opening file %s to read value\n", logitechSysFsFile);
+	FILE * file = fopen(logitechSysFsFile,"r");
+
+	unsigned short value=0;
+
+	if(file!=0){
+		fscanf(file, "%hu", &value);
+		fclose (file);
+		debug(3, "Value read: %hu\n", value);
+	}
+	else{
+		debug(3, "can not read value, did you start it with 'sudo'?\n");
+	}
+
+	return value;
+}
+
+void SetSYSFSEntry(const char* entryName, int entryValue)
+{
+	char logitechSysFsFile[256];
+	strcpy(logitechSysFsFile, logitechSysFsDirectory);
+  	strcat(logitechSysFsFile, entryName);
+
+	debug(3, "Opening file %s to set value %d\n", logitechSysFsFile, entryValue);
+	FILE * file = fopen(logitechSysFsFile,"w");
+
+	if(file!=0){
+		fprintf(file,"%d",  entryValue);
+		fclose (file);
+		debug(3, "Value updated\n");
+	}
+	else{
+		debug(3, "can not set value, did you start it with 'sudo'?\n");
+	}
+}
+
+bool SetLogitechSysFsDirectory(int idxDevice)
+{
+	printf("SetLogitechSysFsDirectory ... \n");
+	bool rs=false;
+
     struct udev *udev;
     struct udev_enumerate *enumerate;
     struct udev_list_entry *udevices, *dev_list_entry;
@@ -1244,35 +1323,13 @@ void SetLogitechSteeringRange(int idxDevice, int range)
 
 		if(udev_device_get_devnode(dev) && strcmp(udev_device_get_devnode(dev),devices[idxDevice].path)==0)
 		{
-			debug(2, "Logitech device found, setting range to %d...\n", range);
+			debug(2, "Logitech device found, storing SYSFS path...\n");
 
-			// PATH + "/device/device/range"
-			char logitechSysFsRangeFile[256];
-			strcpy(logitechSysFsRangeFile, path);
-  			strcat(logitechSysFsRangeFile, "/device/device/range");
+			strcpy(logitechSysFsDirectory, path);
+  			strcat(logitechSysFsDirectory, "/device/device/");
 
-/*
-			printf("logitechSysFsRangeFile=%s\n",logitechSysFsRangeFile);
-			if(access(logitechSysFsRangeFile, F_OK)!=0){
-				debug(2, "This Logitech does not have support for changing Steering Range\n");
-			}
-			else
-			{
-				*/
-			FILE * file = fopen(logitechSysFsRangeFile,"w");
-debug(0, "Opening file %s to set Steering Range\n", logitechSysFsRangeFile);
+			rs=true;
 
-			if(file!=0){
-				fprintf(file,"%d",  range);
-				fclose (file);
-				debug(2, "Steering Range updated\n");
-			}
-			else{
-				debug(2, "can not set Steering Range, did you start it with 'sudo'?\n");
-			}
-			//}
-			//printf("path=%s\n", path);
-			//printf("udev_device_get_devnode=%s\n", udev_device_get_devnode(dev));
 			break;
 		}
 
@@ -1281,4 +1338,6 @@ debug(0, "Opening file %s to set Steering Range\n", logitechSysFsRangeFile);
 
     udev_enumerate_unref(enumerate);
     udev_unref(udev);
+
+	return rs;
 }

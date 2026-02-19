@@ -21,8 +21,11 @@
 #define BOLDCYAN    "\033[1m\033[36m"      /* Bold Cyan */
 #define BOLDWHITE   "\033[1m\033[37m"      /* Bold White */
 
+
 int initDebug(int level);
 void debug(int level, const char *format, ...);
 void debugBuffer(int level, unsigned char *buffer, int length);
+int GetDebugLevel();
+
 
 #endif // DEBUG_H_
