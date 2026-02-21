@@ -26,6 +26,8 @@ some links:
 	fftest          : https://github.com/flosse/linuxconsole/blob/master/utils/fftest.c
 	openjvs         : https://github.com/OpenJVS/OpenJVS/blob/bobby/ffb/src/ffb.c
 	ff-memless-next : https://github.com/chrisboyle/G940-linux/blob/main/drivers/input/ff-memless-next.c
+
+	sudo strace -e ioctl -p 8792 -s 999 -v -o openffb_upload_ubuntu.log
 */
 #define LONG_BITS (sizeof(long) * 8)
 struct ff_effect effect;
@@ -293,9 +295,7 @@ bool FFBInitHaptic(char* device_name)
 					}
 				}
 				FFBCreateAllHapticEffects();
-				FFBSetGlobalGain(getConfig()->globalGain);
 
-				FFBSetGlobalAutoCenter(40,2000); 
 
 				return true;
 			}
@@ -347,32 +347,34 @@ void FFBCreateHapticSineEffect()
 	memset(effect,0,sizeof(ffb_effects[0]));
 	
 	effect->id = -1;
+
 	effect->type = FF_PERIODIC;
-	
+	effect->u.periodic.waveform = FF_SINE;	
 
-	effect->trigger.button = 0;
-	effect->trigger.interval = 0;
-	effect->replay.length = 0;
-	effect->replay.delay = 0;
-	effect->direction = 16384;	
-
-	effect->u.periodic.waveform = FF_SINE;
 	effect->u.periodic.period = 1000;		// 0.1 second 
-	effect->u.periodic.magnitude = 0x6000;	// 
-	effect->u.periodic.offset = 0;
-	effect->u.periodic.phase = 0;
+	effect->u.periodic.magnitude = 0x6000;	
 
-	effect->u.periodic.envelope.attack_length = 0;
-	effect->u.periodic.envelope.attack_level = 0;
-	effect->u.periodic.envelope.fade_length = 0;
-	effect->u.periodic.envelope.fade_level = 0;
+	// effect->trigger.button = 0;
+	// effect->trigger.interval = 0;
+	// effect->replay.length = 0;
+	// effect->replay.delay = 0;
+	// effect->direction = 16384;	
 
-	if(ioctl(device_handle, EVIOCSFF, effect))
+
+	// effect->u.periodic.offset = 0;
+	// effect->u.periodic.phase = 0;
+
+	// effect->u.periodic.envelope.attack_length = 0;
+	// effect->u.periodic.envelope.attack_level = 0;
+	// effect->u.periodic.envelope.fade_length = 0;
+	// effect->u.periodic.envelope.fade_level = 0;
+
+	if(ioctl(device_handle, EVIOCSFF, effect) < 0)
 		debug(2," Error creating FF_PERIODIC FF_SINE effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
-	else{
+	else
+	{
 		supportedFeatures|=FF_SINE_LOADED;
 		debug(2, "FF_SINE Effect     id=%d\n", effect->id);
-
 	}
 }
 
@@ -688,6 +690,9 @@ void FFBCreateHapticSawDownEffect()
 
 void FFBCreateAllHapticEffects()
 {
+	FFBSetGlobalGain(getConfig()->globalGain);
+	FFBSetGlobalAutoCenter(40,2000); 
+
 	FFBCreateHapticConstantEffect();
 	FFBCreateHapticSineEffect();
 	FFBCreateHapticFrictionEffect();
@@ -1164,7 +1169,8 @@ void FFBSetGlobalGain(int level)
 	memset(&gain, 0, sizeof(gain));
 	gain.type = EV_FF;
 	gain.code = FF_GAIN;
-	gain.value = 0xFFFFUL * level / 100;
+	gain.value = 0xFFFF * (level / 100);
+debug(3, " -> level: %d, gain.value: %d\n", level, gain.value);
 
 	if (write(device_handle, &gain, sizeof(gain)) != sizeof(gain)) 
 		debug(1, "Error setting global gain\n");
