@@ -960,7 +960,7 @@ void FFBTriggerSpringEffect(bool upload, double strength)
 		//START EFFECT
 		event.value = 1000;
 		debug(3, " -> starting spring effect with value: %d\n", event.value);
-		
+
 		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
 			fprintf(stderr, "ERROR: starting FF_CONSTANT effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
 
@@ -1180,7 +1180,7 @@ void FFBSetGlobalGain(int level)
 	gain.type = EV_FF;
 	gain.code = FF_GAIN;
 	gain.value = 0xFFFF * (level / 100);
-debug(3, " -> level: %d, gain.value: %d\n", level, gain.value);
+	debug(3, " -> level: %d, gain.value: %d\n", level, gain.value);
 
 	if (write(device_handle, &gain, sizeof(gain)) != sizeof(gain)) 
 		debug(1, "Error setting global gain\n");
