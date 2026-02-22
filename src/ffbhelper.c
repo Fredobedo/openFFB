@@ -318,15 +318,18 @@ void FFBCreateHapticConstantEffect()
 	memset(effect,0,sizeof(ffb_effects[0]));
 	
 	effect->id = -1;
+
+
+	effect->id = -1;
+    effect->trigger.button = 0;
+    effect->trigger.interval = 0;
+    effect->replay.length = 0;
+    effect->replay.delay = 0;
+    effect->direction = 0x4000;
+
 	effect->type = FF_CONSTANT;
 
-	effect->trigger.button = 0;
-	effect->trigger.interval = 0;
-	effect->replay.length = 1000; 
-	effect->replay.delay = 0;
-	effect->direction = 0xC000;
-	
-	effect->u.constant.level  = 0;
+	effect->u.constant.level  = 0x6000;
 	effect->u.constant.envelope.attack_length = 0;
 	effect->u.constant.envelope.attack_level = 0;		
 	effect->u.constant.envelope.fade_length = 0;
@@ -346,28 +349,26 @@ void FFBCreateHapticSineEffect()
 	struct ff_effect* effect=&ffb_effects[sine_effect_idx];
 	memset(effect,0,sizeof(ffb_effects[0]));
 	
-	effect->id = -1;
+    effect->id = -1;
+    effect->trigger.button = 0;
+    effect->trigger.interval = 0;
+    effect->replay.length = 0;
+    effect->replay.delay = 0;
+    effect->direction = 0x4000;
 
 	effect->type = FF_PERIODIC;
 	effect->u.periodic.waveform = FF_SINE;	
 
-	effect->u.periodic.period = 1000;		// 0.1 second 
-	effect->u.periodic.magnitude = 0x6000;	
+	effect->u.periodic.period = 1000;
+	effect->u.periodic.magnitude = 0x6000;
+	effect->u.periodic.offset = 0;
+	effect->u.periodic.phase = 0;
+	effect->u.periodic.envelope.attack_length = 0;
+	effect->u.periodic.envelope.attack_level = 0;
+	effect->u.periodic.envelope.fade_length = 0;
+	effect->u.periodic.envelope.fade_level = 0;
 
-	// effect->trigger.button = 0;
-	// effect->trigger.interval = 0;
-	// effect->replay.length = 0;
-	// effect->replay.delay = 0;
-	// effect->direction = 16384;	
 
-
-	// effect->u.periodic.offset = 0;
-	// effect->u.periodic.phase = 0;
-
-	// effect->u.periodic.envelope.attack_length = 0;
-	// effect->u.periodic.envelope.attack_level = 0;
-	// effect->u.periodic.envelope.fade_length = 0;
-	// effect->u.periodic.envelope.fade_level = 0;
 
 	if(ioctl(device_handle, EVIOCSFF, effect) < 0)
 		debug(2," Error creating FF_PERIODIC FF_SINE effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
@@ -384,21 +385,21 @@ void FFBCreateHapticFrictionEffect()
 	struct ff_effect* effect=&ffb_effects[friction_effect_idx];
 	memset(effect,0,sizeof(ffb_effects[0]));
 	
-	effect->id = -1;
+    effect->id = -1;
+    effect->trigger.button = 0;
+    effect->trigger.interval = 0;
+    effect->replay.length = 0;
+    effect->replay.delay = 0;
+    effect->direction = 0x4000;
+
 	effect->type = FF_FRICTION;
 
-	effect->trigger.button = 0;
-	effect->trigger.interval = 0;
-	effect->replay.length = 1000;  
-	effect->replay.delay = 0;
-
-	effect->u.condition[0].right_saturation = 0x0;
-	effect->u.condition[0].left_saturation = 0x0;
-	effect->u.condition[0].right_coeff = 0x0;
-	effect->u.condition[0].left_coeff = 0x0;
-	effect->u.condition[0].deadband = 0x0;
-	effect->u.condition[0].center = 0x0;
-	effect->u.condition[1] = effect->u.condition[0];
+	effect->u.condition[0].left_saturation = 0xffff;
+	effect->u.condition[0].right_saturation = 0xffff;
+	effect->u.condition[0].left_coeff = 0x4000;
+	effect->u.condition[0].right_coeff = 0x4000;
+	effect->u.condition[0].deadband = 0;
+	effect->u.condition[0].center = 0;
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
 		debug(2," Error creating FF_FRICTION  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);	
@@ -415,16 +416,20 @@ void  FFBCreateHapticDamperEffect()
 	memset(effect,0,sizeof(ffb_effects[0]));
 	
 	effect->id = -1;
+    effect->trigger.button = 0;
+    effect->trigger.interval = 0;
+    effect->replay.length = 0;
+    effect->replay.delay = 0;
+    effect->direction = 0x4000; // 0x4000; // 0x8000 -> left, 0xC000-> right
+
 	effect->type = FF_DAMPER;
 
-	effect->trigger.button = 0;
-	effect->trigger.interval = 0;
-	effect->replay.length = 1000; 
-	effect->replay.delay = 0;
-	effect->direction = 0x0000; // 0x4000; // 0x8000 -> left, 0xC000-> right
-
-	effect->u.condition->left_saturation = 0;
-	effect->u.condition->right_saturation = 0;
+	effect->u.condition[0].left_saturation = 0xffff;
+	effect->u.condition[0].right_saturation = 0xffff;
+	effect->u.condition[0].left_coeff = 0x4000;
+	effect->u.condition[0].right_coeff = 0x4000;
+	effect->u.condition[0].deadband = 0;
+	effect->u.condition[0].center = 0;
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
 		debug(2," Error creating FF_DAMPER  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);	
@@ -440,22 +445,21 @@ void FFBCreateHapticSpringEffect()
 	struct ff_effect* effect=&ffb_effects[spring_effect_idx];
 	memset(effect,0,sizeof(ffb_effects[0]));
 	
-	effect->id = -1;
+    effect->id = -1;
+    effect->trigger.button = 0;
+    effect->trigger.interval = 0;
+    effect->replay.length = 0;
+    effect->replay.delay = 0;
+    effect->direction = 0x4000;
+
 	effect->type = FF_SPRING;
 
-	effect->trigger.button = 0;
-	effect->trigger.interval = 0;
-	effect->replay.length = HAPTIC_INFINITY;  
-	effect->replay.delay = 0;
-
-	/* Initialize all condition parameters to zero so the spring loads with no force */
-	effect->u.condition[0].deadband = 0x0;
-	effect->u.condition[0].center = 0x0;
-	effect->u.condition[0].left_saturation = 0x0;
-	effect->u.condition[0].right_saturation = 0x0;
-	effect->u.condition[0].left_coeff = 0x0;
-	effect->u.condition[0].right_coeff = 0x0;
-	effect->u.condition[1] = effect->u.condition[0];
+	effect->u.condition[0].left_saturation = 0xffff;
+	effect->u.condition[0].right_saturation = 0xffff;
+	effect->u.condition[0].left_coeff = 0x4000;
+	effect->u.condition[0].right_coeff = 0x4000;
+	effect->u.condition[0].deadband = 0;
+	effect->u.condition[0].center = 0;
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
 		debug(2," Error creating FF_SPRING  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);		
@@ -471,15 +475,14 @@ void  FFBCreateHapticRumbleEffect()
 	struct ff_effect* effect=&ffb_effects[rumble_effect_idx];
 	memset(effect,0,sizeof(ffb_effects[0]));
 	
-	effect->id = -1;
+    effect->id = -1;
+    effect->trigger.button = 0;
+    effect->trigger.interval = 0;
+    effect->replay.length = 0;
+    effect->replay.delay = 0;
+    effect->direction = 0x4000;
+
 	effect->type = FF_RUMBLE;
-
-	effect->trigger.button = 0;
-	effect->trigger.interval = 0;
-	effect->replay.length = 1000; 
-	effect->replay.delay = 0;
-	effect->direction = 0x4000; // 0x4000 ; // 0x8000 -> left, 0xC000-> right
-
 
 	effect->u.rumble.strong_magnitude = 0x6000; 
 	effect->u.rumble.weak_magnitude = 0x2000;   
@@ -498,23 +501,21 @@ void FFBCreateHapticInertiaEffect()
 	struct ff_effect* effect = &ffb_effects[inertia_effect_idx];
 	memset(effect, 0, sizeof(ffb_effects[0]));
 
-	effect->id = -1;
+    effect->id = -1;
+    effect->trigger.button = 0;
+    effect->trigger.interval = 0;
+    effect->replay.length = 0;
+    effect->replay.delay = 0;
+    effect->direction = 0x4000;
+
 	effect->type = FF_INERTIA;
 
-	effect->trigger.button = 0;
-	effect->trigger.interval = 0;
-	effect->replay.length = 1000;
-	effect->replay.delay = 0;
-	effect->direction = 0x4000; /* along X axis */
-
-	/* Initialize condition params to zero so inertia loads with no force */
-	effect->u.condition[0].deadband = 0x0;
-	effect->u.condition[0].center = 0x0;
 	effect->u.condition[0].left_saturation = 0xffff;
 	effect->u.condition[0].right_saturation = 0xffff;
 	effect->u.condition[0].left_coeff = 0x4000;
 	effect->u.condition[0].right_coeff = 0x4000;
-	effect->u.condition[1] = effect->u.condition[0];
+	effect->u.condition[0].deadband = 0;
+	effect->u.condition[0].center = 0;
 
 	if (ioctl(device_handle, EVIOCSFF, effect))
 		debug(2, " Error creating FF_INERTIA effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);

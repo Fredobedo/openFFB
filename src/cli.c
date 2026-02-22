@@ -36,14 +36,14 @@ FFBCLIStatus printUsage()
     debug(3, "  -4,  --4BytesSegaFFBRawRequest=[PACKET]  Activate FFB Effects based on a 4 bytes raw request:\n");
     debug(3, "                                       - D0 => Spring     (00->7F)\n");
     debug(3, "                                       - D1 => Friction   (00->7F)\n");
-    debug(3, "                                       - D2 => Constant Torque Direction (Left=00, Right=01) \n");
+    debug(3, "                                       - D2 => Constant Torque Direction (Left=01, Right=00) \n");
     debug(3, "                                       - D3 => Constant Torque Power (00->FF)\n");
     debug(3, "\n");
     debug(3, "  -7,  --7BytesSegaFFBRawRequest=[PACKET]  Activate FFB Effects based on a 7 bytes raw request:\n");
     debug(3, "                                       - D0 => Start byte (80)\n");
     debug(3, "                                       - D1 => Spring     (00->7F)\n");
     debug(3, "                                       - D2 => Friction   (00->7F)\n");
-    debug(3, "                                       - D3 => Constant Torque Direction (Left=00, Right=01) \n");
+    debug(3, "                                       - D3 => Constant Torque Direction (Left=01, Right=00) \n");
     debug(3, "                                       - D4 => Constant Torque Power (00->7F)\n");
     debug(3, "                                       - D5 => Sine Frequency (00->7F)\n");
     debug(3, "                                       - D6 => Sine Intensity (00->7F)\n");
@@ -52,7 +52,7 @@ FFBCLIStatus printUsage()
     debug(3, "                                       - D0 => Start byte (80)\n");
     debug(3, "                                       - D1 => Spring     (00->7F)\n");
     debug(3, "                                       - D2 => Friction   (00->7F)\n");
-    debug(3, "                                       - D3 => Constant Torque Direction (Left=00, Right=01) \n");
+    debug(3, "                                       - D3 => Constant Torque Direction (Left=01, Right=00) \n");
     debug(3, "                                       - D4 => Constant Torque Power (00->7F)\n");
     debug(3, "                                       - D5 => Sine Frequency (00->7F)\n");
     debug(3, "                                       - D6 => Sine Intensity (00->7F)\n");
