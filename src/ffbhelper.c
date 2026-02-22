@@ -958,7 +958,7 @@ void FFBTriggerSpringEffect(bool upload, double strength)
 		fsync(device_handle);
 
 		//START EFFECT
-		event.value = 1000;
+		event.value = 1;
 		debug(3, " -> starting spring effect with value: %d\n", event.value);
 
 		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
