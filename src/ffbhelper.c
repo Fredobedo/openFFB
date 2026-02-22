@@ -958,7 +958,7 @@ void FFBTriggerSpringEffect(bool upload, double strength)
 		fsync(device_handle);
 
 		//START EFFECT
-		event.value = 1;
+		event.value = 1000;
 		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
 			fprintf(stderr, "ERROR: starting FF_CONSTANT effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
 
