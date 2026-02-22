@@ -76,7 +76,7 @@ FFBCLIStatus printUsage()
  **/
 FFBCLIStatus printVersion()
 {
-    debug(0, "1.2.1\n");
+    debug(0, "1.2.2\n");
     return FFB_CLI_STATUS_SUCCESS_CLOSE;
 }
 
