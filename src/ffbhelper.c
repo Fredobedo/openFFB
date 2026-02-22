@@ -809,6 +809,7 @@ void FFBStopAllEffects()
 			FFBStopEffect(ffb_effects[cp].id);
 		}
 		fflush(stdout);
+		sleep(1); // give some time for effects to stop before removing them
 	}
 }
 
@@ -903,7 +904,6 @@ void FFBTriggerSineEffect(bool upload, float frequency, float intensity)
 			fprintf(stderr, "ERROR: starting FF_SINE effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
 
 		fsync(device_handle);
-		//write(device_handle, &event, sizeof(event)) != sizeof(event);
 	}
 	else
 	{
@@ -955,13 +955,14 @@ void FFBTriggerSpringEffect(bool upload, double strength)
 		//STOP PREVIOUS EFFECT
 		event.value = 0;
 		bool rs=write(device_handle, &event, sizeof(event));
+		fsync(device_handle);
 
 		//START EFFECT
 		event.value = 1;
 		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
 			fprintf(stderr, "ERROR: starting FF_CONSTANT effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
 
-		write(device_handle, &event, sizeof(event)) != sizeof(event);
+		fsync(device_handle);
 	}
 	else
 	{
@@ -1020,13 +1021,14 @@ void FFBTriggerConstantEffect(bool upload, double strength)
 		//STOP PREVIOUS EFFECT
 		event.value = 0;
 		bool rs=write(device_handle, &event, sizeof(event));
+		fsync(device_handle);
 
 		//START EFFECT
 		event.value = 1;
 		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
 			fprintf(stderr, "ERROR: starting FF_CONSTANT effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
 
-		write(device_handle, &event, sizeof(event)) != sizeof(event);
+		fsync(device_handle);
 	}
 	else
 	{
@@ -1085,13 +1087,14 @@ void FFBTriggerFrictionEffect(bool upload, double strength)
 		//STOP PREVIOUS EFFECT
 		event.value = 0;
 		bool rs=write(device_handle, &event, sizeof(event));
+		fsync(device_handle);
 
 		//START EFFECT
 		event.value = 1;
 		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
 			fprintf(stderr, "ERROR: starting FF_FRICTION effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
 
-		write(device_handle, &event, sizeof(event)) != sizeof(event);
+		fsync(device_handle);
 	}
 	else
 	{
