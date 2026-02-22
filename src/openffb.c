@@ -15,6 +15,9 @@
 #include <sys/file.h>
 #include <errno.h>
 
+#include <termios.h>
+#include <unistd.h>
+
 #include "ffbhelper.h"
 
 #define PID_FILE "/tmp/openffb.pid"
@@ -26,10 +29,48 @@ unsigned long executed_cycles=0;
 
 int pid_fd;
 
+void press_any_key(void)
+{
+    struct termios oldt, newt;
+
+    // Get current terminal settings
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+
+    // Disable canonical mode and echo
+    newt.c_lflag &= ~(ICANON | ECHO);
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+
+    printf("Press any key to continue...");
+    fflush(stdout);
+
+    getchar(); // Reads single character immediately
+
+    // Restore terminal settings
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+}
+
 int main(int argc, char **argv)
 {
   signal(SIGINT, handleSignal);
   start_time = clock();
+
+  FFBConfig *localConfig = getConfig(); 
+
+  /* Read the initial config */
+  if (parseConfig(CONFIG_PATH) != FFB_CONFIG_STATUS_SUCCESS)
+    printf("Warning: No valid openffb config file found, a default is being used\n");
+
+  /* Initialise the debug output */
+  if (!initDebug(localConfig->debugLevel))
+  {
+    printf("Failed to initialise debug output\n");
+  }
+
+  // If debug level is 3, wait for user input before starting the program to allow attaching a debugger
+  if(GetDebugLevel()==3)
+    press_any_key();
 
   pid_fd = open(PID_FILE, O_RDWR | O_CREAT, 0644);
   if (pid_fd < 0) {
@@ -54,8 +95,6 @@ int main(int argc, char **argv)
 
   debug(0, "Program started, PID=%d\n", getpid());
 
-  FFBConfig *localConfig = getConfig(); 
-
   void initCOMSegaFFBController()
   {
     debug(1, "Connecting to Sega FFB Controller");
@@ -74,16 +113,6 @@ int main(int argc, char **argv)
     if (LSB > '9') LSB -= 7;          // Convert LSB value to a contiguous range (0x30..0x3F)  
      return (MSB <<4) | (LSB & 0x0F); // Make a result byte  using only low nibbles of MSB and LSB thus neglecting the input register case
   }  
-
-  /* Read the initial config */
-  if (parseConfig(CONFIG_PATH) != FFB_CONFIG_STATUS_SUCCESS)
-    printf("Warning: No valid openffb config file found, a default is being used\n");
-
-  /* Initialise the debug output */
-  if (!initDebug(localConfig->debugLevel))
-  {
-    printf("Failed to initialise debug output\n");
-  }
 
   /* Parsing arguments */
   FFBCLIStatus argumentsStatus = parseArguments(argc, argv);
@@ -178,6 +207,9 @@ int main(int argc, char **argv)
   /* Start COM itialization with Sega FFB controller */
   initCOMSegaFFBController();
 
+  if(!running)
+    return EXIT_FAILURE;
+      
   /* Process packets forever */
   debug(2, "Will start the main loop...\n");
   int current_state=0;
@@ -190,7 +222,7 @@ int main(int argc, char **argv)
 
   int MAX_SUCCESS = 3;
   int nbrOfSuccess=0;
-  
+
   pthread_t wheelPositionThreadID;
   pthread_create(&wheelPositionThreadID, NULL, (void *)wheelPostionThread, NULL);
 

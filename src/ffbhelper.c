@@ -805,8 +805,10 @@ void FFBStopAllEffects()
 	{
 		int num_effects = sizeof(ffb_effects)/sizeof(struct ff_effect);
 		for(int cp=0; cp < num_effects; cp++)
+		{
 			FFBStopEffect(ffb_effects[cp].id);
-
+		}
+		fflush(stdout);
 	}
 }
 
@@ -893,13 +895,15 @@ void FFBTriggerSineEffect(bool upload, float frequency, float intensity)
 		//STOP PREVIOUS EFFECT
 		event.value = 0;
 		bool rs=write(device_handle, &event, sizeof(event));
+		fsync(device_handle);
 
 		//START EFFECT
 		event.value = 1;
 		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
 			fprintf(stderr, "ERROR: starting FF_SINE effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
 
-		write(device_handle, &event, sizeof(event)) != sizeof(event);
+		fsync(device_handle);
+		//write(device_handle, &event, sizeof(event)) != sizeof(event);
 	}
 	else
 	{
