@@ -922,21 +922,18 @@ void FFBTriggerSpringEffect(bool upload, double strength)
 		struct ff_effect* springEffect=&ffb_effects[spring_effect_idx];
 		if(upload)
 		{
-			short minForce = (short)(strength > 0.001 ? (getConfig()->minSpring / 100.0 * 16384.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
-			short maxForce = (short)(getConfig()->maxSpring / 100.0 * 16384.0);
-			short range = maxForce - minForce;
-			short coeff = (short)(strength * range + minForce);
-			if (coeff > 16384)
-				coeff = 16384;
+			unsigned short minForce = (unsigned short)((getConfig()->minSpring / 100.0) * 65535.0); 
+			unsigned short maxForce = (unsigned short)((getConfig()->maxSpring / 100.0) * 65535.0);
+			unsigned short range = maxForce - minForce;
 
-			debug(3, " -> strength: %.2f, coeff: %d\n", strength, coeff);
+			unsigned short saturation = (unsigned short)((strength * range) + minForce);
 
-			springEffect->u.condition[0].right_coeff = (short)(coeff);
-			springEffect->u.condition[0].left_coeff = (short)(coeff);
-			// springEffect->u.condition[0].right_saturation = (unsigned short)(coeff) * 2; 
-			// springEffect->u.condition[0].left_saturation = (unsigned short)(coeff) * 2; 
-			springEffect->u.condition[0].right_saturation = (getConfig()->maxSpring / 100.0) * 65535.0; 
-			springEffect->u.condition[0].left_saturation =  (getConfig()->maxSpring / 100.0) * 65535.0; 
+			springEffect->u.condition[0].right_coeff = 16384;
+			springEffect->u.condition[0].left_coeff =  16384;
+			
+			springEffect->u.condition[0].right_saturation = saturation;
+			springEffect->u.condition[0].left_saturation =  saturation;
+
 			debug(3, " -> right_coeff: %d, left_coeff: %d\n", springEffect->u.condition[0].right_coeff, springEffect->u.condition[0].left_coeff);
 			debug(3, " -> right_saturation: %d, left_saturation: %d\n", springEffect->u.condition[0].right_saturation, springEffect->u.condition[0].left_saturation);
 
@@ -994,20 +991,21 @@ void FFBTriggerConstantEffect(bool upload, double strength)
 			else if (strength < -1.0)
 				strength = -1.0;
 
-			int confMinForce = getConfig()->minTorque;
-			int confMaxForce = getConfig()->maxTorque;
-
-			short MinForce = (short)(strength > 0.001 ? (confMinForce / 100.0 * 16384.0) : 0);
-			short MaxForce = (short)(getConfig()->maxTorque / 100.0 * 16384.0);
-			short range = MaxForce - MinForce;
-			short level = (short)(strength * range + MinForce);
+			short minForce = (short)((getConfig()->minTorque / 100.0) * 32767.0); 
+			short maxForce = (short)((getConfig()->maxTorque / 100.0) * 32767.0);
+			short range = maxForce - minForce;
+			
+			short level = (short)((strength * range) + minForce);
 
 			constantEffect->u.constant.level = level;	
 			debug(3, " -> strength: %.2f, level: %d\n", strength, constantEffect->u.constant.level);
 
 			/* Here we set the two values to the max as the arcade system 'manages" fades                */
-			constantEffect->u.constant.envelope.attack_level =  (unsigned short)(strength * 65535.0); /* this one counts! */
-			constantEffect->u.constant.envelope.fade_level =    (unsigned short)(strength * 65535.0); /* only to be safe  */
+			constantEffect->u.constant.envelope.attack_level = 0;
+			constantEffect->u.constant.envelope.fade_level =   0;
+			constantEffect->u.constant.envelope.attack_length = 0;
+			constantEffect->u.constant.envelope.fade_length = 0;
+
 			debug(3, " -> attack_level: %d, fade_level: %d\n", constantEffect->u.constant.envelope.attack_level, constantEffect->u.constant.envelope.fade_level);
 
 			/* update effect */
@@ -1059,19 +1057,17 @@ void FFBTriggerFrictionEffect(bool upload, double strength)
 		struct ff_effect* frictionEffect=&ffb_effects[friction_effect_idx];
 		if(upload)
 		{
-			short minForce = (short)(strength > 0.001 ? (getConfig()->minFriction / 100.0 * 16384.0) : 0); // strength is a double so we do an epsilon check of 0.001 instead of > 0.
-			short maxForce = (short)(getConfig()->maxFriction / 100.0 * 16384.0);
-			short range = maxForce - minForce;
-			short coeff = (short)(strength * range + minForce);
-			if (coeff < 0)
-				coeff = 16384;
+			unsigned short minForce = (unsigned short)((getConfig()->minFriction / 100.0) * 65535.0); 
+			unsigned short maxForce = (unsigned short)((getConfig()->maxFriction / 100.0) * 65535.0);
+			unsigned short range = maxForce - minForce;
 
-			frictionEffect->u.condition[0].left_coeff = (short)(coeff);
-			frictionEffect->u.condition[0].right_coeff = (short)(coeff);
-			debug(3, " -> strength: %.2f, coeff: %d\n", strength, coeff);
+			unsigned short saturation = (unsigned short)((strength * range) + minForce);
 
-			frictionEffect->u.condition[0].left_saturation = (getConfig()->maxSpring / 100.0) * 65535.0; 
-			frictionEffect->u.condition[0].right_saturation = (getConfig()->maxSpring / 100.0) * 65535.0; 
+			frictionEffect->u.condition[0].left_coeff =  16384;
+			frictionEffect->u.condition[0].right_coeff = 16384;
+
+			frictionEffect->u.condition[0].left_saturation = saturation; 
+			frictionEffect->u.condition[0].right_saturation = saturation;
 			debug(3, " -> left_saturation: %d, right_saturation: %d\n", frictionEffect->u.condition[0].left_saturation, frictionEffect->u.condition[0].right_saturation);
 
 			frictionEffect->u.condition[1] = frictionEffect->u.condition[0];
@@ -1123,15 +1119,16 @@ void FFBTriggerRumbleEffect(bool upload, double strength, motor_select motor)
 			else if (strength < -1.0)
 				strength = -1.0;
 
-			short MinForce = (short)(strength > 0.001 ? (getConfig()->minTorque / 100.0 * 16384.0) : 0);
-			short MaxForce = (short)(getConfig()->maxTorque / 100.0 * 16384.0);
-			short range = MaxForce - MinForce;
-			short level = (short)(strength * range + MinForce);
+			unsigned short minForce = (unsigned short)((getConfig()->minTorque / 100.0) * 65535.0); 
+			unsigned short maxForce = (unsigned short)((getConfig()->maxTorque / 100.0) * 65535.0);
+			unsigned short range = maxForce - minForce;
+			
+			unsigned short level = (unsigned short)((strength * range) + minForce);
 
 			switch (motor) {
 				case weak_motor:
 					rumbleEffect->u.rumble.strong_magnitude = 0;
-					rumbleEffect->u.rumble.weak_magnitude = level;
+					rumbleEffect->u.rumble.weak_magnitude = level/3;
 					break;
 				case strong_motor:
 					rumbleEffect->u.rumble.strong_magnitude = level;
@@ -1140,7 +1137,7 @@ void FFBTriggerRumbleEffect(bool upload, double strength, motor_select motor)
 				case both_motors:
 				default:
 					rumbleEffect->u.rumble.strong_magnitude = level;
-					rumbleEffect->u.rumble.weak_magnitude = level;
+					rumbleEffect->u.rumble.weak_magnitude = level/3;
 					break;
 			}
 
