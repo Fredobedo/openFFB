@@ -1003,9 +1003,9 @@ void FFBTriggerConstantEffect(bool upload, double strength)
 			short minForce = (short)((getConfig()->minTorque / 100.0) * 32767.0); 
 			short maxForce = (short)((getConfig()->maxTorque / 100.0) * 32767.0);
 			short range = maxForce - minForce;
-			
-			short level = (short)((strength * range) + minForce);
-
+			debug(3, " -> minForce: %d, maxForce: %d\n", minForce, maxForce);
+			signed short level = (signed short)((strength * range) + minForce);
+			debug(3, " -> strength: %.2f converted to level: %d\n", strength, level);
 			constantEffect->u.constant.level = level;	
 			debug(3, " -> strength: %.2f, level: %d\n", strength, constantEffect->u.constant.level);
 
