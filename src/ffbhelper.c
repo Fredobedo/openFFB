@@ -1278,7 +1278,8 @@ void FFBTriggerTestEffect(unsigned int effect, double strength)
             FFBTriggerFrictionEffect(true, strength);
             break;
         case FF_AUTOCENTER:
-            FFBSetGlobalAutoCenter(40, 10000);
+            //FFBSetGlobalAutoCenter(40, 10000);
+			FFBSetGlobalAutoCenterAsync(40, 10000);
             break;              
         case FF_RUMBLE:
             FFBTriggerRumbleEffectDefault(true, strength);
