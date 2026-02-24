@@ -1211,7 +1211,7 @@ void FFBSetGlobalGain(int level)
 /* --- AutoCenter Global Setting (1-100) for 1 second only --- */
 void FFBSetGlobalAutoCenter(int level, int duration_ms)
 {
-	debug(1, "FFBSetGlobalAutoCenter (during 1 sec)\n");
+	debug(1, "FFBSetGlobalAutoCenter duration: %d ms\n", duration_ms);
 	
 	memset(&event, 0, sizeof(event));
 	event.type = EV_FF;
@@ -1252,7 +1252,7 @@ void FFBTriggerTestEffect(unsigned int effect, double strength)
             FFBTriggerFrictionEffect(true, strength);
             break;
         case FF_AUTOCENTER:
-            FFBSetGlobalAutoCenter(40, 1500);
+            FFBSetGlobalAutoCenter(40, 10000);
             break;              
         case FF_RUMBLE:
             FFBTriggerRumbleEffectDefault(true, strength);
