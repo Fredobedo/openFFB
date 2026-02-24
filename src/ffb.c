@@ -201,11 +201,11 @@ FFBStatus processPacket(unsigned char* packet)
 			break;
 		//0xA1
 		case SET_MAX_RIGHT:
-			FFBTriggerConstantEffect(true,0.15);
+			FFBTriggerConstantEffect(true,-0.15);
 			break;
 		//0xA2
 		case SET_MAX_LEFT:
-			FFBTriggerConstantEffect(true,-0.15);
+			FFBTriggerConstantEffect(true,0.15);
 			break;
 		//0x02
 		case GET_POWER_LINE:
