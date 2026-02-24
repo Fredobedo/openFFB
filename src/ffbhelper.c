@@ -876,7 +876,7 @@ void FFBTriggerSineEffect(bool upload, float frequency, float intensity)
 				magnitude = 0;
 			} else {
 				double absStrength = fabs(intensity);
-				magnitude = (short)(absStrength * (MaxIntensity - MinIntensity) + MinIntensity);
+				magnitude = (short)((absStrength * (MaxIntensity - MinIntensity)) + MinIntensity);
 				magnitude = (intensity > 0.0) ? magnitude : -magnitude;
 			}
 
@@ -1005,7 +1005,7 @@ void FFBTriggerConstantEffect(bool upload, double strength)
 				level = 0;
 			} else {
 				double absStrength = fabs(strength);
-				short magnitude = (short)(absStrength * range + minForce);
+				short magnitude = (short)((absStrength * range) + minForce);
 				level = (strength > 0.0) ? magnitude : -magnitude;
 			}
 			
