@@ -855,8 +855,6 @@ void FFBTriggerSineEffect(bool upload, float frequency, float intensity)
 			//sineEffect->u.periodic.period= (unsigned short)frequency;
 			sineEffect->u.periodic.period= (unsigned short)(1000.0f / (frequency/4.0f)); // period in milliseconds
 
-
-
 			// Frequency Math: Calculate period in microseconds => Period = 1000 / Frequency(Hz)
 			// For 50Hz: 1000 / 50 = 20ms
 			// Clamp value between 5-1000
@@ -867,23 +865,22 @@ void FFBTriggerSineEffect(bool upload, float frequency, float intensity)
 
 			debug(3, " -> frequency converted to period: %ums\n", sineEffect->u.periodic.period);
 
-			// Clamp intensity to -1.0 to 1.0 (maps to -32767 to 32767 evdev range)
-			// rg_intensity: 0.16 -> 0.18*32767=5887 // is the minimum on G27 to feel something which corresponds to 0x16 from Sega FFB
 			if (intensity < -1.0f) intensity = -1.0f;
 			if (intensity > 1.0f) intensity = 1.0f;
 
-			int confMinIntensity = getConfig()->minIntensity;
-			int confMaxIntensity = getConfig()->maxIntensity;
+			short MinIntensity = (short)(getConfig()->minIntensity / 100.0 * 32767.0);
+			short MaxIntensity = (short)(getConfig()->maxIntensity / 100.0 * 32767.0);
 
-			//let's try to calculate amplitude level based on min/max intensity set in game config
-			//32767 is max for evdev, it's a signed value, so in theory it could be negative too but it makes no sense for sine wave magnitude
-			//short MinIntensity = (short)(intensity > 0.001 ? (confMinIntensity / 100.0 * 32767.0) : 0); // if 20 in config=> 6553.4
-			short MinIntensity = (short)(confMinIntensity / 100.0 * 32767.0);
-			short MaxIntensity = (short)(confMaxIntensity / 100.0 * 32767.0);
-			debug(3, " -> minIntensity: %d, maxIntensity: %d\n", MinIntensity, MaxIntensity);
-			
-			short range = MaxIntensity - MinIntensity; // => 26214
-			sineEffect->u.periodic.magnitude = (short)(((intensity/1.0) * range) + MinIntensity);
+			signed short magnitude;
+			if (intensity == 0.0) {
+				magnitude = 0;
+			} else {
+				double absStrength = fabs(intensity);
+				magnitude = (short)(absStrength * (MaxIntensity - MinIntensity) + MinIntensity);
+				magnitude = (intensity > 0.0) ? magnitude : -magnitude;
+			}
+
+			sineEffect->u.periodic.magnitude = magnitude;
 			debug(3, " -> intensity converted to magnitude: %d\n", sineEffect->u.periodic.magnitude);             
 
 			/* update effect */
@@ -1003,9 +1000,16 @@ void FFBTriggerConstantEffect(bool upload, double strength)
 			short minForce = (short)((getConfig()->minTorque / 100.0) * 32767.0); 
 			short maxForce = (short)((getConfig()->maxTorque / 100.0) * 32767.0);
 			short range = maxForce - minForce;
-			debug(3, " -> minForce: %d, maxForce: %d\n", minForce, maxForce);
-			signed short level = (signed short)((strength * range) + minForce);
-			debug(3, " -> strength: %.2f converted to level: %d\n", strength, level);
+
+			signed short level;
+			if (strength == 0.0) {
+				level = 0;
+			} else {
+				double absStrength = fabs(strength);
+				short magnitude = (short)(absStrength * range + minForce);
+				level = (strength > 0.0) ? magnitude : -magnitude;
+			}
+			
 			constantEffect->u.constant.level = level;	
 			debug(3, " -> strength: %.2f, level: %d\n", strength, constantEffect->u.constant.level);
 
