@@ -14,6 +14,7 @@
 #include <sys/ioctl.h>
 #include <errno.h>
 #include <ctype.h>
+#include <pthread.h>
 
 /*
 This code is super highly based on work
@@ -35,57 +36,16 @@ some links:
 #define LONG_BITS (sizeof(long) * 8)
 struct ff_effect effect;
 
-
-
- #include <pthread.h>
-
 typedef struct {
     int level;
     int duration_ms;
 } AutoCenterParams;
 
-void FFBAutoCenterStart(int level)
-{
-    debug(1, "FFBAutoCenterStart level: %d%%\n", level);
-
-    if (level < 0) level = 0;
-    if (level > 100) level = 100;
-
-    memset(&event, 0, sizeof(event));
-    event.type = EV_FF;
-    event.code = FF_AUTOCENTER;
-    event.value = (0xFFFF * level) / 100;
-
-    if (write(device_handle, &event, sizeof(event)) != sizeof(event)) {
-        debug(1, "ERROR: failed to enable auto centering (%s) [%s:%d]\n", 
-              strerror(errno), __FILE__, __LINE__);
-    } else {
-        supportedFeatures |= FF_AUTOCENTER_LOADED;
-    }
-}
-
-void FFBAutoCenterStop(void)
-{
-    debug(1, "FFBAutoCenterStop\n");
-
-    memset(&event, 0, sizeof(event));
-    event.type = EV_FF;
-    event.code = FF_AUTOCENTER;
-    event.value = 0;
-
-    if (write(device_handle, &event, sizeof(event)) != sizeof(event)) {
-        debug(1, "ERROR: failed to disable auto centering (%s) [%s:%d]\n", 
-              strerror(errno), __FILE__, __LINE__);
-    }
-}
-
 static void* autocenter_thread_func(void* arg)
 {
     AutoCenterParams* params = (AutoCenterParams*)arg;
     
-    FFBAutoCenterStart(params->level);
-    usleep((useconds_t)params->duration_ms * 1000);
-    FFBAutoCenterStop();
+	FFBSetGlobalAutoCenter(params->level, params->duration_ms);
     
     free(params);
     return NULL;
