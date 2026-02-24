@@ -16,6 +16,9 @@
 #include <ctype.h>
 
 /*
+This code is super highly based on work
+Thank you again for having shared your work and knowledge on this topic, it was a great help to get started and understand how to use the linux force feedback API.
+
 some links: 
 	linux/input.h    : lots of information in this header file
 	https://www.kernel.org/doc/html/latest/input/ff.html
@@ -898,12 +901,15 @@ void FFBTriggerSineEffect(bool upload, float frequency, float intensity)
 		bool rs=write(device_handle, &event, sizeof(event));
 		fsync(device_handle);
 
-		//START EFFECT
-		event.value = 1;
-		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-			fprintf(stderr, "ERROR: starting FF_SINE effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
+		if(frequency!=0.0 && intensity!=0.0)
+		{
+			//START EFFECT
+			event.value = 1;
+			if (write(device_handle, &event, sizeof(event)) != sizeof(event))
+				fprintf(stderr, "ERROR: starting FF_SINE effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
 
-		fsync(device_handle);
+			fsync(device_handle);
+		}
 	}
 	else
 	{
@@ -954,14 +960,17 @@ void FFBTriggerSpringEffect(bool upload, double strength)
 		bool rs=write(device_handle, &event, sizeof(event));
 		fsync(device_handle);
 
-		//START EFFECT
-		event.value = 1;
-		debug(3, " -> starting spring effect with value: %d\n", event.value);
+		if(strength!=0.0)
+		{
+			//START EFFECT
+			event.value = 1;
+			debug(3, " -> starting spring effect with value: %d\n", event.value);
 
-		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-			fprintf(stderr, "ERROR: starting FF_CONSTANT effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
+			if (write(device_handle, &event, sizeof(event)) != sizeof(event))
+				fprintf(stderr, "ERROR: starting FF_CONSTANT effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
 
-		fsync(device_handle);
+			fsync(device_handle);
+		}
 	}
 	else
 	{
@@ -1023,12 +1032,15 @@ void FFBTriggerConstantEffect(bool upload, double strength)
 		bool rs=write(device_handle, &event, sizeof(event));
 		fsync(device_handle);
 
-		//START EFFECT
-		event.value = 1;
-		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-			fprintf(stderr, "ERROR: starting FF_CONSTANT effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
+		if(strength!=0.0)
+		{
+			//START EFFECT
+			event.value = 1;
+			if (write(device_handle, &event, sizeof(event)) != sizeof(event))
+				fprintf(stderr, "ERROR: starting FF_CONSTANT effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
 
-		fsync(device_handle);
+			fsync(device_handle);
+		}
 	}
 	else
 	{
@@ -1087,12 +1099,15 @@ void FFBTriggerFrictionEffect(bool upload, double strength)
 		bool rs=write(device_handle, &event, sizeof(event));
 		fsync(device_handle);
 
-		//START EFFECT
-		event.value = 1;
-		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-			fprintf(stderr, "ERROR: starting FF_FRICTION effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
+		if(strength!=0.0)
+		{
+			//START EFFECT
+			event.value = 1;
+			if (write(device_handle, &event, sizeof(event)) != sizeof(event))
+				fprintf(stderr, "ERROR: starting FF_FRICTION effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
 
-		fsync(device_handle);
+			fsync(device_handle);
+		}
 	}
 	else
 	{
@@ -1155,12 +1170,15 @@ void FFBTriggerRumbleEffect(bool upload, double strength, motor_select motor)
 		event.value = 0;
 		bool rs=write(device_handle, &event, sizeof(event));
 
-		//START EFFECT
-		event.value = 1;
-		if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-			fprintf(stderr, "ERROR: starting FF_RUMBLE effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
+		if (strength!=0.0)
+		{
+			//START EFFECT
+			event.value = 1;
+			if (write(device_handle, &event, sizeof(event)) != sizeof(event))
+				fprintf(stderr, "ERROR: starting FF_RUMBLE effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
 
-		write(device_handle, &event, sizeof(event)) != sizeof(event);
+			write(device_handle, &event, sizeof(event)) != sizeof(event);
+		}
 	}
 	else
 	{
@@ -1241,19 +1259,6 @@ void FFBTriggerTestEffect(unsigned int effect, double strength)
     }
 }
 
-// alternate_modes
-// combine_pedals  
-// damper_level  
-// ffb_leds        
-// gain
-// real_id            
-// spring_level
-// autocenter       
-// country
-// friction_level
-// peak_ffb_level  
-// range  
-// report_descriptor
 char logitechSysFsDirectory[256];
 
 unsigned short GetSYSFSEntry(const char* entryName)
