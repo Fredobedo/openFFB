@@ -185,7 +185,8 @@ FFBStatus processPacket(unsigned char *packet)
 			break;
 		// 0xA0
 		case SET_CENTER:
-			FFBSetGlobalAutoCenter(40, 1000);
+			//FFBSetGlobalAutoCenter(40, 1000);
+			FFBSetGlobalAutoCenterAsync(40, 2000);
 			break;
 		// 0xA1
 		case SET_MAX_RIGHT:

@@ -92,6 +92,8 @@ typedef enum {
 struct ff_effect ffb_effects[MAX_EFFECTS];
 struct input_event play, stop, gain, event;
 
+void FFBSetGlobalAutoCenterAsync(int level, int duration_ms);
+
 bool  FFBGetDeviceName(int handle, char *deviceName);
 bool  FFBGetDeviceVendorProductVersion(int handle, char *deviceVendor, char *deviceProduct, char *deviceVersion);
 bool  FFBCheckIfFFBDevice(int handle);

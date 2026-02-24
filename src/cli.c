@@ -15,6 +15,7 @@
  * 
  * @returns The status of the action performed
  **/
+
 FFBCLIStatus printUsage()
 {
     debug(0, "Usage: openffb [HAPTIC_NAME] [OPTIONS]\n\n");

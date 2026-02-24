@@ -15,7 +15,7 @@ MIN_FRICTION 0
 MAX_FRICTION 100
 
 # adjust torque effect if necessary here
-MIN_TORQUE 20
+MIN_TORQUE 0
 MAX_TORQUE 100
 
 # adjust sine effect intensity if necessary here (default is 0-100)
