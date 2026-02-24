@@ -68,9 +68,9 @@ int main(int argc, char **argv)
     printf("Failed to initialise debug output\n");
   }
 
-  // If debug level is 3, wait for user input before starting the program to allow attaching a debugger
-  if(GetDebugLevel()==3)
-    press_any_key();
+  // // If debug level is 3, wait for user input before starting the program to allow attaching a debugger
+  // if(GetDebugLevel()==3)
+  //   press_any_key();
 
   pid_fd = open(PID_FILE, O_RDWR | O_CREAT, 0644);
   if (pid_fd < 0) {
