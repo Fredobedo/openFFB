@@ -190,10 +190,12 @@ FFBStatus processPacket(unsigned char *packet)
 		// 0xA1
 		case SET_MAX_RIGHT:
 			FFBTriggerConstantEffect(true, -0.15);
+			sleep(2);
 			break;
 		// 0xA2
 		case SET_MAX_LEFT:
 			FFBTriggerConstantEffect(true, 0.15);
+			sleep(2);
 			break;
 		// 0x02
 		case GET_POWER_LINE:
