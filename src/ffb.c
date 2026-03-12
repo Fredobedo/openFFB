@@ -5,7 +5,7 @@
 #include "debug.h"
 #include "device.h"
 #include "ffbhelper.h"
-#include <linux/time.h>
+//#include <linux/time.h>
 #include <pthread.h>
 #include <stdatomic.h>
 
