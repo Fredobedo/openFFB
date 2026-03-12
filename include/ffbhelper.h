@@ -13,6 +13,8 @@
 #include <locale.h>
 #include <unistd.h>
 
+#include <pthread.h>
+#include <stdatomic.h>
 
 #define HAPTIC_INFINITY 0
 //#define HAPTIC_INFINITY 0xFFFF
@@ -92,7 +94,23 @@ typedef enum {
 struct ff_effect ffb_effects[MAX_EFFECTS];
 struct input_event play, stop, gain, event;
 
-void FFBSetGlobalAutoCenterAsync(int level, int duration_ms);
+typedef struct {
+	int position;
+    double strength;
+	int wait_before_start_ms;
+    int duration_ms;
+} ThreadParams;
+
+
+
+typedef void* (*WorkerFunc)(void*);
+
+int startWorkerAsync(WorkerFunc func, void* arg);
+void* WorkerSetCenter(void* arg);
+void* WorkerUpdateCachedWheelPosition(void* arg);
+void* WorkerSetPosition(void* arg);
+
+int GetCachedWheelPosition();
 
 bool  FFBGetDeviceName(int handle, char *deviceName);
 bool  FFBGetDeviceVendorProductVersion(int handle, char *deviceVendor, char *deviceProduct, char *deviceVersion);
@@ -126,6 +144,10 @@ void FFBCreateHapticTriangleEffect();
 void FFBCreateHapticSawUpEffect();
 void FFBCreateHapticSawDownEffect();
 
+//Async Triggers
+
+void FFBSetPositionAsync(int position, double strength, int wait_before_start_ms, int duration_ms);
+
 //Triggers
 void FFBTriggerSpringEffect(bool upload, double strength);
 void FFBTriggerConstantEffect(bool upload, double strength);
@@ -154,8 +176,8 @@ unsigned short GetSYSFSEntry(const char* entryName);
 void SetSYSFSEntry(const char* entryName, int entryValue);
 
 
-int GetWheelPositionIOCTL();
-int GetWheelPosition();
+int GetNewWheelPositionIOCTL();
+//int GetWheelPositionABSX();
 
 bool IsLogitechWheel();
 #endif

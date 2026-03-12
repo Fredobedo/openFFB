@@ -5,7 +5,7 @@
 #include "debug.h"
 #include "device.h"
 #include "ffbhelper.h"
-#include <time.h>
+#include <linux/time.h>
 #include <pthread.h>
 #include <stdatomic.h>
 
@@ -15,40 +15,39 @@ FFBPacket inputPacket;
 
 // int wheelPosition=8192;
 
-atomic_int storedWheelPosition = 8192;
-atomic_bool threadRunning = true;
 
-void wheelPostionThread()
-{
-	while (threadRunning)
-	{
 
-		int FinalwheelPosition;
-		int tempPosition = GetWheelPosition();
+// void wheelPostionThread()
+// {
+// 	while (threadRunning)
+// 	{
 
-		if (tempPosition == -1)
-			tempPosition = GetWheelPositionIOCTL();
+// 		int FinalwheelPosition;
+// 		int tempPosition = GetWheelPosition();
 
-		if (getConfig()->InvertedWheelPosition == 1)
-			FinalwheelPosition = 16384 - tempPosition;
-		else
-			FinalwheelPosition = tempPosition;
+// 		if (tempPosition == -1)
+// 			tempPosition = GetWheelPositionIOCTL();
 
-		if (FinalwheelPosition < 1500)
-			FinalwheelPosition = 0;
-		else if (FinalwheelPosition > 15500)
-			FinalwheelPosition = 16383;
+// 		if (getConfig()->InvertedWheelPosition == 1)
+// 			FinalwheelPosition = 16384 - tempPosition;
+// 		else
+// 			FinalwheelPosition = tempPosition;
 
-		atomic_store(&storedWheelPosition, FinalwheelPosition);
+// 		if (FinalwheelPosition < 1500)
+// 			FinalwheelPosition = 0;
+// 		else if (FinalwheelPosition > 15500)
+// 			FinalwheelPosition = 16383;
 
-		usleep(5 * 1000); // Sleep for 10 milliseconds
-	}
-}
+// 		atomic_store(&storedWheelPosition, FinalwheelPosition);
 
-void stopWheelPositionThread()
-{
-	threadRunning = false;
-}
+// 		usleep(50 * 1000); 
+// 	}
+// }
+
+// void stopWheelPositionThread()
+// {
+// 	threadRunning = false;
+// }
 
 static long long millis(void)
 {
@@ -167,7 +166,7 @@ FFBStatus processPacket(unsigned char *packet)
 
 			if (getConfig()->SendWheelPositionToMidi == 1)
 			{
-				int wheelPosition = atomic_load(&storedWheelPosition);
+				int wheelPosition = GetCachedWheelPosition();
 				debug(1, "%lu: GET_POS: %d\n", millis(),wheelPosition);
 
 				replyPacket[1] = (wheelPosition >> 7) & 0x7f;
@@ -185,16 +184,23 @@ FFBStatus processPacket(unsigned char *packet)
 			break;
 		// 0xA0
 		case SET_CENTER:
-			//FFBSetGlobalAutoCenter(40, 1000);
-			FFBSetGlobalAutoCenterAsync(40, 2000);
+			ThreadParams *centerParams = malloc(sizeof(ThreadParams));
+			*centerParams = (ThreadParams){8192, 0.40, 0, 2000};
+			startWorkerAsync(WorkerSetCenter, centerParams);
 			break;
 		// 0xA1
 		case SET_MAX_RIGHT:
-			FFBTriggerConstantEffect(true, -0.60);
+			ThreadParams *maxRightParams = malloc(sizeof(ThreadParams));
+			*maxRightParams = (ThreadParams){0, 0.20, 0, 5000};
+			startWorkerAsync(WorkerSetPosition, maxRightParams);
+			//FFBTriggerConstantEffect(true, -0.60);
 			break;
 		// 0xA2
 		case SET_MAX_LEFT:
-			FFBTriggerConstantEffect(true, 0.60);
+			ThreadParams *maxLeftParams = malloc(sizeof(ThreadParams));
+			*maxLeftParams = (ThreadParams){16384, 0.20, 0, 5000};
+			startWorkerAsync(WorkerSetPosition, maxLeftParams);
+			//FFBTriggerConstantEffect(true, 0.60);
 			break;
 		// 0x02
 		case GET_POWER_LINE:
@@ -293,7 +299,7 @@ void playCOMInitEffect()
 void playCOMEndEffect()
 {
 	debug(2, "playCOMEndEffect!!!\n");
-	FFBTriggerConstantEffect(true, 0.80);
+	FFBTriggerConstantEffect(true, 0.70);
 	usleep(70 * 1000);
 	FFBTriggerConstantEffect(true, 0.0);
 	FFBSetGlobalAutoCenter(40, 1000);

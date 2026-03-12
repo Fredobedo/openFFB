@@ -62,9 +62,6 @@ typedef enum
     FFB_STATUS_ERROR_SYNCH_REQUIRED,
 } FFBStatus;
 
-void wheelPostionThread();
-void stopWheelPositionThread();
-
 /* --- init haptic device  --- */
 int initFFB(char *devicePath);
 int disconnectFFB();

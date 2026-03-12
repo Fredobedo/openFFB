@@ -42,7 +42,7 @@ FFBConfig config = {
     .periodAdjustmentFactor = 1.0,
     .logitechSteeringRange = 900,
     .SendWheelPositionToMidi = 0,
-    .InvertedWheelPosition = 0,
+    .InvertedWheelPosition = 1,
 };
 
 void DumpConfig()

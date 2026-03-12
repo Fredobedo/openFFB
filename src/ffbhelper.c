@@ -16,6 +16,9 @@
 #include <ctype.h>
 #include <pthread.h>
 
+bool LogitechWheelDetected=false;
+atomic_int storedWheelPosition = 8192;
+
 /*
 This code is super highly based on work
 Thank you again for having shared your work and knowledge on this topic, it was a great help to get started and understand how to use the linux force feedback API.
@@ -34,39 +37,98 @@ some links:
 	sudo strace -e ioctl -p 8792 -s 999 -v -o openffb_upload_ubuntu.log
 */
 #define LONG_BITS (sizeof(long) * 8)
+
 struct ff_effect effect;
 
-typedef struct {
-    int level;
-    int duration_ms;
-} AutoCenterParams;
-
-static void* autocenter_thread_func(void* arg)
+// Generic async worker thread
+// Fire-end-forget mode
+int startWorkerAsync(WorkerFunc func, void* arg) 
 {
-    AutoCenterParams* params = (AutoCenterParams*)arg;
+    pthread_t tid;
+    int ret = pthread_create(&tid, NULL, func, arg);
+    if (ret == 0) pthread_detach(tid);
+    return ret;
+}
+
+void* WorkerSetCenter(void* arg)
+{
+    ThreadParams* params = (ThreadParams*)arg;
     
-	FFBSetGlobalAutoCenter(params->level, params->duration_ms);
+	FFBSetGlobalAutoCenter(params->strength, params->duration_ms);
     
     free(params);
     return NULL;
 }
 
-void FFBSetGlobalAutoCenterAsync(int level, int duration_ms)
+
+void* WorkerSetPosition(void* arg)
 {
-    pthread_t thread;
-    AutoCenterParams* params = malloc(sizeof(AutoCenterParams));
-    params->level = level;
-    params->duration_ms = duration_ms;
-    
-    if (pthread_create(&thread, NULL, autocenter_thread_func, params) == 0) {
-        pthread_detach(thread);  // Let it run independently
-    } else {
-        free(params);
-        debug(1, "ERROR: failed to create autocenter thread\n");
-    }
+	pthread_t thread;
+
+	ThreadParams* params = (ThreadParams*)arg;
+	if (!params) return NULL;
+
+	/* optional initial delay before starting to wait for position */
+	if (params->wait_before_start_ms > 0)
+		usleep(params->wait_before_start_ms * 1000);
+
+	//search for direction of the effect based on the position
+
+	// => move to the left
+	if( params->position > GetCachedWheelPosition())
+		FFBTriggerConstantEffect(true, (fabs(params->strength)));
+	else 
+		FFBTriggerConstantEffect(true, -(fabs(params->strength)));
+
+
+	/* wait until cached wheel position matches requested position */
+	int totalDuration_ms=0;
+	int waitPerCycle_ms=20;
+	
+	while (GetCachedWheelPosition() != params->position && params->duration_ms > totalDuration_ms)
+	{
+		usleep(waitPerCycle_ms * 1000); 
+		totalDuration_ms += waitPerCycle_ms;
+	}
+
+	FFBStopEffect(ffb_effects[constant_effect_idx].id);
+	
+	free(params);
+	return NULL;
 }
 
-bool LogitechWheelDetected=false;
+void* WorkerUpdateCachedWheelPosition(void* arg)
+{
+	while (true)
+	{
+
+		int FinalwheelPosition;
+		int tempPosition = GetNewWheelPositionIOCTL();
+
+		if (tempPosition >= 0)
+		{
+			if (getConfig()->InvertedWheelPosition == 1)
+				FinalwheelPosition = 16384 - tempPosition;
+			else
+				FinalwheelPosition = tempPosition;
+
+			if (FinalwheelPosition < 1500)
+				FinalwheelPosition = 0;
+			else if (FinalwheelPosition > 15500)
+				FinalwheelPosition = 16383;
+
+			atomic_store(&storedWheelPosition, FinalwheelPosition);
+		}
+		usleep(50 * 1000); 
+	}
+}
+
+
+
+int GetCachedWheelPosition()
+{
+	return atomic_load(&storedWheelPosition);
+}
 
 bool IsLogitechWheel()
 {
@@ -258,7 +320,7 @@ int FFBGetDeviceIdx(char* device_name)
 		return idxDevice;
 }
 
-int GetWheelPositionIOCTL()
+int GetNewWheelPositionIOCTL()
 {
 	int wheelPosition=-1;
 	struct input_absinfo absinfo;
@@ -269,34 +331,35 @@ int GetWheelPositionIOCTL()
 
 	return wheelPosition;
 }
-/*
-ABS_X: max right = 16382
-      mmax_left  = 0 
-*/
-int GetWheelPosition()
-{
-	struct input_event event;
-    fd_set file_descriptor;
-    struct timeval tv;
 
-	FD_ZERO(&file_descriptor);
-    FD_SET(device_handle, &file_descriptor);
+// /*
+// ABS_X: max right = 16382
+//       mmax_left  = 0 
+// */
+// int GetWheelPositionABSX()
+// {
+// 	struct input_event event;
+//     fd_set file_descriptor;
+//     struct timeval tv;
 
-    tv.tv_sec = 0;
-    tv.tv_usec = 2 * 1000;
+// 	FD_ZERO(&file_descriptor);
+//     FD_SET(device_handle, &file_descriptor);
 
-    if (select(device_handle + 1, &file_descriptor, NULL, NULL, &tv) < 1)
-        return -1;
+//     tv.tv_sec = 0;
+//     tv.tv_usec = 2 * 1000;
 
-	int bytesRead = read(device_handle, &event, sizeof(struct input_event));
+//     if (select(device_handle + 1, &file_descriptor, NULL, NULL, &tv) < 1)
+//         return -1;
 
-	if (bytesRead == sizeof(struct input_event)) {
-		if (event.type == EV_ABS && event.code == ABS_X) {
-			return event.value;
-		}
-	}
-	return -1; // Indicate an error or no position available
-}
+// 	int bytesRead = read(device_handle, &event, sizeof(struct input_event));
+
+// 	if (bytesRead == sizeof(struct input_event)) {
+// 		if (event.type == EV_ABS && event.code == ABS_X) {
+// 			return event.value;
+// 		}
+// 	}
+// 	return -1; // Indicate an error or no position available
+// }
 
 bool FFBInitHaptic(char* device_name)
 {
@@ -590,7 +653,6 @@ void FFBCreateHapticRampEffect()
 	}
 }
 
-//FRED??
 void FFBCreateHapticSquareEffect()
 {
 	/* --- FF_SQUARE (periodic) --- */
@@ -748,7 +810,6 @@ void FFBAbortExecution(void)
     debug(1, "\nAborting program execution.\n");
 	if(device_handle){
 		FFBStopAllEffects();
-		//FFBRemoveAllEffects();
 		close(device_handle);
 	}
 }
@@ -1239,14 +1300,14 @@ void FFBSetGlobalGain(int level)
 }
 
 /* --- AutoCenter Global Setting (1-100) for 1 second only --- */
-void FFBSetGlobalAutoCenter(int level, int duration_ms)
+void FFBSetGlobalAutoCenter(int strength, int duration_ms)
 {
 	debug(1, "FFBSetGlobalAutoCenter duration: %d ms\n", duration_ms);
 	
 	memset(&event, 0, sizeof(event));
 	event.type = EV_FF;
 	event.code = FF_AUTOCENTER;
-	event.value = 0xFFFFUL * level / 100;	
+	event.value = 0xFFFFUL * strength / 100;	
 
 	/* Enable autocalibration / auto-center */
 	if (write(device_handle, &event, sizeof(event)) != sizeof(event))
@@ -1265,11 +1326,12 @@ void FFBSetGlobalAutoCenter(int level, int duration_ms)
 
 void FFBTriggerTestEffect(unsigned int effect, double strength)
 {
-	//debug(0,"FFBTriggerEffect effect=%u, strength=%f\n",effect, strength);
     switch(effect)
     {
         case FF_CONSTANT:
-            FFBTriggerConstantEffect(true, strength);
+			ThreadParams *testParams = malloc(sizeof(ThreadParams));
+			*testParams = (ThreadParams){0, strength, 0, 5000};
+			startWorkerAsync(WorkerSetPosition, testParams);
             break;
         case FF_SPRING:
             FFBTriggerSpringEffect(true, strength);
@@ -1278,8 +1340,7 @@ void FFBTriggerTestEffect(unsigned int effect, double strength)
             FFBTriggerFrictionEffect(true, strength);
             break;
         case FF_AUTOCENTER:
-            //FFBSetGlobalAutoCenter(40, 10000);
-			FFBSetGlobalAutoCenterAsync(40, 10000);
+			startWorkerAsync(WorkerSetCenter, &(ThreadParams){8192, 0.40, 0, 10000});
             break;              
         case FF_RUMBLE:
             FFBTriggerRumbleEffectDefault(true, strength);

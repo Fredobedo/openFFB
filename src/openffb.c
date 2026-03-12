@@ -158,9 +158,11 @@ int main(int argc, char **argv)
     FFBDumpSupportedFeatures();
     return EXIT_SUCCESS;
   }
+  
+  startWorkerAsync(WorkerUpdateCachedWheelPosition, NULL);
 
   if(containArgument(TRIGGER_EFFECT)){
-    double Strength = 0.85;
+    double Strength = 0.25;
     if(containArgument(SET_FORCE))
       Strength=((double)atoi(getArgumentValue(SET_FORCE)))/100;
 
@@ -223,9 +225,6 @@ int main(int argc, char **argv)
   int MAX_SUCCESS = 3;
   int nbrOfSuccess=0;
 
-  pthread_t wheelPositionThreadID;
-  pthread_create(&wheelPositionThreadID, NULL, (void *)wheelPostionThread, NULL);
-
   while (running)
   {
     //executed_cycles++;
@@ -279,10 +278,6 @@ int main(int argc, char **argv)
     FFBStatusMinus      = processingStatus;
   }
   
-  /* Stop the wheel position thread */
-  stopWheelPositionThread();
-  pthread_join(wheelPositionThreadID, NULL);
-
   /* Close the file pointer */
   if (!disconnectFFB())
   {
