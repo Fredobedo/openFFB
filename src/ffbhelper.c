@@ -61,14 +61,16 @@ void* WorkerSetCenter(void* arg)
     
 	int totalDuration_ms=0;
 	int waitPerCycle_ms=20;
+	debug(2, "WorkerSetCenter: Starting center effect for duration %d ms with strength %d\n", params->duration_ms, params->strength);
 	
 	while (params->duration_ms > totalDuration_ms)
 	{
 		FFBTriggerSpringEffect(true, params->strength);
+
 		usleep(waitPerCycle_ms * 1000); 
 		totalDuration_ms += waitPerCycle_ms;
 	}
-
+	debug(2, "WorkerSetCenter: Stopping center effect after %d ms\n", totalDuration_ms);
 	FFBStopEffect(ffb_effects[spring_effect_idx].id);
 
     free(params);
