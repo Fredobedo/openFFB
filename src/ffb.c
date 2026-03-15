@@ -13,42 +13,6 @@
 /* it contains the converted values from serial raw    */
 FFBPacket inputPacket;
 
-// int wheelPosition=8192;
-
-
-
-// void wheelPostionThread()
-// {
-// 	while (threadRunning)
-// 	{
-
-// 		int FinalwheelPosition;
-// 		int tempPosition = GetWheelPosition();
-
-// 		if (tempPosition == -1)
-// 			tempPosition = GetWheelPositionIOCTL();
-
-// 		if (getConfig()->InvertedWheelPosition == 1)
-// 			FinalwheelPosition = 16384 - tempPosition;
-// 		else
-// 			FinalwheelPosition = tempPosition;
-
-// 		if (FinalwheelPosition < 1500)
-// 			FinalwheelPosition = 0;
-// 		else if (FinalwheelPosition > 15500)
-// 			FinalwheelPosition = 16383;
-
-// 		atomic_store(&storedWheelPosition, FinalwheelPosition);
-
-// 		usleep(50 * 1000); 
-// 	}
-// }
-
-// void stopWheelPositionThread()
-// {
-// 	threadRunning = false;
-// }
-
 static long long millis(void)
 {
 	struct timespec ts;
