@@ -52,10 +52,20 @@ int startWorkerAsync(WorkerFunc func, void* arg)
 
 void* WorkerSetCenter(void* arg)
 {
-    ThreadParams* params = (ThreadParams*)arg;
+	ThreadParams* params = (ThreadParams*)arg;
+	if (!params) return NULL;
+
+	/* optional initial delay before starting to wait for position */
+	if (params->wait_before_start_ms > 0)
+		usleep(params->wait_before_start_ms * 1000);
     
-	FFBSetGlobalAutoCenter(params->strength, params->duration_ms);
-    
+
+	FFBTriggerSpringEffect(true, params->strength);
+	
+	usleep(params->duration_ms * 1000); 
+
+	FFBStopEffect(ffb_effects[spring_effect_idx].id);
+
     free(params);
     return NULL;
 }
@@ -63,7 +73,7 @@ void* WorkerSetCenter(void* arg)
 
 void* WorkerSetPosition(void* arg)
 {
-	pthread_t thread;
+	//pthread_t thread;
 
 	ThreadParams* params = (ThreadParams*)arg;
 	if (!params) return NULL;
