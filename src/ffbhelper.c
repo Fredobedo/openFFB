@@ -59,10 +59,15 @@ void* WorkerSetCenter(void* arg)
 	if (params->wait_before_start_ms > 0)
 		usleep(params->wait_before_start_ms * 1000);
     
-
-	FFBTriggerSpringEffect(true, params->strength);
+	int totalDuration_ms=0;
+	int waitPerCycle_ms=20;
 	
-	usleep(params->duration_ms * 1000); 
+	while (params->duration_ms > totalDuration_ms)
+	{
+		FFBTriggerSpringEffect(true, params->strength);
+		usleep(waitPerCycle_ms * 1000); 
+		totalDuration_ms += waitPerCycle_ms;
+	}
 
 	FFBStopEffect(ffb_effects[spring_effect_idx].id);
 
