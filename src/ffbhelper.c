@@ -1338,8 +1338,9 @@ void FFBTriggerTestEffect(unsigned int effect, double strength)
 {
     switch(effect)
     {
+		ThreadParams *testParams;
         case FF_CONSTANT:
-			ThreadParams *testParams = malloc(sizeof(ThreadParams));
+			testParams = malloc(sizeof(ThreadParams));
 			*testParams = (ThreadParams){0, strength, 0, 5000};
 			startWorkerAsync(WorkerSetPosition, testParams);
             break;
@@ -1350,7 +1351,9 @@ void FFBTriggerTestEffect(unsigned int effect, double strength)
             FFBTriggerFrictionEffect(true, strength);
             break;
         case FF_AUTOCENTER:
-			startWorkerAsync(WorkerSetCenter, &(ThreadParams){8192, 0.40, 0, 10000});
+			testParams = malloc(sizeof(ThreadParams));
+			*testParams = (ThreadParams){0, 0.40, 0, 10000};
+			startWorkerAsync(WorkerSetCenter, testParams);
             break;              
         case FF_RUMBLE:
             FFBTriggerRumbleEffectDefault(true, strength);
