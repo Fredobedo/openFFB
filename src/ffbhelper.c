@@ -136,7 +136,7 @@ void* WorkerUpdateCachedWheelPosition(void* arg)
 
 			atomic_store(&storedWheelPosition, FinalwheelPosition);
 		}
-		usleep(50 * 1000); 
+		usleep(8 * 1000); 
 	}
 }
 
