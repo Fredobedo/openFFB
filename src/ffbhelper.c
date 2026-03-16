@@ -1360,7 +1360,7 @@ void FFBTriggerTestEffect(unsigned int effect, double strength)
             break;
         case FF_AUTOCENTER:
 			testParams = malloc(sizeof(ThreadParams));
-			*testParams = (ThreadParams){0, 0.40, 0, 10000};
+			*testParams = (ThreadParams){0, 0.84, 0, 50000};
 			startWorkerAsync(WorkerSetCenter, testParams);
             break;              
         case FF_RUMBLE:

@@ -149,7 +149,7 @@ FFBStatus processPacket(unsigned char *packet)
 		// 0xA0
 		case SET_CENTER:
 			ThreadParams *centerParams = malloc(sizeof(ThreadParams));
-			*centerParams = (ThreadParams){0, 0.40, 50, 3000};
+			*centerParams = (ThreadParams){0, 0.84, 50, 3000};
 			startWorkerAsync(WorkerSetCenter, centerParams);
 			break;
 		// 0xA1
