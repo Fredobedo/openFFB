@@ -946,10 +946,10 @@ void FFBRemoveAllEffects()
 // The function manages effect parameters, uploads them to the device, and handles starting or stopping the effect as needed.
 void FFBTriggerSineEffect(bool upload, float frequency, float intensity)
 {
-	debug(0, "FFBTriggerSineEffect");
+	debug(1, "FFBTriggerSineEffect");
 	if(FF_SINE_LOADED==(supportedFeatures & FF_SINE_LOADED)) 
 	{
-		debug(0, " -> arg_frequency: %.2f, arg_intensity: %.2f\n", frequency, intensity);
+		debug(2, " -> arg_frequency: %.2f, arg_intensity: %.2f\n", frequency, intensity);
 
 		struct ff_effect* sineEffect=&ffb_effects[sine_effect_idx];
 		if(upload)
@@ -1097,6 +1097,7 @@ void FFBTriggerConstantEffect(bool upload, double strength)
 	debug(1, "FFBTriggerConstantEffect\n");
 	if(FF_CONSTANT_LOADED==(supportedFeatures & FF_CONSTANT_LOADED)) 
 	{
+		debug(2, " -> arg_strength: %.2f\n", strength);
 		struct ff_effect* constantEffect=&ffb_effects[constant_effect_idx];
 		if(upload)
 		{
