@@ -437,7 +437,7 @@ void FFBCreateHapticConstantEffect()
 	effect->id = -1;
     effect->trigger.button = 0;
     effect->trigger.interval = 0;
-    effect->replay.length = 0;
+    effect->replay.length = 100;
     effect->replay.delay = 0;
     effect->direction = 0x4000;
 
