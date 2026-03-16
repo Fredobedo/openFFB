@@ -149,20 +149,20 @@ FFBStatus processPacket(unsigned char *packet)
 		// 0xA0
 		case SET_CENTER:
 			ThreadParams *centerParams = malloc(sizeof(ThreadParams));
-			*centerParams = (ThreadParams){0, 0.40, 0, 3000};
+			*centerParams = (ThreadParams){0, 0.40, 50, 3000};
 			startWorkerAsync(WorkerSetCenter, centerParams);
 			break;
 		// 0xA1
 		case SET_MAX_RIGHT:
 			ThreadParams *maxRightParams = malloc(sizeof(ThreadParams));
-			*maxRightParams = (ThreadParams){0, 0.20, 0, 5000};
+			*maxRightParams = (ThreadParams){0, 0.20, 50, 5000};
 			startWorkerAsync(WorkerSetPosition, maxRightParams);
 			//FFBTriggerConstantEffect(true, -0.60);
 			break;
 		// 0xA2
 		case SET_MAX_LEFT:
 			ThreadParams *maxLeftParams = malloc(sizeof(ThreadParams));
-			*maxLeftParams = (ThreadParams){16384, 0.20, 0, 5000};
+			*maxLeftParams = (ThreadParams){16384, 0.20, 50, 5000};
 			startWorkerAsync(WorkerSetPosition, maxLeftParams);
 			//FFBTriggerConstantEffect(true, 0.60);
 			break;
