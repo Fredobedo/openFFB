@@ -36,22 +36,23 @@ unsigned char ff_bits[1 + FF_MAX / 8 / sizeof(unsigned char)];
 /* All loaded/supported effects are stored here */
 unsigned int supportedFeatures;
 
-#define FF_SINE_LOADED       1U << 0
-#define FF_SQUARE_LOADED     1U << 1
-#define FF_TRIANGLE_LOADED   1U << 2
-#define FF_SAW_UP_LOADED     1U << 3
-#define FF_SAW_DOWN_LOADED   1U << 4
-#define FF_CONSTANT_LOADED   1U << 5
-#define FF_SPRING_LOADED     1U << 6
-#define FF_DAMPER_LOADED     1U << 7
-#define FF_INERTIA_LOADED    1U << 8
-#define FF_FRICTION_LOADED   1U << 9
-#define FF_RAMP_LOADED       1U << 10
-#define FF_CUSTOM_LOADED     1U << 11
-#define FF_GAIN_LOADED       1U << 12
-#define FF_AUTOCENTER_LOADED 1U << 13
-#define FF_RUMBLE_LOADED     1U << 14
-
+#define FF_SINE_LOADED       		1U << 0
+#define FF_SQUARE_LOADED   		  	1U << 1
+#define FF_TRIANGLE_LOADED 		  	1U << 2
+#define FF_SAW_UP_LOADED     		1U << 3
+#define FF_SAW_DOWN_LOADED   		1U << 4
+#define FF_CONSTANT_LOADED   		1U << 5
+#define FF_CONSTANT_ASYNC_LOADED   	1U << 6
+#define FF_SPRING_LOADED     		1U << 7
+#define FF_SPRING_ASYNC_LOADED     	1U << 8
+#define FF_DAMPER_LOADED     		1U << 9
+#define FF_INERTIA_LOADED    		1U << 10
+#define FF_FRICTION_LOADED   		1U << 11
+#define FF_RAMP_LOADED       		1U << 12
+#define FF_CUSTOM_LOADED     		1U << 13
+#define FF_GAIN_LOADED       		1U << 14
+#define FF_AUTOCENTER_LOADED 		1U << 15
+#define FF_RUMBLE_LOADED     		1U << 16
 #define DEV_INPUT_EVENT "/dev/input"
 #define MAX_DEVICE 30
 #define MAX_EFFECTS 16
@@ -72,12 +73,14 @@ int NbrOfDevices;
 
 typedef enum{
 	constant_effect_idx = 0,
+	constant_effect_async_idx,
 	sine_effect_idx,
 	square_effect_idx,
 	triangle_effect_idx,		
 	sawtoothup_effect_idx,	
 	sawtoothdown_effect_idx,
 	spring_effect_idx,
+	spring_effect_async_idx,
 	damper_effect_idx,
 	inertia_effect_idx,	
 	friction_effect_idx,
@@ -131,11 +134,11 @@ void FFBAbortExecution(void);
 
 //Creates
 void FFBCreateAllHapticEffects();
-void FFBCreateHapticConstantEffect();
+void FFBCreateHapticConstantEffects();
 void FFBCreateHapticSineEffect();
 void FFBCreateHapticFrictionEffect();
 void FFBCreateHapticDamperEffect();
-void FFBCreateHapticSpringEffect();
+void FFBCreateHapticSpringEffects();
 void FFBCreateHapticRumbleEffect();
 void FFBCreateHapticInertiaEffect();
 void FFBCreateHapticRampEffect();
@@ -149,8 +152,8 @@ void FFBCreateHapticSawDownEffect();
 void FFBSetPositionAsync(int position, double strength, int wait_before_start_ms, int duration_ms);
 
 //Triggers
-void FFBTriggerSpringEffect(bool upload, double strength);
-void FFBTriggerConstantEffect(bool upload, double strength);
+void FFBTriggerSpringEffect(bool upload, double strength, bool async);
+void FFBTriggerConstantEffect(bool upload, double strength, bool async);
 void FFBTriggerFrictionEffect(bool upload, double strength);
 void FFBTriggerSineEffect(bool upload, float freq, float intensity);
 void FFBTriggerRumbleEffectDefault(bool upload, double strength);

@@ -62,16 +62,17 @@ void* WorkerSetCenter(void* arg)
 	int totalDuration_ms=0;
 	int waitPerCycle_ms=20;
 	debug(2, "WorkerSetCenter: Starting center effect for duration %d ms with strength %d\n", params->duration_ms, params->strength);
-	
+
+	FFBTriggerSpringEffect(true, params->strength, true);
+
 	while (params->duration_ms > totalDuration_ms)
 	{
-		FFBTriggerSpringEffect(true, params->strength);
-
 		usleep(waitPerCycle_ms * 1000); 
 		totalDuration_ms += waitPerCycle_ms;
 	}
+
 	debug(2, "WorkerSetCenter: Stopping center effect after %d ms\n", totalDuration_ms);
-	FFBStopEffect(ffb_effects[spring_effect_idx].id);
+	FFBStopEffect(ffb_effects[spring_effect_async_idx].id);
 
     free(params);
     return NULL;
@@ -93,9 +94,9 @@ void* WorkerSetPosition(void* arg)
 
 	// => move to the left
 	if( params->position > GetCachedWheelPosition())
-		FFBTriggerConstantEffect(true, (fabs(params->strength)));
+		FFBTriggerConstantEffect(true, (fabs(params->strength)),true);
 	else 
-		FFBTriggerConstantEffect(true, -(fabs(params->strength)));
+		FFBTriggerConstantEffect(true, -(fabs(params->strength)),true);
 
 
 	/* wait until cached wheel position matches requested position */
@@ -108,7 +109,7 @@ void* WorkerSetPosition(void* arg)
 		totalDuration_ms += waitPerCycle_ms;
 	}
 
-	FFBStopEffect(ffb_effects[constant_effect_idx].id);
+	FFBStopEffect(ffb_effects[constant_effect_async_idx].id);
 	
 	free(params);
 	return NULL;
@@ -425,19 +426,16 @@ bool FFBInitHaptic(char* device_name)
 		return false;
 }
 
-void FFBCreateHapticConstantEffect()
+void FFBCreateHapticConstantEffects()
 {
 	/* --- FF_CONSTANT --- */
 	struct ff_effect* effect=&ffb_effects[constant_effect_idx];
 	memset(effect,0,sizeof(ffb_effects[0]));
 	
 	effect->id = -1;
-
-
-	effect->id = -1;
     effect->trigger.button = 0;
     effect->trigger.interval = 0;
-    effect->replay.length = 100;
+    effect->replay.length = 0;
     effect->replay.delay = 0;
     effect->direction = 0x4000;
 
@@ -450,10 +448,23 @@ void FFBCreateHapticConstantEffect()
 	effect->u.constant.envelope.fade_level = 0;			
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
-		debug(2," Error creating FF_CONSTANT effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+		debug(2," Error creating FF_CONSTANT synceffect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
 	else{
 		supportedFeatures|=FF_CONSTANT_LOADED;
-		debug(2, "FF_CONSTANT Effect id=%d\n", effect->id);
+		debug(2, "FF_CONSTANT sync Effect id=%d\n", effect->id);
+	}
+
+	/* --- FF_CONSTANT ASYNC --- */
+	struct ff_effect* effectAsync=&ffb_effects[constant_effect_async_idx];
+	memcpy(effectAsync, effect, sizeof(ffb_effects[0]));
+
+	effectAsync->id = -1;
+
+	if(ioctl(device_handle, EVIOCSFF, effectAsync))
+		debug(2," Error creating FF_CONSTANT async effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
+	else{
+		supportedFeatures|=FF_CONSTANT_ASYNC_LOADED;
+		debug(2, "FF_CONSTANT async Effect id=%d\n", effectAsync->id);
 	}
 }
 
@@ -553,7 +564,7 @@ void  FFBCreateHapticDamperEffect()
 	}
 }
 
-void FFBCreateHapticSpringEffect()
+void FFBCreateHapticSpringEffects()
 {
 	/* --- FF_SPRING --- */
 	struct ff_effect* effect=&ffb_effects[spring_effect_idx];
@@ -576,11 +587,26 @@ void FFBCreateHapticSpringEffect()
 	effect->u.condition[0].center = 0;
 
 	if(ioctl(device_handle, EVIOCSFF, effect))
-		debug(2," Error creating FF_SPRING  effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);		
+		debug(2," Error creating FF_SPRING sync effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);		
 	else{
 		supportedFeatures|=FF_SPRING_LOADED;
-		debug(2, "FF_SPRING Effect   id=%d\n", effect->id);	
+		debug(2, "FF_SPRING Effect sync id=%d\n", effect->id);	
 	}
+
+	/* --- FF_SPRING ASYNC --- */
+	struct ff_effect* effectAsync=&ffb_effects[spring_effect_async_idx];
+	memset(effectAsync,0,sizeof(ffb_effects[0]));
+	memcpy(effectAsync, effect, sizeof(ffb_effects[0]));
+
+	effectAsync->id = -1;
+
+	if(ioctl(device_handle, EVIOCSFF, effectAsync))
+		debug(2," Error creating FF_SPRING async effect (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);		
+	else{
+		supportedFeatures|=FF_SPRING_ASYNC_LOADED;
+		debug(2, "FF_SPRING Effect async id=%d\n", effectAsync->id);	
+	}
+
 }
 
 void  FFBCreateHapticRumbleEffect()
@@ -807,11 +833,11 @@ void FFBCreateAllHapticEffects()
 	FFBSetGlobalGain(getConfig()->globalGain);
 	FFBSetGlobalAutoCenter(40,2000); 
 
-	FFBCreateHapticConstantEffect();
+	FFBCreateHapticConstantEffects();
 	FFBCreateHapticSineEffect();
 	FFBCreateHapticFrictionEffect();
 	FFBCreateHapticDamperEffect();
-	FFBCreateHapticSpringEffect();
+	FFBCreateHapticSpringEffects();
 	FFBCreateHapticRumbleEffect();
 
 	FFBCreateHapticInertiaEffect();
@@ -1026,12 +1052,18 @@ void FFBTriggerSineEffect(bool upload, float frequency, float intensity)
 // FFBTriggerSpringEffect applies or updates a force feedback spring effect on a device, 
 // configuring its strength and uploading the effect if supported; if not supported, it falls back to a default rumble effect. 
 // The function manages effect parameters, uploads them to the device, and handles starting or stopping the effect as needed.
-void FFBTriggerSpringEffect(bool upload, double strength)
+void FFBTriggerSpringEffect(bool upload, double strength, bool async)
 {
 	debug(1, "FFBTriggerSpringEffect\n");
 	if(FF_SPRING_LOADED==(supportedFeatures & FF_SPRING_LOADED)) 
 	{
-		struct ff_effect* springEffect=&ffb_effects[spring_effect_idx];
+		debug(2, " -> arg_strength: %.2f\n async: %d", strength, async);
+
+
+		struct ff_effect* springEffect = async
+			? &ffb_effects[spring_effect_async_idx]
+			: &ffb_effects[spring_effect_idx];
+
 		if(upload)
 		{
 			unsigned short minForce = (unsigned short)((getConfig()->minSpring / 100.0) * 65535.0); 
@@ -1092,13 +1124,17 @@ void FFBTriggerSpringEffect(bool upload, double strength)
  *  Constant:
  *   @level:         strength of the effect; may be negative
  */
-void FFBTriggerConstantEffect(bool upload, double strength)
+void FFBTriggerConstantEffect(bool upload, double strength, bool async)
 {
 	debug(1, "FFBTriggerConstantEffect\n");
 	if(FF_CONSTANT_LOADED==(supportedFeatures & FF_CONSTANT_LOADED)) 
 	{
-		debug(2, " -> arg_strength: %.2f\n", strength);
-		struct ff_effect* constantEffect=&ffb_effects[constant_effect_idx];
+		debug(2, " -> arg_strength: %.2f\n async: %d", strength, async);
+
+		struct ff_effect* constantEffect = async
+			? &ffb_effects[constant_effect_async_idx]
+			: &ffb_effects[constant_effect_idx];
+
 		if(upload)
 		{
 			if (strength > 1.0)
@@ -1160,7 +1196,6 @@ void FFBTriggerConstantEffect(bool upload, double strength)
 		debug(1, " -> constant effect not supported.\n");
 	}
 }
-
 
 /**
  * @right_saturation: maximum level when joystick moved all way to the right
@@ -1353,7 +1388,7 @@ void FFBTriggerTestEffect(unsigned int effect, double strength)
 			startWorkerAsync(WorkerSetPosition, testParams);
             break;
         case FF_SPRING:
-            FFBTriggerSpringEffect(true, strength);
+            FFBTriggerSpringEffect(true, strength, false);
             break;
         case FF_FRICTION:
             FFBTriggerFrictionEffect(true, strength);
