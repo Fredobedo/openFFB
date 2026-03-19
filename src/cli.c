@@ -201,7 +201,7 @@ FFBCLIStatus parseArguments(int argc, char **argv)
                                                 ahex2bin(token[6],token[7])}; // D3 => Constant Torque Power
 
                 sprintf(arguments.keyvalue[cpKeyValue].value, "%c%c%c%c%c%c",
-                    0x80,
+                    OPENFFB_SET_BULK_EFFECTS_CMD,
                     AsciiHexToBin[0], 
                     AsciiHexToBin[1],
                     AsciiHexToBin[2],

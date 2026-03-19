@@ -120,13 +120,13 @@ FFBStatus processPacket(unsigned char *packet)
 	}
 
 	// SPECIAL COMMANDS SENT BY SEGA FFB CONTROLLER
-	if (packet[0] == 0xFD)
+	if (packet[0] == OPENFFB_GENERIC_CMD)
 	{
 		switch (packet[1])
 		{
 		// 0x01
-		case GET_WHEEL_POSITION:
-			replyPacket[0] = 0x90;
+		case OPENFFB_GET_WHEEL_POSITION_SUB_CMD: // Synchronous command, reply directly
+			replyPacket[0] = OPENFFB_WHEEL_POSITION_REPLY_CMD;
 
 			if (getConfig()->SendWheelPositionToMidi == 1)
 			{
@@ -147,42 +147,41 @@ FFBStatus processPacket(unsigned char *packet)
 			WriteReplyPacket();
 			break;
 		// 0xA0
-		case SET_CENTER:
+		case OPENFFB_SET_CENTER_SUB_CMD: 	// Asynchronous command, reply will be sent by Worker thread
 			ThreadParams *centerParams = malloc(sizeof(ThreadParams));
 			*centerParams = (ThreadParams){0, 0.80, 30, 3000};
 			startWorkerAsync(WorkerSetCenter, centerParams);
 			break;
 		// 0xA1
-		case SET_MAX_RIGHT:
+		case OPENFFB_SET_MAX_RIGHT_SUB_CMD: // Asynchronous command, reply will be sent by Worker thread
 			ThreadParams *maxRightParams = malloc(sizeof(ThreadParams));
 			*maxRightParams = (ThreadParams){0, 0.20, 0, 5000};
 			startWorkerAsync(WorkerSetPosition, maxRightParams);
-			//FFBTriggerConstantEffect(true, -0.60);
 			break;
 		// 0xA2
-		case SET_MAX_LEFT:
+		case OPENFFB_SET_MAX_LEFT_SUB_CMD: 	// Asynchronous command, reply will be sent by Worker thread
 			ThreadParams *maxLeftParams = malloc(sizeof(ThreadParams));
 			*maxLeftParams = (ThreadParams){16383, 0.20, 0, 5000};
 			startWorkerAsync(WorkerSetPosition, maxLeftParams);
-			//FFBTriggerConstantEffect(true, 0.60);
 			break;
 		// 0x02
-		case GET_POWER_LINE:
+		case OPENFFB_GET_POWER_LINE_SUB_CMD:
 			// TO DO
 			break;
 		// 0xFE
-		case NOT_READY:
+		case OPENFFB_NOT_READY_SUB_CMD:
 			// nothing to do
 			break;
 		// 0xFF
-		case RESET_DEVICE:
+		case OPENFFB_RESET_DEVICE_SUB_CMD:
 			FFBStopAllEffects();
 			break;
 		default:
 			break;
 		}
 	}
-	// NORMAL COMMAND PACKET FOR FORCE FEEDBACK EFFECTS
+	// NORMAL COMMAND PACKET FOR BULCK FORCE FEEDBACK EFFECTS FROM AGANYTE
+	// No reply from openFFB, the Sega FFB Controller will take care of it (Send reply to Sega System).
 	else
 	{
 		inputPacket.startByte = packet[0];

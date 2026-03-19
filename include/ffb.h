@@ -23,14 +23,36 @@
 #define STATUS_CHECKSUM_FAILURE 0x03 // the checksum on the command packet did not match a computed checksum
 #define STATUS_OVERFLOW         0x04 // an overflow occurred while processing the command
 
-#define GET_WHEEL_POSITION 0x01
-#define GET_POWER_LINE     0x02
+// 2 type of Commands can be sent to OPENFFB (first byte sent), 8 bytes request
+#define OPENFFB_SET_BULK_EFFECTS_CMD  0x80  // => the one implemented by Aganyte
+#define OPENFFB_GENERIC_CMD           0x7D  // => extensions specific for openffb integration
 
-#define SET_CENTER    0xA0
-#define SET_MAX_RIGHT 0xA1  
-#define SET_MAX_LEFT  0xA2
-#define NOT_READY     0xFE
-#define RESET_DEVICE  0xFF
+// OPENFFB REQUESTS
+#define OPENFFB_GET_WHEEL_POSITION_SUB_CMD     0x01
+#define OPENFFB_GET_POWER_LINE_SUB_CMD         0x02 // not used for Sega but Namco
+#define OPENFFB_SET_CENTER_SUB_CMD             0xA0 // used during initialization
+#define OPENFFB_SET_MAX_RIGHT_SUB_CMD          0xA1 // used during start of calibration, at init
+#define OPENFFB_SET_MAX_LEFT_SUB_CMD           0xA2 // Not used by now
+#define OPENFFB_SET_FRICTION_SUB_CMD           0xA3 // No reply for this request
+#define OPENFFB_NOT_READY_SUB_CMD              0xFE // No reply for this request
+#define OPENFFB_RESET_DEVICE_SUB_CMD           0xFF // No reply for this request
+
+// OPENFFB REPLIES
+#define OPENFFB_WHEEL_POSITION_REPLY_CMD       0x90  
+#define OPENFFB_POWER_LINE_REPLY_CMD           0x91
+#define OPENFFB_CENTER_REPLY_CMD               0x92
+#define OPENFFB_MAX_RIGHT_REPLY_CMD            0x93 
+#define OPENFFB_MAX_LEFT_REPLY_CMD             0x94
+
+
+// #define GET_WHEEL_POSITION 0x01
+// #define GET_POWER_LINE     0x02
+
+// #define SET_CENTER    0xA0
+// #define SET_MAX_RIGHT 0xA1  
+// #define SET_MAX_LEFT  0xA2
+// #define NOT_READY     0xFE
+// #define RESET_DEVICE  0xFF
 
 #define SEGA_FFB_CONTROLLER_PACKET_SIZE       8
 #define SEGA_FFB_CONTROLLER_REPLY_PACKET_SIZE 4

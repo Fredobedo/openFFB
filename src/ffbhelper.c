@@ -111,6 +111,13 @@ void* WorkerSetPosition(void* arg)
 
 	FFBStopEffect(ffb_effects[constant_effect_async_idx].id);
 	
+	replyPacket[0] = (GetCachedWheelPosition()==0?OPENFFB_MAX_RIGHT_REPLY_CMD:OPENFFB_MAX_LEFT_REPLY_CMD);
+	replyPacket[1] = 0;
+	replyPacket[2] = 0;
+	replyPacket[3] = 0;
+
+	WriteReplyPacket();
+
 	free(params);
 	return NULL;
 }
