@@ -25,7 +25,7 @@
 
 // 2 type of Commands can be sent to OPENFFB (first byte sent), 8 bytes request
 #define OPENFFB_SET_BULK_EFFECTS_CMD  0x80  // => the one implemented by Aganyte
-#define OPENFFB_GENERIC_CMD           0x7D  // => extensions specific for openffb integration
+#define OPENFFB_GENERIC_CMD           0x99  // => extensions specific for openffb integration
 
 // OPENFFB REQUESTS
 #define OPENFFB_GET_WHEEL_POSITION_SUB_CMD     0x01
@@ -64,8 +64,8 @@ typedef struct
     double friction;              // from 0x00 to 0x7F -> 128 levels converted to double 0.0 -> 1.0 
     int torqueDirection;          // 0x00 = Left, 0x01  = Right
     double torquePower;           // from 0x00 to 0x7F -> 128 levels converted to double 0.0 -> 1.0
-    double sineFrequency;        // from 0x00 to 0x7F -> 128 levels converted to double 0.0 -> 1.0
-    double sineIntensity;        // from 0x00 to 0x7F -> 128 levels converted to double 0.0 -> 1.0
+    double sineFrequency;         // from 0x00 to 0x7F -> 128 levels converted to double 0.0 -> 1.0
+    double sineIntensity;         // from 0x00 to 0x7F -> 128 levels converted to double 0.0 -> 1.0
     uint8_t crc;                  // (D1 ^ D2 ^ D3 ^ D4) & 0x7F
 } FFBPacket;
 
