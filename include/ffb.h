@@ -62,11 +62,12 @@ typedef struct
     uint8_t startByte;            // Start byte
     double spring;                // from 0x00 to 0x7F -> 128 levels converted to double 0.0 -> 1.0
     double friction;              // from 0x00 to 0x7F -> 128 levels converted to double 0.0 -> 1.0 
-    int torqueDirection;          // 0x00 = Left, 0x01  = Right
-    double torquePower;           // from 0x00 to 0x7F -> 128 levels converted to double 0.0 -> 1.0
+    // int torqueDirection;          // 0x00 = Left, 0x01  = Right
+    // double torquePower;           // from 0x00 to 0x7F -> 128 levels converted to double 0.0 -> 1.0
+    double torque;
     double sineFrequency;         // from 0x00 to 0x7F -> 128 levels converted to double 0.0 -> 1.0
     double sineIntensity;         // from 0x00 to 0x7F -> 128 levels converted to double 0.0 -> 1.0
-    uint8_t crc;                  // (D1 ^ D2 ^ D3 ^ D4) & 0x7F
+   // uint8_t crc;                  // (D1 ^ D2 ^ D3 ^ D4) & 0x7F
 } FFBPacket;
 
 unsigned char rawPacket[SEGA_FFB_CONTROLLER_PACKET_SIZE];
