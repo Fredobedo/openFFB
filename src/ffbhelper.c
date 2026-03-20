@@ -109,6 +109,8 @@ void* WorkerSetPosition(void* arg)
 		totalDuration_ms += waitPerCycle_ms;
 	}
 
+	usleep(20 * 1000); 
+
 	FFBStopEffect(ffb_effects[constant_effect_async_idx].id);
 	
 	replyPacket[0] = (GetCachedWheelPosition()==0?OPENFFB_MAX_RIGHT_REPLY_CMD:OPENFFB_MAX_LEFT_REPLY_CMD);
