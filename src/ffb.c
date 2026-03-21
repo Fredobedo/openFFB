@@ -149,7 +149,7 @@ FFBStatus processPacket(unsigned char *packet)
 		// 0xA0
 		case OPENFFB_SET_CENTER_SUB_CMD: 	// Asynchronous command, reply will be sent by Worker thread
 			ThreadParams *centerParams = malloc(sizeof(ThreadParams));
-			*centerParams = (ThreadParams){0, 0.80, 30, 60000};
+			*centerParams = (ThreadParams){0, 0.80, 30, 2500};
 			startWorkerAsync(WorkerSetCenter, centerParams);
 			break;
 		// 0xA1
