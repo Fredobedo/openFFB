@@ -30,12 +30,12 @@
 // OPENFFB REQUESTS
 #define OPENFFB_GET_WHEEL_POSITION_SUB_CMD     0x01
 #define OPENFFB_GET_POWER_LINE_SUB_CMD         0x02 // not used for Sega but Namco
-#define OPENFFB_SET_CENTER_SUB_CMD             0xA0 // used during initialization
-#define OPENFFB_SET_MAX_RIGHT_SUB_CMD          0xA1 // used during start of calibration, at init
-#define OPENFFB_SET_MAX_LEFT_SUB_CMD           0xA2 // Not used by now
-#define OPENFFB_SET_FRICTION_SUB_CMD           0xA3 // No reply for this request
-#define OPENFFB_NOT_READY_SUB_CMD              0xFE // No reply for this request
-#define OPENFFB_RESET_DEVICE_SUB_CMD           0xFF // No reply for this request
+#define OPENFFB_SET_CENTER_SUB_CMD             0x10 // used during initialization
+#define OPENFFB_SET_MAX_RIGHT_SUB_CMD          0x11 // used during start of calibration, at init
+#define OPENFFB_SET_MAX_LEFT_SUB_CMD           0x12 // Not used by now
+#define OPENFFB_SET_FRICTION_SUB_CMD           0x13 // No reply for this request
+#define OPENFFB_NOT_READY_SUB_CMD              0x6E // No reply for this request
+#define OPENFFB_RESET_DEVICE_SUB_CMD           0x6F // No reply for this request
 
 // OPENFFB REPLIES
 #define OPENFFB_WHEEL_POSITION_REPLY_CMD       0x90  
@@ -43,7 +43,6 @@
 #define OPENFFB_CENTER_REPLY_CMD               0x92
 #define OPENFFB_MAX_RIGHT_REPLY_CMD            0x93 
 #define OPENFFB_MAX_LEFT_REPLY_CMD             0x94
-
 
 // #define GET_WHEEL_POSITION 0x01
 // #define GET_POWER_LINE     0x02
