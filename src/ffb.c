@@ -187,9 +187,9 @@ FFBStatus processPacket(unsigned char *packet)
 		inputPacket.startByte = packet[0];
 		inputPacket.spring = ((double)packet[1] + 1) / 128;
 		inputPacket.friction = ((double)packet[2] + 1) / 128;
-		// inputPacket.torqueDirection = packet[3];
-		// inputPacket.torquePower = ((double)packet[4] + 1) / 128;
-		inputPacket.torque = (((packet[3] << 7) | packet[4]) - 0x80) / 128;
+		inputPacket.torqueDirection = packet[3];
+		inputPacket.torquePower = ((double)packet[4]) / 128;
+		//inputPacket.torque = (((packet[3] << 7) | packet[4]) - 0x80) / 128;
 		inputPacket.sineFrequency = ((double)packet[5]) / 2;
 		inputPacket.sineIntensity = ((double)packet[6] + 1) / 128;
 		//inputPacket.crc = packet[7];
@@ -217,18 +217,16 @@ FFBStatus processPacket(unsigned char *packet)
 		{
 			if(previous_rawpacket[3] != packet[3] || previous_rawpacket[4] != packet[4])
 			{
-				//From FlyCast - Thank you 
-				// https://github.com/flyinghead/flycast/blob/b71fb72f0ad5273d6337fef1527cf2f09e41e569/core/hw/naomi/midiffb.cpp#L117
-				// 			packet[3]		packet[4]	Torque
-				// Minimum:	0x00			0x00		-128
-				// Zero:	0x01			0x00		0
-				// Maximum:	0x01			0x7F		127
-				FFBTriggerConstantEffect(previous_rawpacket[3] != packet[3] || previous_rawpacket[4] != packet[4], inputPacket.torque, false);
+				//FFBTriggerConstantEffect(previous_rawpacket[3] != packet[3] || previous_rawpacket[4] != packet[4], inputPacket.torque, false);
 
-				// if (inputPacket.torqueDirection == 0)
-				// 	FFBTriggerConstantEffect(previous_rawpacket[3] != packet[3] || previous_rawpacket[4] != packet[4], -inputPacket.torquePower, false);
-				// else
-				// 	FFBTriggerConstantEffect(previous_rawpacket[3] != packet[3] || previous_rawpacket[4] != packet[4], inputPacket.torquePower, false);
+				// DIRECTION:
+				//  - 0 = Right = Negative value for Linux FFB Effect
+				//  - 1 = Left  = Positive value for Linux FFB Effect 
+
+				if (inputPacket.torqueDirection == 0)
+					FFBTriggerConstantEffect(previous_rawpacket[3] != packet[3] || previous_rawpacket[4] != packet[4], -inputPacket.torquePower, false);
+				else
+					FFBTriggerConstantEffect(previous_rawpacket[3] != packet[3] || previous_rawpacket[4] != packet[4], inputPacket.torquePower, false);
 			}
 		}
 
