@@ -128,21 +128,21 @@ FFBStatus processPacket(unsigned char *packet)
 		case OPENFFB_GET_WHEEL_POSITION_SUB_CMD: // Synchronous command, reply directly
 			replyPacket[0] = OPENFFB_WHEEL_POSITION_REPLY_CMD;
 
-			if (getConfig()->SendWheelPositionToMidi == 1)
-			{
+			// if (getConfig()->SendWheelPositionToMidi == 1)
+			// {
 				int wheelPosition = GetCachedWheelPosition();
 				debug(4, "%lu: GET_POS: %d\n", millis(),wheelPosition);
 
 				replyPacket[1] = (wheelPosition >> 7) & 0x7f;
 				replyPacket[2] = wheelPosition & 0x7f;
 				replyPacket[3] = (replyPacket[0] ^ replyPacket[1] ^ replyPacket[2]) & 0x7f;
-			}
-			else
-			{
-				replyPacket[1] = 0;
-				replyPacket[2] = 0;
-				replyPacket[3] = 0;
-			}
+			// }
+			// else
+			// {
+			// 	replyPacket[1] = 0;
+			// 	replyPacket[2] = 0;
+			// 	replyPacket[3] = 0;
+			// }
 
 			WriteReplyPacket();
 			break;
@@ -185,14 +185,12 @@ FFBStatus processPacket(unsigned char *packet)
 	else
 	{
 		inputPacket.startByte = packet[0];
-		inputPacket.spring = ((double)packet[1] + 1) / 128;
+		inputPacket.spring = ((double)packet[1] + 1)   / 128;
 		inputPacket.friction = ((double)packet[2] + 1) / 128;
 		inputPacket.torqueDirection = packet[3];
-		inputPacket.torquePower = ((double)packet[4]) / 128;
-		//inputPacket.torque = (((packet[3] << 7) | packet[4]) - 0x80) / 128;
-		inputPacket.sineFrequency = ((double)packet[5]) / 2;
+		inputPacket.torquePower = ((double)packet[4])  / 128;
+		inputPacket.sineFrequency = ((double)packet[5])     / 2;
 		inputPacket.sineIntensity = ((double)packet[6] + 1) / 128;
-		//inputPacket.crc = packet[7];
 
 		/* --- spring            from 0x00 to 0x7F -> 128 levels --- */
 		if (packet[1] == 0x0)
@@ -210,19 +208,15 @@ FFBStatus processPacket(unsigned char *packet)
 				FFBTriggerFrictionEffect(previous_rawpacket[2] != packet[2], inputPacket.friction);
 
 		/* ---                --- */
-		/* ---                --- */
 		if (packet[4] == 0x0)
 			FFBStopEffect(ffb_effects[constant_effect_idx].id);
 		else
 		{
 			if(previous_rawpacket[3] != packet[3] || previous_rawpacket[4] != packet[4])
 			{
-				//FFBTriggerConstantEffect(previous_rawpacket[3] != packet[3] || previous_rawpacket[4] != packet[4], inputPacket.torque, false);
-
 				// DIRECTION:
 				//  - 0 = Right = Negative value for Linux FFB Effect
 				//  - 1 = Left  = Positive value for Linux FFB Effect 
-
 				if (inputPacket.torqueDirection == 0)
 					FFBTriggerConstantEffect(previous_rawpacket[3] != packet[3] || previous_rawpacket[4] != packet[4], -inputPacket.torquePower, false);
 				else
