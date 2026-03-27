@@ -7,30 +7,21 @@ GLOBAL_GAIN 100
 AUTO_CENTER 0
 
 # adjust spring effect if necessary here
-MIN_SPRING 0
+MIN_SPRING 10
 MAX_SPRING 100
 
 # adjust friction effect if necessary here
-MIN_FRICTION 0
+MIN_FRICTION 10
 MAX_FRICTION 100
 
 # adjust torque effect if necessary here
-MIN_TORQUE 0
+MIN_TORQUE 10
 MAX_TORQUE 100
 
 # adjust sine effect intensity if necessary here (default is 0-100)
-MIN_INTENSITY 15
+MIN_INTENSITY 10
 MAX_INTENSITY 100
 
-# adjust the period of period effects here if necessary (ex: SINE EFFECT) (default is 1.0)
-PERIOD_ADJUSTMENT_FACTOR 1.0
-
-# Club Kart use case:
-# As of today, I only see one game (Club Kart) that needs to get wheel position through MIDI interface
-# Other games ust get wheel position from JVS analog reports (default is 0)
-SEND_WHEEL_POSITION_TO_MIDI 1
-#invert wheel position values when sending through MIDI (default is 0)
-INVERTED_WHEEL_POSITION 1
 
 LOGITECH_STEERING_RANGE 270
 

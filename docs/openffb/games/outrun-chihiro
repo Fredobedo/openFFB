@@ -7,15 +7,15 @@ GLOBAL_GAIN 100
 AUTO_CENTER 0
 
 # adjust spring effect if necessary here
-MIN_SPRING 30
+MIN_SPRING 10
 MAX_SPRING 100
 
 # adjust friction effect if necessary here
-MIN_FRICTION 30
+MIN_FRICTION 10
 MAX_FRICTION 100
 
 # adjust torque effect if necessary here
-MIN_TORQUE 30
+MIN_TORQUE 10
 MAX_TORQUE 100
 
 # for those who want to use a Logitech racing wheel which is upported by new-lg4ff

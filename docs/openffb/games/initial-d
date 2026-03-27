@@ -11,11 +11,11 @@ MIN_SPRING 0
 MAX_SPRING 100
 
 # adjust friction effect if necessary here
-MIN_FRICTION 0
+MIN_FRICTION 10
 MAX_FRICTION 100
 
 # adjust torque effect if necessary here
-MIN_TORQUE 20
+MIN_TORQUE 10
 MAX_TORQUE 100
 
 SEND_WHEEL_POSITION_TO_MIDI 1
