@@ -142,8 +142,8 @@ FFBConfigStatus parseDrivingProfile(char *path)
 
         if (strcmp(command, "GLOBAL_GAIN") == 0)
             config.globalGain = atoi(getNextToken(NULL, " ", &saveptr));
-        // if (strcmp(command, "INITIALIZATION_GAIN") == 0)
-        //     config.initializationGain = atoi(getNextToken(NULL, " ", &saveptr));
+        else if (strcmp(command, "INITIALIZATION_GAIN") == 0)
+            config.initializationGain = atoi(getNextToken(NULL, " ", &saveptr));
         else if (strcmp(command, "AUTO_CENTER") == 0)
             config.autoCenter = atoi(getNextToken(NULL, " ", &saveptr));   
         else if (strcmp(command, "MIN_SPRING") == 0)
@@ -175,7 +175,7 @@ FFBConfigStatus parseDrivingProfile(char *path)
         else if (strcmp(command, "INVERTED_WHEEL_POSITION") == 0)
             config.InvertedWheelPosition = atoi(getNextToken(NULL, " ", &saveptr)); 
         else
-            printf("Error: parseDrivingProfile - Unknown configuration command %s\n", command);
+            printf("Error: parseDrivingProfile - Unknown configuration [command %s]\n", command);
     }
 
     fclose(file);
