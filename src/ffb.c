@@ -198,25 +198,25 @@ FFBStatus processPacket(unsigned char *packet)
 		inputPacket.sineIntensity = ((double)packet[6] + 1) / 128;
 
 		/* --- spring            from 0x00 to 0x7F -> 128 levels --- */
-		if (packet[1] == 0x0)
-			FFBStopEffect(ffb_effects[spring_effect_idx].id);
-		else 
+		// if (packet[1] == 0x0)
+		// 	FFBStopEffect(ffb_effects[spring_effect_idx].id);
+		// else 
 			if(previous_rawpacket[1] != packet[1])
 				FFBTriggerSpringEffect(previous_rawpacket[1] != packet[1], inputPacket.spring, false);
 
 		/* --- friction          from 0x00 to 0x7F -> 128 levels                                                --- */
 		/* --- For now on, I will use Sine effect instead as I can't control the strengh of a froction effect ? --- */
-		if (packet[2] == 0x0)
-			FFBStopEffect(ffb_effects[friction_effect_idx].id);
-		else 
+		// if (packet[2] == 0x0)
+		// 	FFBStopEffect(ffb_effects[friction_effect_idx].id);
+		// else 
 			if(previous_rawpacket[2] != packet[2])
 				FFBTriggerFrictionEffect(previous_rawpacket[2] != packet[2], inputPacket.friction);
 
 		/* ---                --- */
-		if (packet[4] == 0x0)
-			FFBStopEffect(ffb_effects[constant_effect_idx].id);
-		else
-		{
+		// if (packet[4] == 0x0)
+		// 	FFBStopEffect(ffb_effects[constant_effect_idx].id);
+		// else
+		// {
 			if(previous_rawpacket[3] != packet[3] || previous_rawpacket[4] != packet[4])
 			{
 				// DIRECTION:
@@ -227,11 +227,11 @@ FFBStatus processPacket(unsigned char *packet)
 				else
 					FFBTriggerConstantEffect(previous_rawpacket[3] != packet[3] || previous_rawpacket[4] != packet[4], inputPacket.torquePower, false);
 			}
-		}
+		// }
 
-		if (packet[6] == 0x0 || packet[5] == 0x0)
-			FFBStopEffect(ffb_effects[sine_effect_idx].id);
-		else 
+		// if (packet[6] == 0x0 || packet[5] == 0x0)
+		// 	FFBStopEffect(ffb_effects[sine_effect_idx].id);
+		// else 
 			if(previous_rawpacket[5] != packet[5] || previous_rawpacket[6] != packet[6])
 				FFBTriggerSineEffect(previous_rawpacket[5] != packet[5] || previous_rawpacket[6] != packet[6], inputPacket.sineFrequency, inputPacket.sineIntensity);
 
