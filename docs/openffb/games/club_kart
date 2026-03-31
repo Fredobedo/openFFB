@@ -4,7 +4,8 @@
 GLOBAL_GAIN 100
 
 # set the strength during intialization phase, when wheel goes completely right (to the Base=0, then search for the enter)
-INITIALIZATION_GAIN 110
+# For logitech G27, you can set INITIALIZATION_GAIN 160
+INITIALIZATION_GAIN 160
 
 # for the games not supporting FFB effects, you can set a generic auto center effect here (0-100)
 AUTO_CENTER 0
