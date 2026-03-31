@@ -1147,7 +1147,7 @@ void FFBTriggerConstantEffect(bool upload, double strength, bool async)
 			? &ffb_effects[constant_effect_async_idx]
 			: &ffb_effects[constant_effect_idx];
 
-debug(0,"SegaFFBControllerState: %d\n", SegaFFBControllerState);
+debug(0,"SegaFFBControllerState:  %d\n", SegaFFBControllerState);
 		if(upload)
 		{
 			if (strength > 1.0)
