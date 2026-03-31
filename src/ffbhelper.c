@@ -1147,7 +1147,7 @@ void FFBTriggerConstantEffect(bool upload, double strength, bool async)
 			? &ffb_effects[constant_effect_async_idx]
 			: &ffb_effects[constant_effect_idx];
 
-debug(0,"SegaFFBControllerState:  %d\n", SegaFFBControllerState);
+//debug(0,"SegaFFBControllerState:  %d\n", SegaFFBControllerState);
 		if(upload)
 		{
 			if (strength > 1.0)
@@ -1160,12 +1160,12 @@ debug(0,"SegaFFBControllerState:  %d\n", SegaFFBControllerState);
 				level = 0;
 			} 
 			else if(SegaFFBControllerState==OPENFFB_NOT_READY_SUB_CMD){
-debug(0," -> strength before applying initialization gain: %.2f\n", strength);				
-debug(0,"Applying initialization gain: %d%%\n", getConfig()->initializationGain);
+//debug(0," -> strength before applying initialization gain: %.2f\n", strength);				
+//debug(0,"Applying initialization gain: %d%%\n", getConfig()->initializationGain);
 				strength*= (getConfig()->initializationGain/100.0);
-debug(0," -> strength after applying initialization gain: %.2f\n", strength);
+//debug(0," -> strength after applying initialization gain: %.2f\n", strength);
 				level = (short)CLAMP(strength * 32767.0, -32767.0, 32767.0);
-debug(0," -> level after applying initialization gain: %d\n", level);
+//debug(0," -> level after applying initialization gain: %d\n", level);
 			}
 			else {
 				short minForce = (short)((getConfig()->minTorque / 100.0) * 32767.0); 
