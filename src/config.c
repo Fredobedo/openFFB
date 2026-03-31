@@ -113,7 +113,7 @@ FFBConfigStatus parseConfig(char *path)
             config.debugLevel = atoi(getNextToken(NULL, " ", &saveptr));
         
         else
-            printf("Error: Unknown configuration command %s\n", command);
+            printf("Error: parseConfig - Unknown configuration command %s\n", command);
     }
 
     fclose(file);
@@ -175,7 +175,7 @@ FFBConfigStatus parseDrivingProfile(char *path)
         else if (strcmp(command, "INVERTED_WHEEL_POSITION") == 0)
             config.InvertedWheelPosition = atoi(getNextToken(NULL, " ", &saveptr)); 
         else
-            printf("Error: Unknown configuration command %s\n", command);
+            printf("Error: parseDrivingProfile - Unknown configuration command %s\n", command);
     }
 
     fclose(file);
