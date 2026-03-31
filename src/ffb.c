@@ -170,8 +170,13 @@ FFBStatus processPacket(unsigned char *packet)
 			break;
 		// 0xFE
 		case OPENFFB_NOT_READY_SUB_CMD:
+			SegaFFBControllerState = OPENFFB_NOT_READY_SUB_CMD;
 			// nothing to do
 			break;
+		case OPENFFB_READY_SUB_CMD:
+			SegaFFBControllerState = OPENFFB_READY_SUB_CMD;
+			// nothing to do
+			break;			
 		// 0xFF
 		case OPENFFB_RESET_DEVICE_SUB_CMD:
 			FFBStopAllEffects();

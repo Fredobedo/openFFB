@@ -20,6 +20,9 @@ typedef struct
     // Use this function to set the global gain of the specified haptic device. (0-100)
     int globalGain;
 
+    // set the strength during intialization phase, when wheel goes completely right (to the Base=0, then search for the enter)
+    int initializationGain;
+
     //auto center force (0-100)
     int autoCenter;
 

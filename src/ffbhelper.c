@@ -16,6 +16,8 @@
 #include <ctype.h>
 #include <pthread.h>
 
+#define CLAMP(x, lo, hi) ((x) > (hi) ? (hi) : ((x) < (lo) ? (lo) : (x)))
+
 bool LogitechWheelDetected=false;
 atomic_int storedWheelPosition = 8192;
 
@@ -1136,6 +1138,7 @@ void FFBTriggerSpringEffect(bool upload, double strength, bool async)
 void FFBTriggerConstantEffect(bool upload, double strength, bool async)
 {
 	debug(1, "FFBTriggerConstantEffect\n");
+	
 	if(FF_CONSTANT_LOADED==(supportedFeatures & FF_CONSTANT_LOADED)) 
 	{
 		debug(2, " -> arg_strength: %.2f\n async: %d", strength, async);
@@ -1151,19 +1154,26 @@ void FFBTriggerConstantEffect(bool upload, double strength, bool async)
 			else if (strength < -1.0)
 				strength = -1.0;
 
-			short minForce = (short)((getConfig()->minTorque / 100.0) * 32767.0); 
-			short maxForce = (short)((getConfig()->maxTorque / 100.0) * 32767.0);
-			short range = maxForce - minForce;
 
 			signed short level;
 			if (strength == 0.0) {
 				level = 0;
-			} else {
+			} 
+			else if(SegaFFBControllerState==OPENFFB_NOT_READY_SUB_CMD){
+				strength*= (getConfig()->initializationGain/100.0);
+				level = (short)CLAMP(strength * 32767.0, -32767.0, 32767.0);
+			}
+			else {
+				short minForce = (short)((getConfig()->minTorque / 100.0) * 32767.0); 
+				short maxForce = (short)((getConfig()->maxTorque / 100.0) * 32767.0);
+
+				short range = maxForce - minForce;
+
 				double absStrength = fabs(strength);
 				short magnitude = (short)((absStrength * range) + minForce);
 				level = (strength > 0.0) ? magnitude : -magnitude;
 			}
-			
+
 			constantEffect->u.constant.level = level;	
 			debug(3, " -> strength: %.2f, level: %d\n", strength, constantEffect->u.constant.level);
 

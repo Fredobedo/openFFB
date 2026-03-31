@@ -30,6 +30,7 @@ FFBConfig config = {
     .segaFFBControllerPath = "/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0",
     .debugLevel = 0,
     .globalGain = 100,
+    .initializationGain = 100,
     .autoCenter =0,
     .minSpring = 0,
     .maxSpring = 100,
@@ -55,6 +56,7 @@ void DumpConfig()
     printf("segaFFBControllerPath   = %s\n", config.segaFFBControllerPath);
     printf("debugLevel              = %d\n", config.debugLevel);
     printf("globalGain              = %d\n", config.globalGain);
+    printf("initializationGain      = %d\n", config.initializationGain);
     printf("autoCenter              = %d\n", config.autoCenter);
     printf("minSpring               = %d\n", config.minSpring);
     printf("maxSpring               = %d\n", config.maxSpring);
@@ -140,6 +142,8 @@ FFBConfigStatus parseDrivingProfile(char *path)
 
         if (strcmp(command, "GLOBAL_GAIN") == 0)
             config.globalGain = atoi(getNextToken(NULL, " ", &saveptr));
+        if (strcmp(command, "INITIALIZATION_GAIN") == 0)
+            config.initializationGain = atoi(getNextToken(NULL, " ", &saveptr));
         else if (strcmp(command, "AUTO_CENTER") == 0)
             config.autoCenter = atoi(getNextToken(NULL, " ", &saveptr));   
         else if (strcmp(command, "MIN_SPRING") == 0)

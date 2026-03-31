@@ -34,6 +34,7 @@
 #define OPENFFB_SET_MAX_RIGHT_SUB_CMD          0x11 // used during start of calibration, at init
 #define OPENFFB_SET_MAX_LEFT_SUB_CMD           0x12 // Not used by now
 #define OPENFFB_SET_FRICTION_SUB_CMD           0x13 // No reply for this request
+#define OPENFFB_READY_SUB_CMD                  0x6D // No reply for this request
 #define OPENFFB_NOT_READY_SUB_CMD              0x6E // No reply for this request
 #define OPENFFB_RESET_DEVICE_SUB_CMD           0x6F // No reply for this request
 
@@ -43,15 +44,6 @@
 #define OPENFFB_CENTER_REPLY_CMD               0x92
 #define OPENFFB_MAX_RIGHT_REPLY_CMD            0x93 
 #define OPENFFB_MAX_LEFT_REPLY_CMD             0x94
-
-// #define GET_WHEEL_POSITION 0x01
-// #define GET_POWER_LINE     0x02
-
-// #define SET_CENTER    0xA0
-// #define SET_MAX_RIGHT 0xA1  
-// #define SET_MAX_LEFT  0xA2
-// #define NOT_READY     0xFE
-// #define RESET_DEVICE  0xFF
 
 #define SEGA_FFB_CONTROLLER_PACKET_SIZE       8
 #define SEGA_FFB_CONTROLLER_REPLY_PACKET_SIZE 4
@@ -73,6 +65,8 @@ unsigned char rawPacket[SEGA_FFB_CONTROLLER_PACKET_SIZE];
 unsigned char replyPacket[SEGA_FFB_CONTROLLER_REPLY_PACKET_SIZE];
 unsigned char previous_rawpacket[SEGA_FFB_CONTROLLER_PACKET_SIZE];
 unsigned char max_rawpacket[SEGA_FFB_CONTROLLER_PACKET_SIZE];
+
+unsigned char SegaFFBControllerState;
 
 typedef enum
 {
