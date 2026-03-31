@@ -159,6 +159,9 @@ int main(int argc, char **argv)
     return EXIT_SUCCESS;
   }
   
+  //Set default state for the Sega FFB Controller, it will be updated when we receive the first packet from the controller
+  SegaFFBControllerState=OPENFFB_NOT_READY_SUB_CMD;
+  
   startWorkerAsync(WorkerUpdateCachedWheelPosition, NULL);
 
   if(containArgument(TRIGGER_EFFECT)){
