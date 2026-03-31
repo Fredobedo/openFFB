@@ -1160,6 +1160,7 @@ debug(0,"SegaFFBControllerState:  %d\n", SegaFFBControllerState);
 				level = 0;
 			} 
 			else if(SegaFFBControllerState==OPENFFB_NOT_READY_SUB_CMD){
+debug(0," -> strength before applying initialization gain: %.2f\n", strength);				
 debug(0,"Applying initialization gain: %d%%\n", getConfig()->initializationGain);
 				strength*= (getConfig()->initializationGain/100.0);
 debug(0," -> strength after applying initialization gain: %.2f\n", strength);

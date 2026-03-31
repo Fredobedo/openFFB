@@ -35,8 +35,8 @@
 #define OPENFFB_SET_MAX_LEFT_SUB_CMD           0x12 // Not used by now
 #define OPENFFB_SET_FRICTION_SUB_CMD           0x13 // No reply for this request
 #define OPENFFB_READY_SUB_CMD                  0x6D // No reply for this request
-#define OPENFFB_NOT_READY_SUB_CMD              0x6E // No reply for this request
-#define OPENFFB_RESET_DEVICE_SUB_CMD           0x6F // No reply for this request
+#define OPENFFB_NOT_READY_SUB_CMD              0x6E // No reply for this request //110
+#define OPENFFB_RESET_DEVICE_SUB_CMD           0x6F // No reply for this request    
 
 // OPENFFB REPLIES
 #define OPENFFB_WHEEL_POSITION_REPLY_CMD       0x90  
