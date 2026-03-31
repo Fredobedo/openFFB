@@ -113,7 +113,10 @@ void* WorkerSetCenter(void* arg);
 void* WorkerUpdateCachedWheelPosition(void* arg);
 void* WorkerSetPosition(void* arg);
 
+void GetWheelEffectiveMaxPosition();
 int GetCachedWheelPosition();
+int GetNewWheelPositionIOCTL();
+//int GetWheelPositionABSX();
 
 bool  FFBGetDeviceName(int handle, char *deviceName);
 bool  FFBGetDeviceVendorProductVersion(int handle, char *deviceVendor, char *deviceProduct, char *deviceVersion);
@@ -177,10 +180,6 @@ bool SetLogitechSysFsDirectory(int idxDevice);
 
 unsigned short GetSYSFSEntry(const char* entryName);
 void SetSYSFSEntry(const char* entryName, int entryValue);
-
-
-int GetNewWheelPositionIOCTL();
-//int GetWheelPositionABSX();
 
 bool IsLogitechWheel();
 #endif

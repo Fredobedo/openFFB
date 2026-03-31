@@ -189,6 +189,12 @@ FFBCLIStatus parseArguments(int argc, char **argv)
                 strcpy(arguments.keyvalue[cpKeyValue].value,strtok(NULL, "="));
                 cpKeyValue++;                                    
             }
+
+//TO DO: Add commands to send to SEga FFB Controller
+//SEND_TO_SEGA_FFB_CONTROLLER
+
+
+
             // Start byte and CRC are not passed in parameter here, it is added in code
             else if ((strcmp(command, "--4BytesSegaFFBRawRequest") == 0)  || (strcmp(command, "-4") == 0)) {
                 arguments.keyvalue[cpKeyValue].mode=TRIGGER_SEGA_FFB_RAW_REQUEST;

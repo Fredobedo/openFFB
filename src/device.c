@@ -58,26 +58,6 @@ int readBytes(unsigned char *buffer, int amount)
 
 int writeBytes(const unsigned char *buffer, int amount)
 {
-  /*
-    fd_set fd_serial;
-    struct timeval tv;
-
-    FD_ZERO(&fd_serial);
-    FD_SET(serialIO, &fd_serial);
-
-    tv.tv_sec = 0;
-    tv.tv_usec = TIMEOUT_SELECT * 1000;
-
-    // Wait until the fd is ready for writing
-    int filesReadyToWrite = select(serialIO + 1, NULL, &fd_serial, NULL, &tv);
-    if (filesReadyToWrite < 1)
-        return -1;  // timeout or error
-
-    if (!FD_ISSET(serialIO, &fd_serial))
-        return -2;  // not ready
-
-  */
- 
     // Perform the actual write
     return write(serialIO, buffer, amount);
 }

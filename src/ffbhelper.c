@@ -21,6 +21,8 @@
 bool LogitechWheelDetected=false;
 atomic_int storedWheelPosition = 8192;
 
+unsigned int WheelEffectiveMaxPosition=16383;
+	
 /*
 This code is super highly based on work
 Thank you again for having shared your work and knowledge on this topic, it was a great help to get started and understand how to use the linux force feedback API.
@@ -132,7 +134,7 @@ void* WorkerUpdateCachedWheelPosition(void* arg)
 	{
 
 		int FinalwheelPosition;
-		int tempPosition = GetNewWheelPositionIOCTL();
+		int tempPosition = GetNewWheelPositionIOCTL() / (int)(WheelEffectiveMaxPosition / 16383); // scale to 0-16383 range
 
 		if (tempPosition >= 0)
 		{
@@ -403,6 +405,7 @@ bool FFBInitHaptic(char* device_name)
 			if (device_handle > -1) {
 				debug(2, "Using device %s.\n\n", device_name);
 
+				GetWheelEffectiveMaxPosition();
 				/*-- test if it's a logitech Racing wheel (ID_VENDOR=046d) --*/
 				if(strcmp(devices[idxDevice].vendor,"046d")==0)
 				{
@@ -437,6 +440,15 @@ bool FFBInitHaptic(char* device_name)
 		return false;
 }
 
+void GetWheelEffectiveMaxPosition()
+{
+	struct input_absinfo absinfo;
+
+	if (ioctl(device_handle, EVIOCGABS(ABS_X), &absinfo) >= 0) {
+		WheelEffectiveMaxPosition = absinfo.maximum;
+		debug(0, "Wheel Effective Max Position: %d\n", WheelEffectiveMaxPosition);
+	}
+}
 void FFBCreateHapticConstantEffects()
 {
 	/* --- FF_CONSTANT --- */
