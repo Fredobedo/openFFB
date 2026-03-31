@@ -446,7 +446,7 @@ void GetWheelEffectiveMaxPosition()
 
 	if (ioctl(device_handle, EVIOCGABS(ABS_X), &absinfo) >= 0) {
 		WheelEffectiveMaxPosition = absinfo.maximum;
-		debug(0, "Wheel Effective Max Position: %d\n", WheelEffectiveMaxPosition);
+		//debug(0, "Wheel Effective Max Position: %d\n", WheelEffectiveMaxPosition);
 	}
 }
 void FFBCreateHapticConstantEffects()
@@ -911,7 +911,8 @@ void FFBDumpSupportedFeatures()
     debug(0, "------------------------------------------------------------------\n");
     debug(0, "-- Checking capabilities:\n");
     debug(0, "------------------------------------------------------------------\n");
-
+	debug(0, "   Wheel range: 0-%d\n", WheelEffectiveMaxPosition);
+	debug(0, "\n");
 	int n_effects;	
 	if(ioctl(device_handle, EVIOCGEFFECTS, &n_effects))
 		debug(1," Error getting Nbr of programmable effects (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);

@@ -189,12 +189,26 @@ FFBCLIStatus parseArguments(int argc, char **argv)
                 strcpy(arguments.keyvalue[cpKeyValue].value,strtok(NULL, "="));
                 cpKeyValue++;                                    
             }
+            else if ((strcmp(command, "--4BytesSegaMIDICommand") == 0)  || (strcmp(command, "-4s") == 0)) {
+                arguments.keyvalue[cpKeyValue].mode=SEND_TO_SEGA_FFB_CONTROLLER_AS_MIDI_COMMAND;
+                token=strtok(NULL, "=");
+                
+                //(Spring, Friction, ConstantTorqueDirection, ConstantTorquePower)
+                unsigned char AsciiHexToBin[4]={ahex2bin(token[0],token[1]),  // D0 => MIDI_CMD
+                                                ahex2bin(token[2],token[3]),  // D1 => Value1
+                                                ahex2bin(token[4],token[5]),  // D2 => Value2
+                                                ahex2bin(token[6],token[7])}; // D3 => CRC
 
-//TO DO: Add commands to send to SEga FFB Controller
-//SEND_TO_SEGA_FFB_CONTROLLER
-
-
-
+                          
+                replyPacket[0] = AsciiHexToBin[0];
+                replyPacket[1] = AsciiHexToBin[1];
+                replyPacket[2] = AsciiHexToBin[2];
+                replyPacket[3] = AsciiHexToBin[3];
+                
+                WriteReplyPacket();
+                
+                cpKeyValue++;
+            }
             // Start byte and CRC are not passed in parameter here, it is added in code
             else if ((strcmp(command, "--4BytesSegaFFBRawRequest") == 0)  || (strcmp(command, "-4") == 0)) {
                 arguments.keyvalue[cpKeyValue].mode=TRIGGER_SEGA_FFB_RAW_REQUEST;
