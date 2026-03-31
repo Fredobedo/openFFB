@@ -1154,21 +1154,15 @@ void FFBTriggerConstantEffect(bool upload, double strength, bool async)
 			else if (strength < -1.0)
 				strength = -1.0;
 
-debug(0, "\nA");
 			signed short level;
 			if (strength == 0.0) {
 				level = 0;
 			} 
 			else if(SegaFFBControllerState==OPENFFB_NOT_READY_SUB_CMD){
-				debug(0, "\nB\n");
-				debug(0, "\nOriginal strength: %.2f\n", strength);
 				strength*= (getConfig()->initializationGain/100.0);
-				debug(0, "\ninitializationGain: %.2f\n", getConfig()->initializationGain);
 				level = (short)CLAMP(strength * 32767.0, -32767.0, 32767.0);
-				debug(0, "\ninitializationGain applied: %.2f, level: %d\n", strength, level);
 			}
 			else {
-				debug(0, "\nC");
 				short minForce = (short)((getConfig()->minTorque / 100.0) * 32767.0); 
 				short maxForce = (short)((getConfig()->maxTorque / 100.0) * 32767.0);
 
