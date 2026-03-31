@@ -247,7 +247,7 @@ int main(int argc, char **argv)
         break;
       case FFB_STATUS_ERROR:
       case FFB_STATUS_ERROR_TIMEOUT:
-        debug(1, "Error: timout occoured, nbrOfTimeOut=%d\n", nbrOfTimeOut);      
+        debug(2, "Error: timout occoured, nbrOfTimeOut=%d\n", nbrOfTimeOut);      
         nbrOfSuccess=0;
         if (nbrOfTimeOut==MAX_TIMOUT_COUNT){
             playCOMEndEffect();

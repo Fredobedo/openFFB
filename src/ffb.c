@@ -131,8 +131,8 @@ FFBStatus processPacket(unsigned char *packet)
 			// if (getConfig()->SendWheelPositionToMidi == 1)
 			// {
 				int wheelPosition = GetCachedWheelPosition();
-				debug(1, "%lu: GET_POS: %d\n", millis(),wheelPosition);
-
+				debug(1, "GET_POS: %d\n", wheelPosition);
+				//debug(1, "%lu: GET_POS: %d\n", millis(),wheelPosition);
 				replyPacket[1] = (wheelPosition >> 7) & 0x7f;
 				replyPacket[2] = wheelPosition & 0x7f;
 				replyPacket[3] = (replyPacket[0] ^ replyPacket[1] ^ replyPacket[2]) & 0x7f;
