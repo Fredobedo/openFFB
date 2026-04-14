@@ -120,7 +120,7 @@ void* WorkerSetPosition(void* arg)
 	replyPacket[0] = (GetCachedWheelPosition()==0?OPENFFB_MAX_RIGHT_REPLY_CMD:OPENFFB_MAX_LEFT_REPLY_CMD);
 	replyPacket[1] = 0;
 	replyPacket[2] = 0;
-	replyPacket[3] = 0;
+	replyPacket[3] = (replyPacket[0] ^ replyPacket[1] ^ replyPacket[2]) & 0x7f;
 
 	WriteReplyPacket();
 
