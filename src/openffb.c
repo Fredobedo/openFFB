@@ -22,7 +22,7 @@
 
 #define PID_FILE "/tmp/openffb.pid"
 
-int running = 1;
+
 clock_t start_time;
 clock_t end_time;
 unsigned long executed_cycles=0;
@@ -51,9 +51,26 @@ void press_any_key(void)
     tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 }
 
+void setupSignalHandler(void) {
+    struct sigaction sa;
+    sa.sa_handler = handleSignal;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;  // Critical: do NOT set SA_RESTART
+
+    if (sigaction(SIGINT, &sa, NULL) == -1) {
+        perror("sigaction");
+        exit(EXIT_FAILURE);
+    }
+}
+
 int main(int argc, char **argv)
 {
-  signal(SIGINT, handleSignal);
+  running = 1;
+
+  //signal(SIGINT, handleSignal);
+  setupSignalHandler();
+
+
   start_time = clock();
 
   FFBConfig *localConfig = getConfig(); 
@@ -78,6 +95,34 @@ int main(int argc, char **argv)
       return EXIT_FAILURE;
   }
 
+  debug(0, "Program started, PID=%d\n", getpid());
+
+  unsigned char ahex2bin(unsigned char MSB, unsigned char LSB) 
+  {  
+    if (MSB > '9') MSB -= 7;          // Convert MSB value to a contiguous range (0x30..0x3F)  
+    if (LSB > '9') LSB -= 7;          // Convert LSB value to a contiguous range (0x30..0x3F)  
+     return (MSB <<4) | (LSB & 0x0F); // Make a result byte  using only low nibbles of MSB and LSB thus neglecting the input register case
+  }  
+
+  debug(0, "OpenFFB Version "); printVersion();
+  debug(0, "Sega FFB Controller: %s\n", localConfig->segaFFBControllerPath);
+  debug(1, "\nDebug messages will appear below, you are in debug mode %d.\n\n", localConfig->debugLevel);
+
+  /* Parsing arguments */
+  FFBCLIStatus argumentsStatus = parseArguments(argc, argv);
+
+  switch (argumentsStatus)
+  {
+  case FFB_CLI_STATUS_ERROR:
+    return EXIT_FAILURE;
+    break;
+  case FFB_CLI_STATUS_SUCCESS_CLOSE:
+    return EXIT_SUCCESS;
+    break;
+  }
+
+
+  
   /* Try to lock the file */
   if (flock(pid_fd, LOCK_EX | LOCK_NB) < 0) {
       if (errno == EWOULDBLOCK) {
@@ -93,43 +138,7 @@ int main(int argc, char **argv)
   ftruncate(pid_fd, 0);
   dprintf(pid_fd, "%d\n", getpid());
 
-  debug(0, "Program started, PID=%d\n", getpid());
 
-  void initCOMSegaFFBController()
-  {
-    debug(1, "Connecting to Sega FFB Controller");
-    while(!initFFB(localConfig->segaFFBControllerPath) && running)
-    {
-      debug(1, ".");
-      fflush(stdout);
-      sleep(1);
-    }
-    debug(1, "\n");
-  }
-
-  unsigned char ahex2bin(unsigned char MSB, unsigned char LSB) 
-  {  
-    if (MSB > '9') MSB -= 7;          // Convert MSB value to a contiguous range (0x30..0x3F)  
-    if (LSB > '9') LSB -= 7;          // Convert LSB value to a contiguous range (0x30..0x3F)  
-     return (MSB <<4) | (LSB & 0x0F); // Make a result byte  using only low nibbles of MSB and LSB thus neglecting the input register case
-  }  
-
-  /* Parsing arguments */
-  FFBCLIStatus argumentsStatus = parseArguments(argc, argv);
-
-  switch (argumentsStatus)
-  {
-  case FFB_CLI_STATUS_ERROR:
-    return EXIT_FAILURE;
-    break;
-  case FFB_CLI_STATUS_SUCCESS_CLOSE:
-    return EXIT_SUCCESS;
-    break;
-  }
-
-  debug(0, "OpenFFB Version "); printVersion();
-  debug(0, "Sega FFB Controller: %s\n", localConfig->segaFFBControllerPath);
-  debug(1, "\nDebug messages will appear below, you are in debug mode %d.\n\n", localConfig->debugLevel);
 
   /* update config from arguments */
   strcpy(localConfig->hapticName, arguments.haptic_name);
@@ -240,6 +249,7 @@ int main(int argc, char **argv)
     switch (processingStatus)
     {
       case FFB_STATUS_ERROR_SYNCH_REQUIRED:
+        
         tryResynch();
         break;
       case FFB_STATUS_ERROR_CHECKSUM:
@@ -301,13 +311,16 @@ void handleSignal(int signal)
     debug(1, "\nTime taken: %.2f seconds\n", time_taken);
     debug(1, "Number of cycles: %lu\n", executed_cycles);
     */
-    debug(2, "\nClosing down OpenFFB...\n");
+   (void)signal;
+   running = 0;
+
+   //debug(2, "\nClosing down OpenFFB...\n");
     FFBAbortExecution();
     disconnectFFB();
     
     close(pid_fd);
     unlink(PID_FILE);
 
-    running = 0;
+
   }
 }

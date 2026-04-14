@@ -23,7 +23,6 @@ static long long millis(void)
 int initFFB(char *devicePath)
 {
 	/* Init the connection to the Aganyte's Sega FFB Controller */
-	// int rc=initDevice(devicePath);
 	if (!initDevice(devicePath))
 		return 0;
 

@@ -43,6 +43,8 @@ struct arguments_t {
 bool containArgument(int mode);
 char* getArgumentValue(int mode);
 
+void runInteractiveMode();
+
 FFBCLIStatus parseArguments(int argc, char **argv);
 
 FFBCLIStatus printUsage();

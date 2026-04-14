@@ -5,6 +5,7 @@
 #include "config.h"
 #include "debug.h"
 #include "cli.h"
+#include <ctype.h> 
 
 #include "ffbhelper.h"
 /**
@@ -117,6 +118,79 @@ char* getArgumentValue(int mode)
      return (MSB <<4) | (LSB & 0x0F); // Make a result byte  using only low nibbles of MSB and LSB thus neglecting the input register case
  }  
 
+ int parse_hex_string(const char *input, unsigned char *output) {
+    if (strlen(input) != 8) return -1;
+
+    for (int i = 0; i < 8; i++) {
+        if (!isxdigit((unsigned char)input[i])) return -1;
+    }
+
+    output[0] = ahex2bin(input[0], input[1]);
+    output[1] = ahex2bin(input[2], input[3]);
+    output[2] = ahex2bin(input[4], input[5]);
+    output[3] = ahex2bin(input[6], input[7]);
+
+    return 0;
+}
+
+
+void runInteractiveMode() {
+    char input[64];
+    unsigned char packet[4];
+    
+    initCOMSegaFFBController();
+
+    printf("=== Interactive Mode ===\n");
+    printf("Enter 8 hex digits (e.g., 80112233), or 'quit' to exit.\n\n");
+
+    while (running) {
+        printf("FFB> ");
+        fflush(stdout);
+
+        if (fgets(input, sizeof(input), stdin) == NULL) {
+            if (errno == EINTR)
+                continue; // Spurious interrupt; retry
+
+            printf("\nEOF detected. Exiting.\n");
+            break;
+        }
+
+        // Trim newline
+        size_t len = strlen(input);
+        while (len > 0 && (input[len - 1] == '\n' || input[len - 1] == '\r')) {
+            input[--len] = '\0';
+        }
+
+        // Skip empty lines
+        if (len == 0) continue;
+
+        // Check for exit commands
+        if (strcasecmp(input, "quit") == 0 || strcasecmp(input, "exit") == 0) {
+            printf("Exiting interactive mode.\n");
+            break;
+        }
+
+        // Parse and validate
+        if (parse_hex_string(input, packet) != 0) {
+            fprintf(stderr, "Error: Input must be exactly 8 valid hex characters (e.g., 80112233).\n");
+            continue;
+        }
+
+        // Load and send packet
+        replyPacket[0] = packet[0];
+        replyPacket[1] = packet[1];
+        replyPacket[2] = packet[2];
+        replyPacket[3] = packet[3];
+
+        if(WriteReplyPacket() != FFB_STATUS_SUCCESS) {
+            fprintf(stderr, "Error: Failed to send packet to Sega FFB Controller.\n");
+        } 
+        else {    
+        printf("Sent: %02X %02X %02X %02X\n", packet[0], packet[1], packet[2], packet[3]);
+        }
+    }
+}
+
 /**
  * Parses the command line arguments
  * 
@@ -130,6 +204,8 @@ char* getArgumentValue(int mode)
  **/
 FFBCLIStatus parseArguments(int argc, char **argv)
 {
+    char* token = NULL;
+
     // If there are no arguments simply continue
     if (argc <= 1)
         return printUsage();
@@ -149,13 +225,38 @@ FFBCLIStatus parseArguments(int argc, char **argv)
         DumpConfig();
         return FFB_CLI_STATUS_SUCCESS_CLOSE;
     }
+    else if ((strcmp(argv[1], "--interactiveSegaMIDICommand") == 0)    || (strcmp(argv[1], "-is") == 0)) {
+        runInteractiveMode();
+        return FFB_CLI_STATUS_SUCCESS_CLOSE;
+    }
+    else if ((strcmp(argv[1], "--4BytesSegaMIDICommand") == 0)  || (strcmp(argv[1], "-4s") == 0)) {
+
+        token=strtok(NULL, "=");
+        
+        //(Spring, Friction, ConstantTorqueDirection, ConstantTorquePower)
+        unsigned char AsciiHexToBin[4]={ahex2bin(token[0],token[1]),  // D0 => MIDI_CMD
+                                        ahex2bin(token[2],token[3]),  // D1 => Value1
+                                        ahex2bin(token[4],token[5]),  // D2 => Value2
+                                        ahex2bin(token[6],token[7])}; // D3 => CRC
+
+                    
+        replyPacket[0] = AsciiHexToBin[0];
+        replyPacket[1] = AsciiHexToBin[1];
+        replyPacket[2] = AsciiHexToBin[2];
+        replyPacket[3] = AsciiHexToBin[3];
+        
+        initCOMSegaFFBController();
+        WriteReplyPacket();
+
+        return FFB_CLI_STATUS_SUCCESS_CLOSE;
+    }
+
 
     // Store all other requests for a specific hapic here:
     int cpKeyValue=0;
     for (int optind = 1; optind < argc ; optind++) {
         /*  --- Parameters with token --- */
         char *command = strtok(argv[optind], "=:");
-        char* token = NULL;
 
         if(command!=NULL){
            
@@ -188,26 +289,6 @@ FFBCLIStatus parseArguments(int argc, char **argv)
                 arguments.keyvalue[cpKeyValue].mode=DUMP_RAW_SEGA_FFB_CONTROLLER;
                 strcpy(arguments.keyvalue[cpKeyValue].value,strtok(NULL, "="));
                 cpKeyValue++;                                    
-            }
-            else if ((strcmp(command, "--4BytesSegaMIDICommand") == 0)  || (strcmp(command, "-4s") == 0)) {
-                arguments.keyvalue[cpKeyValue].mode=SEND_TO_SEGA_FFB_CONTROLLER_AS_MIDI_COMMAND;
-                token=strtok(NULL, "=");
-                
-                //(Spring, Friction, ConstantTorqueDirection, ConstantTorquePower)
-                unsigned char AsciiHexToBin[4]={ahex2bin(token[0],token[1]),  // D0 => MIDI_CMD
-                                                ahex2bin(token[2],token[3]),  // D1 => Value1
-                                                ahex2bin(token[4],token[5]),  // D2 => Value2
-                                                ahex2bin(token[6],token[7])}; // D3 => CRC
-
-                          
-                replyPacket[0] = AsciiHexToBin[0];
-                replyPacket[1] = AsciiHexToBin[1];
-                replyPacket[2] = AsciiHexToBin[2];
-                replyPacket[3] = AsciiHexToBin[3];
-                
-                WriteReplyPacket();
-                
-                cpKeyValue++;
             }
             // Start byte and CRC are not passed in parameter here, it is added in code
             else if ((strcmp(command, "--4BytesSegaFFBRawRequest") == 0)  || (strcmp(command, "-4") == 0)) {

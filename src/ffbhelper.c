@@ -128,6 +128,20 @@ void* WorkerSetPosition(void* arg)
 	return NULL;
 }
 
+  void initCOMSegaFFBController()
+  {
+	FFBConfig *localConfig = getConfig(); 
+    debug(1, "Connecting to Sega FFB Controller...");
+    while(!initFFB(localConfig->segaFFBControllerPath) && running)
+    {
+      debug(1, ".");
+      fflush(stdout);
+      sleep(1);
+    }
+    debug(1, "Done!\n");
+  }
+
+  
 void* WorkerUpdateCachedWheelPosition(void* arg)
 {
 	while (true)

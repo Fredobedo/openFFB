@@ -6,6 +6,7 @@
 #include <linux/input.h>
 #include <sys/ioctl.h>
 #include <dirent.h>
+#include <signal.h>
 
 #include <libudev.h>
 #include <stdio.h>
@@ -104,9 +105,10 @@ typedef struct {
     int duration_ms;
 } ThreadParams;
 
-
+volatile sig_atomic_t running;
 
 typedef void* (*WorkerFunc)(void*);
+void initCOMSegaFFBController();
 
 int startWorkerAsync(WorkerFunc func, void* arg);
 void* WorkerSetCenter(void* arg);
