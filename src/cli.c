@@ -120,7 +120,7 @@ char* getArgumentValue(int mode)
 
  int parse_hex_string(const char *input, unsigned char *output) {
     debug(0, "Parsing hex string length %lu\n", strlen(input));
-    if (strlen(input) != 9) return -1;
+    if (strlen(input) != 8) return -1;
 
     for (int i = 0; i < 8; i++) {
         if (!isxdigit((unsigned char)input[i])) return -1;
@@ -199,15 +199,15 @@ void runInteractiveMode() {
             if (feof(stdin))
                 break;
 
-            // // Trim newline
-            // size_t len = strlen(input);
-            // while (len > 0 && (input[len - 1] == '\n' || input[len - 1] == '\r')) {
-            //     input[--len] = '\0';
-            // }
+            // Trim newline
+            size_t len = strlen(input);
+            while (len > 0 && (input[len - 1] == '\n' || input[len - 1] == '\r')) {
+                input[--len] = '\0';
+            }
 
-            // // Skip empty lines
-            // if (len == 0) 
-            //     break;
+            // Skip empty lines
+            if (len == 0) 
+                break;
 
             // Check for exit commands
             if (strcasecmp(input, "quit") == 0 || strcasecmp(input, "exit") == 0) {
@@ -240,6 +240,7 @@ void runInteractiveMode() {
             else {    
                 printf("> Sent: %02X %02X %02X %02X\n", packet[0], packet[1], packet[2], packet[3]);
             }
+            printf("FFB> ");
         }
     }
 }
