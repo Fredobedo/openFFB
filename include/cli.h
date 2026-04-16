@@ -44,6 +44,7 @@ bool containArgument(int mode);
 char* getArgumentValue(int mode);
 
 void runInteractiveMode();
+void SleepFromInput(char* input);
 
 FFBCLIStatus parseArguments(int argc, char **argv);
 

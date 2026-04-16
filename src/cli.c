@@ -133,6 +133,52 @@ char* getArgumentValue(int mode)
     return 0;
 }
 
+//Try to parse user input for sleep request. Ex: Sleep(15)
+void SleepFromInput(char* input) {
+    int sleep_duration = 0;       // Default duration if no value provided
+    char* arg_start = input + 5;  // Pointer to character after "sleep"
+    char *endptr;
+    bool valid_syntax = false;
+
+    // Skip optional space between 'sleep' and '('
+    while (*arg_start == ' ') arg_start++;
+
+    if (*arg_start != '\0' && *arg_start == '(') {
+        char* open_paren = strchr(arg_start, '(');
+        
+        if (open_paren) {
+            char* close_paren = strchr(open_paren, ')');
+            
+            if (close_paren && close_paren > open_paren) {
+                char temp_buf[64];
+                size_t num_len = close_paren - open_paren - 1;  // Length of text inside parens
+                
+                if (num_len < sizeof(temp_buf)) {
+                    strncpy(temp_buf, open_paren + 1, num_len);
+                    temp_buf[num_len] = '\0';
+                    
+                    // Attempt parse
+                    long val = strtol(temp_buf, &endptr, 10);
+                    
+                    if (val >= 1 && val <= 3600) {
+                        sleep_duration = (int)val;
+
+                        printf("Sleeping for %d second%s...\n", sleep_duration, (sleep_duration == 1 ? "" : "s"));
+                        sleep(sleep_duration);
+                        printf("Sleep finished.\n");
+                    } else {
+                        fprintf(stderr, "Error: Sleep duration must be 1-3600 seconds.\n");
+                    }
+                } else {
+                    fprintf(stderr, "Error: Number too long in sleep().\n");
+                }
+            } else {
+                fprintf(stderr, "Error: Missing closing ')' in sleep command.\n");
+            }
+        }
+    } 
+
+}
 
 void runInteractiveMode() {
     char input[65536];
@@ -170,8 +216,14 @@ void runInteractiveMode() {
             break;
         }
 
+        //SLEEP(12)
+        if (strncasecmp(input, "sleep", 5) == 0) {
+
+            SleepFromInput(input);
+            continue;
+        }
         // Parse and validate
-        if (parse_hex_string(input, packet) != 0) {
+        else if (parse_hex_string(input, packet) != 0) {
             fprintf(stderr, "Error: Input must be exactly 8 valid hex characters (e.g., 80112233).\n");
             continue;
         }
