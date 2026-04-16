@@ -183,15 +183,20 @@ void SleepFromInput(char* input) {
 void runInteractiveMode() {
     char input[65536];
     unsigned char packet[4];
-    
+    bool previousLineWasEmpty=false;
+
     initCOMSegaFFBController();
 
     printf("=== Interactive Mode ===\n");
     printf("Enter 8 hex digits (e.g., 80112233), or 'quit' to exit.\n\n");
 
     while (running) {
-        printf("FFB> ");
-        fflush(stdout);
+        if(!previousLineWasEmpty)
+        {
+            printf("FFB> ");
+            fflush(stdout);
+        }
+
 
         if (fgets(input, sizeof(input), stdin) == NULL) {
             if (errno == EINTR)
@@ -208,7 +213,13 @@ void runInteractiveMode() {
         }
 
         // Skip empty lines
-        if (len == 0) continue;
+        if (len == 0) {
+            previousLineWasEmpty=true;
+            continue;
+        } 
+        else {
+            previousLineWasEmpty=false;
+        }
 
         // Check for exit commands
         if (strcasecmp(input, "quit") == 0 || strcasecmp(input, "exit") == 0) {
@@ -216,14 +227,15 @@ void runInteractiveMode() {
             break;
         }
 
-        //SLEEP(12)
+        // Check for sleep command
         if (strncasecmp(input, "sleep", 5) == 0) {
 
             SleepFromInput(input);
             continue;
         }
-        // Parse and validate
-        else if (parse_hex_string(input, packet) != 0) {
+
+        // Parse and validate hex input
+        if (parse_hex_string(input, packet) != 0) {
             fprintf(stderr, "Error: Input must be exactly 8 valid hex characters (e.g., 80112233).\n");
             continue;
         }
