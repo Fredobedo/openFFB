@@ -198,15 +198,15 @@ void runInteractiveMode() {
             if (feof(stdin))
                 break;
 
-            // Trim newline
-            size_t len = strlen(input);
-            while (len > 0 && (input[len - 1] == '\n' || input[len - 1] == '\r')) {
-                input[--len] = '\0';
-            }
+            // // Trim newline
+            // size_t len = strlen(input);
+            // while (len > 0 && (input[len - 1] == '\n' || input[len - 1] == '\r')) {
+            //     input[--len] = '\0';
+            // }
 
-            // Skip empty lines
-            if (len == 0) 
-                break;
+            // // Skip empty lines
+            // if (len == 0) 
+            //     break;
 
             // Check for exit commands
             if (strcasecmp(input, "quit") == 0 || strcasecmp(input, "exit") == 0) {
