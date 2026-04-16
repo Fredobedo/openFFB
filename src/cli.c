@@ -119,7 +119,7 @@ char* getArgumentValue(int mode)
  }  
 
  int parse_hex_string(const char *input, unsigned char *output) {
-    debug(0, "Parsing hex string length %lu\n", strlen(input));
+    
     if (strlen(input) != 8) return -1;
 
     for (int i = 0; i < 8; i++) {
@@ -163,7 +163,7 @@ void SleepFromInput(char* input) {
                     
                     if (val >= 1 && val <= 60000) {
                         sleep_duration = (int)val;
-                        printf("> Sleep: %d\n", sleep_duration);
+                        printf("Sleep: %d\n", sleep_duration);
                         usleep(sleep_duration * 1000); // Convert ms to us
                     } else {
                         fprintf(stderr, "Error: Sleep duration must be 1-60000 milliseconds.\n");
@@ -238,7 +238,7 @@ void runInteractiveMode() {
                 break;
             } 
             else {    
-                printf("> Sent: %02X %02X %02X %02X\n", packet[0], packet[1], packet[2], packet[3]);
+                printf("Sent: %02X %02X %02X %02X\n", packet[0], packet[1], packet[2], packet[3]);
             }
             printf("FFB> ");
         }
