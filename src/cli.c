@@ -163,9 +163,9 @@ void SleepFromInput(char* input) {
                     if (val >= 1 && val <= 60000) {
                         sleep_duration = (int)val;
 
-                        printf("Sleeping for %d millisecond%s...\n", sleep_duration, (sleep_duration == 1 ? "" : "s"));
+                        //printf("Sleeping for %d millisecond%s...\n", sleep_duration, (sleep_duration == 1 ? "" : "s"));
                         usleep(sleep_duration * 1000); // Convert ms to us
-                        printf("Sleep finished.\n");
+                        //printf("Sleep finished.\n");
                     } else {
                         fprintf(stderr, "Error: Sleep duration must be 1-60000 milliseconds.\n");
                     }
