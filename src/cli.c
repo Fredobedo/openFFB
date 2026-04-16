@@ -226,7 +226,8 @@ void runInteractiveMode() {
                 fprintf(stderr, "Error: Input must be exactly 8 valid hex characters (e.g., 80112233).\n");
                 break;
             }
-
+            
+            printf("FFB> ");
             // Load and send packet
             replyPacket[0] = packet[0];
             replyPacket[1] = packet[1];
@@ -240,7 +241,7 @@ void runInteractiveMode() {
             else {    
                 printf("Sent: %02X %02X %02X %02X\n", packet[0], packet[1], packet[2], packet[3]);
             }
-            printf("FFB> ");
+
         }
     }
 }
