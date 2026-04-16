@@ -197,60 +197,64 @@ void runInteractiveMode() {
             fflush(stdout);
         }
 
+        while (fgets(input, sizeof(input), stdin) != NULL) {
+             if (errno == EINTR)
+                 continue; // Spurious interrupt; retry
 
-        if (fgets(input, sizeof(input), stdin) == NULL) {
-            if (errno == EINTR)
-                continue; // Spurious interrupt; retry
+            // if (fgets(input, sizeof(input), stdin) == NULL) {
+            //     if (errno == EINTR)
+            //         continue; // Spurious interrupt; retry
 
-            printf("\nEOF detected. Exiting.\n");
-            break;
-        }
+            //     printf("\nEOF detected. Exiting.\n");
+            //     break;
+            // }
 
-        // Trim newline
-        size_t len = strlen(input);
-        while (len > 0 && (input[len - 1] == '\n' || input[len - 1] == '\r')) {
-            input[--len] = '\0';
-        }
+            // Trim newline
+            size_t len = strlen(input);
+            while (len > 0 && (input[len - 1] == '\n' || input[len - 1] == '\r')) {
+                input[--len] = '\0';
+            }
 
-        // Skip empty lines
-        if (len == 0) {
-            previousLineWasEmpty=true;
-            continue;
-        } 
-        else {
-            previousLineWasEmpty=false;
-        }
+            // Skip empty lines
+            if (len == 0) {
+                //previousLineWasEmpty=true;
+                continue;
+            } 
+            else {
+                //previousLineWasEmpty=false;
+            }
 
-        // Check for exit commands
-        if (strcasecmp(input, "quit") == 0 || strcasecmp(input, "exit") == 0) {
-            printf("Exiting interactive mode.\n");
-            break;
-        }
+            // Check for exit commands
+            if (strcasecmp(input, "quit") == 0 || strcasecmp(input, "exit") == 0) {
+                printf("Exiting interactive mode.\n");
+                break;
+            }
 
-        // Check for sleep command
-        if (strncasecmp(input, "sleep", 5) == 0) {
+            // Check for sleep command
+            if (strncasecmp(input, "sleep", 5) == 0) {
 
-            SleepFromInput(input);
-            continue;
-        }
+                SleepFromInput(input);
+                continue;
+            }
 
-        // Parse and validate hex input
-        if (parse_hex_string(input, packet) != 0) {
-            fprintf(stderr, "Error: Input must be exactly 8 valid hex characters (e.g., 80112233).\n");
-            continue;
-        }
+            // Parse and validate hex input
+            if (parse_hex_string(input, packet) != 0) {
+                fprintf(stderr, "Error: Input must be exactly 8 valid hex characters (e.g., 80112233).\n");
+                continue;
+            }
 
-        // Load and send packet
-        replyPacket[0] = packet[0];
-        replyPacket[1] = packet[1];
-        replyPacket[2] = packet[2];
-        replyPacket[3] = packet[3];
+            // Load and send packet
+            replyPacket[0] = packet[0];
+            replyPacket[1] = packet[1];
+            replyPacket[2] = packet[2];
+            replyPacket[3] = packet[3];
 
-        if(WriteReplyPacket() != FFB_STATUS_SUCCESS) {
-            fprintf(stderr, "Error: Failed to send packet to Sega FFB Controller.\n");
-        } 
-        else {    
-        //printf("Sent: %02X %02X %02X %02X\n", packet[0], packet[1], packet[2], packet[3]);
+            if(WriteReplyPacket() != FFB_STATUS_SUCCESS) {
+                fprintf(stderr, "Error: Failed to send packet to Sega FFB Controller.\n");
+            } 
+            else {    
+            //printf("Sent: %02X %02X %02X %02X\n", packet[0], packet[1], packet[2], packet[3]);
+            }
         }
     }
 }
