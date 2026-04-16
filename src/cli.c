@@ -191,11 +191,8 @@ void runInteractiveMode() {
     printf("Enter 8 hex digits (e.g., 80112233), or 'quit' to exit.\n\n");
 
     while (running) {
-        if(!previousLineWasEmpty)
-        {
-            printf("FFB> ");
-            fflush(stdout);
-        }
+        printf("FFB> ");
+        fflush(stdout);
 
         while (fgets(input, sizeof(input), stdin) != NULL) {
              if (errno == EINTR)
@@ -253,7 +250,7 @@ void runInteractiveMode() {
                 fprintf(stderr, "Error: Failed to send packet to Sega FFB Controller.\n");
             } 
             else {    
-            //printf("Sent: %02X %02X %02X %02X\n", packet[0], packet[1], packet[2], packet[3]);
+                printf("Sent: %02X %02X %02X %02X\n", packet[0], packet[1], packet[2], packet[3]);
             }
         }
     }
