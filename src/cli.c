@@ -120,7 +120,7 @@ char* getArgumentValue(int mode)
 
  int parse_hex_string(const char *input, unsigned char *output) {
     debug(0, "Parsing hex string length %lu\n", strlen(input));
-    if (strlen(input) != 8) return -1;
+    if (strlen(input) != 9) return -1;
 
     for (int i = 0; i < 8; i++) {
         if (!isxdigit((unsigned char)input[i])) return -1;
