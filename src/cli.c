@@ -197,7 +197,7 @@ void runInteractiveMode() {
 
         while (fgets(input, sizeof(input), stdin) != NULL) {
              if (errno == EINTR)
-                 continue; // Spurious interrupt; retry
+                 break; // Spurious interrupt; retry
 
             if (feof(stdin))
                 break;
@@ -218,10 +218,12 @@ void runInteractiveMode() {
 
             // Skip empty lines
             if (len == 0) {
+                debug(0, "Empty line detected, skipping input.\n");
                 //previousLineWasEmpty=true;
                 continue;
             } 
             else {
+                debug(0, "Received input: %s\n", input);
                 //previousLineWasEmpty=false;
             }
 
