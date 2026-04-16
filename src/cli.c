@@ -135,7 +135,7 @@ char* getArgumentValue(int mode)
 
 
 void runInteractiveMode() {
-    char input[64];
+    char input[65536];
     unsigned char packet[4];
     
     initCOMSegaFFBController();
