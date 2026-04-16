@@ -162,11 +162,8 @@ void SleepFromInput(char* input) {
                     
                     if (val >= 1 && val <= 60000) {
                         sleep_duration = (int)val;
-
-                        printf("Sleep: %d\n", sleep_duration);
-
+                        //printf("> Sleep: %d\n", sleep_duration);
                         usleep(sleep_duration * 1000); // Convert ms to us
-                        //printf("Sleep finished.\n");
                     } else {
                         fprintf(stderr, "Error: Sleep duration must be 1-60000 milliseconds.\n");
                     }
@@ -178,7 +175,6 @@ void SleepFromInput(char* input) {
             }
         }
     } 
-
 }
 
 void runInteractiveMode() {
@@ -202,14 +198,6 @@ void runInteractiveMode() {
             if (feof(stdin))
                 break;
 
-                 // if (fgets(input, sizeof(input), stdin) == NULL) {
-            //     if (errno == EINTR)
-            //         continue; // Spurious interrupt; retry
-
-            //     printf("\nEOF detected. Exiting.\n");
-            //     break;
-            // }
-
             // Trim newline
             size_t len = strlen(input);
             while (len > 0 && (input[len - 1] == '\n' || input[len - 1] == '\r')) {
@@ -217,15 +205,8 @@ void runInteractiveMode() {
             }
 
             // Skip empty lines
-            if (len == 0) {
-                debug(0, "Empty line detected, skipping input.\n");
-                //previousLineWasEmpty=true;
-                break;;
-            } 
-            else {
-                debug(0, "Received input: %s\n", input);
-                //previousLineWasEmpty=false;
-            }
+            if (len == 0) 
+                break;
 
             // Check for exit commands
             if (strcasecmp(input, "quit") == 0 || strcasecmp(input, "exit") == 0) {
@@ -235,7 +216,6 @@ void runInteractiveMode() {
 
             // Check for sleep command
             if (strncasecmp(input, "sleep", 5) == 0) {
-
                 SleepFromInput(input);
                 continue;
             }
@@ -257,7 +237,7 @@ void runInteractiveMode() {
                 break;
             } 
             else {    
-                printf("Sent: %02X %02X %02X %02X\n", packet[0], packet[1], packet[2], packet[3]);
+                //printf("> Sent: %02X %02X %02X %02X\n", packet[0], packet[1], packet[2], packet[3]);
             }
         }
     }
