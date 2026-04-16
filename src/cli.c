@@ -220,7 +220,7 @@ void runInteractiveMode() {
             if (len == 0) {
                 debug(0, "Empty line detected, skipping input.\n");
                 //previousLineWasEmpty=true;
-                continue;
+                break;;
             } 
             else {
                 debug(0, "Received input: %s\n", input);
@@ -243,7 +243,7 @@ void runInteractiveMode() {
             // Parse and validate hex input
             if (parse_hex_string(input, packet) != 0) {
                 fprintf(stderr, "Error: Input must be exactly 8 valid hex characters (e.g., 80112233).\n");
-                continue;
+                break;
             }
 
             // Load and send packet
@@ -254,6 +254,7 @@ void runInteractiveMode() {
 
             if(WriteReplyPacket() != FFB_STATUS_SUCCESS) {
                 fprintf(stderr, "Error: Failed to send packet to Sega FFB Controller.\n");
+                break;
             } 
             else {    
                 printf("Sent: %02X %02X %02X %02X\n", packet[0], packet[1], packet[2], packet[3]);
