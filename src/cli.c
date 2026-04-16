@@ -185,10 +185,10 @@ void runInteractiveMode() {
     initCOMSegaFFBController();
 
     printf("=== Interactive Mode ===\n");
-    printf("Enter 8 hex digits (e.g., 80112233), or 'quit' to exit.\n\n");
+    printf("Enter 8 hex digits (e.g., 80112233), or 'quit' to exit.\n");
 
     while (running) {
-        printf("FFB> ");
+        printf("\nFFB> ");
         fflush(stdout);
 
         while (fgets(input, sizeof(input), stdin) != NULL) {
