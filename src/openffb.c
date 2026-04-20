@@ -1,6 +1,9 @@
+
+
 #include <stdio.h>
-#include <signal.h>
+#include <sys/types.h>
 #include <string.h>
+
 #include "cli.h"
 #include "device.h"
 #include "openffb.h"
@@ -15,6 +18,9 @@
 #include <sys/file.h>
 #include <errno.h>
 
+#define _GNU_SOURCE
+#include <signal.h>
+
 #include <termios.h>
 #include <unistd.h>
 
@@ -22,12 +28,13 @@
 
 #define PID_FILE "/tmp/openffb.pid"
 
-
 clock_t start_time;
 clock_t end_time;
 unsigned long executed_cycles=0;
 
 int pid_fd;
+
+struct sigaction sa;
 
 void press_any_key(void)
 {
@@ -52,7 +59,7 @@ void press_any_key(void)
 }
 
 void setupSignalHandler(void) {
-    struct sigaction sa;
+
     sa.sa_handler = handleSignal;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;  // Critical: do NOT set SA_RESTART
@@ -96,13 +103,6 @@ int main(int argc, char **argv)
   }
 
   debug(0, "Program started, PID=%d\n", getpid());
-
-  unsigned char ahex2bin(unsigned char MSB, unsigned char LSB) 
-  {  
-    if (MSB > '9') MSB -= 7;          // Convert MSB value to a contiguous range (0x30..0x3F)  
-    if (LSB > '9') LSB -= 7;          // Convert LSB value to a contiguous range (0x30..0x3F)  
-     return (MSB <<4) | (LSB & 0x0F); // Make a result byte  using only low nibbles of MSB and LSB thus neglecting the input register case
-  }  
 
   debug(0, "OpenFFB Version "); printVersion();
   debug(0, "Sega FFB Controller: %s\n", localConfig->segaFFBControllerPath);

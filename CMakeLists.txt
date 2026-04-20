@@ -1,6 +1,6 @@
-project(openffb C)
+cmake_minimum_required(VERSION 3.31.6)
 
-cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
+project(openffb C)
 
 #Using -fcommon for legacy code compatibility"
 if(CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 10)
@@ -47,10 +47,7 @@ include_directories(${THREAD_INLCUDE_DIRS} ${PROJECT_SOURCE_DIR}/src ${PROJECT_S
 
 FILE( GLOB_RECURSE Sources src/*.c )
 add_executable( ${PROJECT_NAME} ${Sources} )
-# add_subdirectory(src)
 
-#find_package(SDL2 REQUIRED)
-#target_link_libraries(openffb ${SDL2_LIBRARY})
 target_link_libraries(openffb udev)
 
 install(TARGETS ${PROJECT_NAME}

@@ -112,11 +112,7 @@ char* getArgumentValue(int mode)
     return 0;
 }
 
- unsigned char ahex2bin(unsigned char MSB, unsigned char LSB) {  
-    if (MSB > '9') MSB -= 7;          // Convert MSB value to a contiguous range (0x30..0x3F)  
-    if (LSB > '9') LSB -= 7;          // Convert LSB value to a contiguous range (0x30..0x3F)  
-     return (MSB <<4) | (LSB & 0x0F); // Make a result byte  using only low nibbles of MSB and LSB thus neglecting the input register case
- }  
+
 
  int parse_hex_string(const char *input, unsigned char *output) {
     
@@ -163,7 +159,7 @@ void SleepFromInput(char* input) {
                     
                     if (val >= 1 && val <= 60000) {
                         sleep_duration = (int)val;
-                        printf("FFB> Sleep: %d\n", sleep_duration);
+                        printf("Sleep: %d\n", sleep_duration);
                         usleep(sleep_duration * 1000); // Convert ms to us
                     } else {
                         fprintf(stderr, "Error: Sleep duration must be 1-60000 milliseconds.\n");
@@ -193,21 +189,26 @@ void runInteractiveMode() {
         fflush(stdout);
 
         while (fgets(input, sizeof(input), stdin) != NULL) {
-             if (errno == EINTR)
+             if (errno == EINTR){
+                //debug(0, "Input interrupted by signal, retrying...\n");
                  break; // Spurious interrupt; retry
-
-            if (feof(stdin))
-                break;
+             }
 
             // Trim newline
             size_t len = strlen(input);
+            int cp=0;
             while (len > 0 && (input[len - 1] == '\n' || input[len - 1] == '\r')) {
+                cp++;
                 input[--len] = '\0';
             }
 
+            //debug(0, "Received input: '%s' (length: %zu, trimmed chars: %d)\n", input, len, cp);
+
             // Skip empty lines
-            if (len == 0) 
+            if (len == 0) {
+                //debug(0, "Empty line entered, skipping.\n");
                 break;
+            }
 
             // Check for exit commands
             if (strcasecmp(input, "quit") == 0 || strcasecmp(input, "exit") == 0) {
@@ -217,6 +218,7 @@ void runInteractiveMode() {
 
             // Check for sleep command
             if (strncasecmp(input, "sleep", 5) == 0) {
+                debug(0, "Sleep command detected.\n");
                 SleepFromInput(input);
                 continue;
             }
@@ -238,8 +240,10 @@ void runInteractiveMode() {
                 break;
             } 
             else {    
-                printf("FFB> Sent: %02X %02X %02X %02X\n", packet[0], packet[1], packet[2], packet[3]);
+                printf("Sent: %02X %02X %02X %02X\n", packet[0], packet[1], packet[2], packet[3]);
             }
+            
+            printf("FFB> ");
 
         }
     }

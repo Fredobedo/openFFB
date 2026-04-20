@@ -107,6 +107,8 @@ typedef struct {
 
 volatile sig_atomic_t running;
 
+unsigned char ahex2bin(unsigned char MSB, unsigned char LSB) ;
+
 typedef void* (*WorkerFunc)(void*);
 void initCOMSegaFFBController();
 
