@@ -158,10 +158,10 @@ void* WorkerUpdateCachedWheelPosition(void* arg)
 
 		if (tempPosition >= 0)
 		{
-			if (getConfig()->InvertedWheelPosition == 1)
-				FinalwheelPosition = 16384 - tempPosition;
-			else
-				FinalwheelPosition = tempPosition;
+			// if (getConfig()->InvertedWheelPosition == 1)
+			FinalwheelPosition = 16384 - tempPosition;
+			// else
+			// 	FinalwheelPosition = tempPosition;
 
 			if (FinalwheelPosition < 1500)
 				FinalwheelPosition = 0;
@@ -1024,23 +1024,7 @@ void FFBTriggerSineEffect(bool upload, float frequency, float intensity)
 		struct ff_effect* sineEffect=&ffb_effects[sine_effect_idx];
 		if(upload)
 		{
-			// to convert from 0.5-1.0 to 50-100Hz
-			//frequency*=(360.0f * getConfig()->periodAdjustmentFactor); 
-
-			//According https://github.com/flyinghead/flycast/blob/master/core/hw/naomi/midiffb.cpp
-			// we see that value of 2 = 1Hz and based on max value of 0x7f, we only have a range 127/2Hz => 0.5(0x01) to 64Hz(0x7F)
-    		//if (frequency < 0.5f) frequency = 0.5f;
-    		//if (frequency > 120.0f) frequency = 120.0f;
-			//sineEffect->u.periodic.period= (unsigned short)frequency;
 			sineEffect->u.periodic.period= (unsigned short)(1000.0f / (frequency/4.0f)); // period in milliseconds
-
-			// Frequency Math: Calculate period in microseconds => Period = 1000 / Frequency(Hz)
-			// For 50Hz: 1000 / 50 = 20ms
-			// Clamp value between 5-1000
-			// int period_us = (int)(1000.0f / frequency); // period in milliseconds
-			// if (period_us < 5) period_us = 5;       // it looks like it's the Minimum period of my G27
-			// if (period_us > 1000) period_us = 1000; // Maximum period
-			// sineEffect->u.periodic.period = period_us; 
 
 			debug(3, " -> frequency converted to period: %ums\n", sineEffect->u.periodic.period);
 

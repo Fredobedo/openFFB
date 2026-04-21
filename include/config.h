@@ -40,14 +40,8 @@ typedef struct
     int maxIntensity;
     
     float periodAdjustmentFactor;
-
-    int staticSpring;
-    int staticFriction;
     
     int logitechSteeringRange;
-
-    int SendWheelPositionToMidi;
-    int InvertedWheelPosition;
 } FFBConfig;
 
 typedef enum

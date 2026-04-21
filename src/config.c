@@ -40,10 +40,7 @@ FFBConfig config = {
     .maxTorque = 100,
     .minIntensity = 0,
     .maxIntensity = 100,
-    .periodAdjustmentFactor = 1.0,
     .logitechSteeringRange = 900,
-    .SendWheelPositionToMidi = 0,
-    .InvertedWheelPosition = 1,
 };
 
 void DumpConfig()
@@ -66,12 +63,7 @@ void DumpConfig()
     printf("maxTorque               = %d\n", config.maxTorque);  
     printf("minIntensity            = %d\n", config.minIntensity);
     printf("maxIntensity            = %d\n", config.maxIntensity);  
-    printf("periodAdjustmentFactor  = %f\n", config.periodAdjustmentFactor);
-    printf("staticSpring            = %d\n", config.minTorque);
-    printf("staticFriction          = %d\n", config.maxTorque); 
     printf("logitechSteeringRange   = %d\n", config.logitechSteeringRange);
-    printf("SendWheelPositionToMidi = %d\n", config.SendWheelPositionToMidi);
-    printf("InvertedWheelPosition   = %d\n", config.InvertedWheelPosition);
 }
 
 FFBConfig *getConfig()
@@ -162,18 +154,8 @@ FFBConfigStatus parseDrivingProfile(char *path)
             config.minIntensity = atoi(getNextToken(NULL, " ", &saveptr));   
         else if (strcmp(command, "MAX_INTENSITY") == 0)
             config.maxIntensity = atoi(getNextToken(NULL, " ", &saveptr));
-        else if (strcmp(command, "PERIOD_ADJUSTMENT_FACTOR") == 0)
-            config.periodAdjustmentFactor = atof(getNextToken(NULL, " ", &saveptr));
-        else if (strcmp(command, "STATIC_SPRING") == 0)
-            config.staticSpring = atoi(getNextToken(NULL, " ", &saveptr));                                       
-        else if (strcmp(command, "STATIC_FRICTION") == 0)
-            config.staticFriction = atoi(getNextToken(NULL, " ", &saveptr));    
         else if (strcmp(command, "LOGITECH_STEERING_RANGE") == 0)
             config.logitechSteeringRange = atoi(getNextToken(NULL, " ", &saveptr)); 
-        else if (strcmp(command, "SEND_WHEEL_POSITION_TO_MIDI") == 0)
-            config.SendWheelPositionToMidi = atoi(getNextToken(NULL, " ", &saveptr)); 
-        else if (strcmp(command, "INVERTED_WHEEL_POSITION") == 0)
-            config.InvertedWheelPosition = atoi(getNextToken(NULL, " ", &saveptr)); 
         else
             printf("Error: parseDrivingProfile - Unknown configuration [command %s]\n", command);
     }
