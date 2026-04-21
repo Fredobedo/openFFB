@@ -3,7 +3,7 @@
 # set the global strength of all effects here (default is 100)
 GLOBAL_GAIN 100
 
-# set the strength during intialization phase, when wheel goes completely right (to the Base=0, then search for the enter)
+# set the strength during intialization phase if required
 INITIALIZATION_GAIN 100
 
 # for the games not supporting FFB effects, you can set a generic auto center effect here (default is 0)
@@ -25,17 +25,7 @@ MAX_TORQUE 100
 MIN_INTENSITY 15
 MAX_INTENSITY 100
 
-# adjust the period of period effects here if necessary (ex: SINE EFFECT) (default is 1.0)
-#PERIOD_ADJUSTMENT_FACTOR 1.0
-
-# for those who want to use a Logitech racing wheel which is upported by new-lg4ff
-# and have possible steering range up to 900 degree (i.e. G25, G27),
-# this option can be used to change it on the fly
+# for those who want to use a Logitech racing wheel which is supported by new-lg4ff
+# it is possible to set steering range up to 900 degree (i.e. G25, G27),
 LOGITECH_STEERING_RANGE 360
 
-# As of today, I only see one game (Club Kart) that needs to get wheel position through MIDI interface
-# Other games ust get wheel position from JVS analog reports (default is 0)
-# SEND_WHEEL_POSITION_TO_MIDI 1
-
-#invert wheel position values when sending through MIDI (default is 0)
-# INVERTED_WHEEL_POSITION 1

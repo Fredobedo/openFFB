@@ -3,8 +3,6 @@
 # set the global strength of all effects here (0-100)
 GLOBAL_GAIN 100
 
-# for the games not supporting FFB effects, you can set a generic auto center effect here (0-100)
-AUTO_CENTER 0
 
 # adjust spring effect if necessary here
 MIN_SPRING 10
@@ -18,7 +16,6 @@ MAX_FRICTION 100
 MIN_TORQUE 10
 MAX_TORQUE 100
 
-# for those who want to use a Logitech racing wheel which is upported by new-lg4ff
-# and have possible steering range up to 900 degree (i.e. G25, G27),
-# this option can be used to change it on the fly
+# for those who want to use a Logitech racing wheel which is supported by new-lg4ff
+# it is possible to set steering range up to 900 degree (i.e. G25, G27),
 LOGITECH_STEERING_RANGE 180
