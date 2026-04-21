@@ -10,19 +10,19 @@ INITIALIZATION_GAIN 100
 AUTO_CENTER 1
 
 # adjust spring effect if necessary here (default is 0-100)
-MIN_SPRING 15
+MIN_SPRING 5
 MAX_SPRING 100
 
 # adjust friction effect if necessary here (default is 0-100)
-MIN_FRICTION 15
+MIN_FRICTION 5
 MAX_FRICTION 100
 
 # adjust torque effect if necessary here (default is 0-100)
-MIN_TORQUE 15
+MIN_TORQUE 5
 MAX_TORQUE 100
 
 # adjust sine effect intensity if necessary here (default is 0-100)
-MIN_INTENSITY 15
+MIN_INTENSITY 5
 MAX_INTENSITY 100
 
 # for those who want to use a Logitech racing wheel which is supported by new-lg4ff

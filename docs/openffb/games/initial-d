@@ -3,17 +3,17 @@
 # set the global strength of all effects here (0-100)
 GLOBAL_GAIN 100
 
-# adjust spring effect if necessary here
-MIN_SPRING 0
-MAX_SPRING 100
-
 # adjust friction effect if necessary here
-MIN_FRICTION 10
+MIN_FRICTION 5
 MAX_FRICTION 100
 
 # adjust torque effect if necessary here
-MIN_TORQUE 10
+MIN_TORQUE 5
 MAX_TORQUE 100
+
+# adjust sine effect intensity if necessary here (default is 0-100)
+MIN_INTENSITY 5
+MAX_INTENSITY 100
 
 # for those who want to use a Logitech racing wheel which is supported by new-lg4ff
 # it is possible to set steering range up to 900 degree (i.e. G25, G27),
