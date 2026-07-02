@@ -173,6 +173,14 @@ int main(int argc, char **argv)
   
   startWorkerAsync(WorkerUpdateCachedWheelPosition, NULL);
 
+  //Search for minimum strength for the wheel, this is used to avoid the wheel to not react when the force is low
+  GetWheelEffectiveMinStrength();
+
+  //adjust the minimum values for the effects, to avoid the wheel to not react when the force is low
+  localConfig->minFriction+= minimumStrength*100;
+  localConfig->minTorque+= minimumStrength*100;
+  localConfig->minIntensity+= minimumStrength*100;
+
   if(containArgument(TRIGGER_EFFECT)){
     double Strength = 0.25;
     if(containArgument(SET_FORCE))

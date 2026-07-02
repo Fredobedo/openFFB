@@ -118,6 +118,10 @@ void* WorkerUpdateCachedWheelPosition(void* arg);
 void* WorkerSetPosition(void* arg);
 
 void GetWheelEffectiveMaxPosition();
+
+double minimumStrength;
+void GetWheelEffectiveMinStrength();
+
 int GetCachedWheelPosition();
 int GetNewWheelPositionIOCTL();
 //int GetWheelPositionABSX();

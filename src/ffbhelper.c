@@ -469,6 +469,38 @@ void GetWheelEffectiveMaxPosition()
 		//debug(0, "Wheel Effective Max Position: %d\n", WheelEffectiveMaxPosition);
 	}
 }
+
+void GetWheelEffectiveMinStrength()
+{
+	debug(3, "Starting GetWheelEffectiveMinStrength()...\n");
+	minimumStrength = 0.0;
+	
+	bool MoveDetected=false;
+
+	ThreadParams *centerParams = malloc(sizeof(ThreadParams));
+	*centerParams = (ThreadParams){0, 0.90, 0, 3000};
+	WorkerSetCenter(centerParams);
+
+
+	int wheelPosition = GetCachedWheelPosition();
+	double step = 0.02; // Adjust the step size as needed
+
+	while(!MoveDetected)
+	{
+		ThreadParams *maxRightParams = malloc(sizeof(ThreadParams));
+
+		*maxRightParams = (ThreadParams){0, minimumStrength, 0, 10};
+		WorkerSetPosition(maxRightParams);
+
+		if(wheelPosition==GetCachedWheelPosition())
+			minimumStrength += step;
+		else{
+			MoveDetected=true;
+			debug(3, "Wheel Effective Min Strength: %f\n", minimumStrength);
+		}
+	}
+}
+
 void FFBCreateHapticConstantEffects()
 {
 	/* --- FF_CONSTANT --- */
