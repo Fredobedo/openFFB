@@ -145,13 +145,13 @@ FFBStatus processPacket(unsigned char *packet)
 		// 0xA1
 		case OPENFFB_SET_MAX_RIGHT_SUB_CMD: // Asynchronous command, reply will be sent by Worker thread
 			ThreadParams *maxRightParams = malloc(sizeof(ThreadParams));
-			*maxRightParams = (ThreadParams){0, 0.10 + minimumStrength, 0, 60000};
+			*maxRightParams = (ThreadParams){0, 0.10, 0, 60000};
 			startWorkerAsync(WorkerSetPosition, maxRightParams);
 			break;
 		// 0xA2
 		case OPENFFB_SET_MAX_LEFT_SUB_CMD: 	// Asynchronous command, reply will be sent by Worker thread
 			ThreadParams *maxLeftParams = malloc(sizeof(ThreadParams));
-			*maxLeftParams = (ThreadParams){16383, 0.10 + minimumStrength, 0, 60000};
+			*maxLeftParams = (ThreadParams){16383, 0.10, 0, 60000};
 			startWorkerAsync(WorkerSetPosition, maxLeftParams);
 			break;
 		// 0x02
