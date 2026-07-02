@@ -474,7 +474,7 @@ void GetWheelEffectiveMinStrength()
 {
 	debug(3, "Starting GetWheelEffectiveMinStrength()...\n");
 	minimumStrength = 0.0;
-	
+
 	bool MoveDetected=false;
 
 	ThreadParams *centerParams = malloc(sizeof(ThreadParams));
@@ -1208,15 +1208,15 @@ void FFBTriggerConstantEffect(bool upload, double strength, bool async)
 			if (strength == 0.0) {
 				level = 0;
 			} 
-			else if(SegaFFBControllerState==OPENFFB_NOT_READY_SUB_CMD){
-//debug(0," -> strength before applying initialization gain: %.2f\n", strength);				
-//debug(0,"Applying initialization gain: %d%%\n", getConfig()->initializationGain);
-				strength*= (getConfig()->initializationGain/100.0);
-//debug(0," -> strength after applying initialization gain: %.2f\n", strength);
-				level = (short)CLAMP(strength * 32767.0, -32767.0, 32767.0);
-//debug(0," -> level after applying initialization gain: %d\n", level);
-			}
-			else {
+// 			else if(SegaFFBControllerState==OPENFFB_NOT_READY_SUB_CMD){
+// //debug(0," -> strength before applying initialization gain: %.2f\n", strength);				
+// //debug(0,"Applying initialization gain: %d%%\n", getConfig()->initializationGain);
+// 				strength*= (getConfig()->initializationGain/100.0);
+// //debug(0," -> strength after applying initialization gain: %.2f\n", strength);
+// 				level = (short)CLAMP(strength * 32767.0, -32767.0, 32767.0);
+// //debug(0," -> level after applying initialization gain: %d\n", level);
+// 			}
+// 			else {
 				short minForce = (short)((getConfig()->minTorque / 100.0) * 32767.0); 
 				short maxForce = (short)((getConfig()->maxTorque / 100.0) * 32767.0);
 
@@ -1225,7 +1225,7 @@ void FFBTriggerConstantEffect(bool upload, double strength, bool async)
 				double absStrength = fabs(strength);
 				short magnitude = (short)((absStrength * range) + minForce);
 				level = (strength > 0.0) ? magnitude : -magnitude;
-			}
+			//}
 
 			constantEffect->u.constant.level = level;	
 			debug(3, " -> strength: %.2f, level: %d\n", strength, constantEffect->u.constant.level);
