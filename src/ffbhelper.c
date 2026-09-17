@@ -1255,6 +1255,7 @@ void FFBTriggerConstantEffect(bool upload, double strength, bool async)
 
 		if(strength!=0.0)
 		{
+			debug(1, ".");
 			//START EFFECT
 			event.value = 1;
 			if (write(device_handle, &event, sizeof(event)) != sizeof(event))
