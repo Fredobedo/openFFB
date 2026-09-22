@@ -87,6 +87,7 @@ FFBStatus WriteReplyPacket()
 		return FFB_STATUS_SUCCESS;
 	}
 }
+
 FFBStatus readPacket()
 {
 	int bytesRead = readBytes(rawPacket, SEGA_FFB_CONTROLLER_PACKET_SIZE);
