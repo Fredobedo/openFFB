@@ -181,12 +181,12 @@ FFBStatus processPacket(unsigned char *packet)
 	else
 	{
 		inputPacket.startByte = packet[0];
-		inputPacket.spring = ((double)packet[1] + 1)   / 128;
-		inputPacket.friction = ((double)packet[2] + 1) / 128;
-		inputPacket.torqueDirection = packet[3];
-		inputPacket.torquePower = ((double)packet[4])  / 128;
-		inputPacket.sineFrequency = ((double)packet[5])     / 2;
-		inputPacket.sineIntensity = ((double)packet[6] + 1) / 128;
+		inputPacket.spring = ((double)packet[1])        / 128;
+		inputPacket.friction = ((double)packet[2])      / 128;
+		inputPacket.ConstantDirection = packet[3];
+		inputPacket.ConstantPower = ((double)packet[4]) / 128;
+		inputPacket.sineFrequency = ((double)packet[5]) / 2;
+		inputPacket.sineIntensity = ((double)packet[6]) / 128;
 
 		/* --- spring            from 0x00 to 0x7F -> 128 levels --- */
 		// if (packet[1] == 0x0)
@@ -213,10 +213,10 @@ FFBStatus processPacket(unsigned char *packet)
 				// DIRECTION:
 				//  - 0 = Right = Negative value for Linux FFB Effect
 				//  - 1 = Left  = Positive value for Linux FFB Effect 
-				if (inputPacket.torqueDirection == 0)
-					FFBTriggerConstantEffect(previous_rawpacket[3] != packet[3] || previous_rawpacket[4] != packet[4], -inputPacket.torquePower, false);
+				if (inputPacket.ConstantDirection == 0)
+					FFBTriggerConstantEffect(previous_rawpacket[3] != packet[3] || previous_rawpacket[4] != packet[4], -inputPacket.ConstantPower, false);
 				else
-					FFBTriggerConstantEffect(previous_rawpacket[3] != packet[3] || previous_rawpacket[4] != packet[4], inputPacket.torquePower, false);
+					FFBTriggerConstantEffect(previous_rawpacket[3] != packet[3] || previous_rawpacket[4] != packet[4], inputPacket.ConstantPower, false);
 			}
 		// }
 

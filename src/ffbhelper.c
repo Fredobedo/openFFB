@@ -1217,8 +1217,8 @@ void FFBTriggerConstantEffect(bool upload, double strength, bool async)
 // //debug(0," -> level after applying initialization gain: %d\n", level);
 // 			}
 // 			else {
-				short minForce = (short)((getConfig()->minTorque / 100.0) * 32767.0); 
-				short maxForce = (short)((getConfig()->maxTorque / 100.0) * 32767.0);
+				short minForce = (short)((getConfig()->minConstant / 100.0) * 32767.0); 
+				short maxForce = (short)((getConfig()->maxConstant / 100.0) * 32767.0);
 
 				short range = maxForce - minForce;
 
@@ -1355,8 +1355,8 @@ void FFBTriggerRumbleEffect(bool upload, double strength, motor_select motor)
 			else if (strength < -1.0)
 				strength = -1.0;
 
-			unsigned short minForce = (unsigned short)((getConfig()->minTorque / 100.0) * 65535.0); 
-			unsigned short maxForce = (unsigned short)((getConfig()->maxTorque / 100.0) * 65535.0);
+			unsigned short minForce = (unsigned short)((getConfig()->minConstant / 100.0) * 65535.0); 
+			unsigned short maxForce = (unsigned short)((getConfig()->maxConstant / 100.0) * 65535.0);
 			unsigned short range = maxForce - minForce;
 			
 			unsigned short level = (unsigned short)((strength * range) + minForce);

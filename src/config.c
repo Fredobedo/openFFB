@@ -36,8 +36,8 @@ FFBConfig config = {
     .maxSpring = 100,
     .minFriction = 0,
     .maxFriction = 100,
-    .minTorque = 0,
-    .maxTorque = 100,
+    .minConstant = 0,
+    .maxConstant = 100,
     .minIntensity = 0,
     .maxIntensity = 100,
     .logitechSteeringRange = 900,
@@ -59,8 +59,8 @@ void DumpConfig()
     printf("maxSpring               = %d\n", config.maxSpring);
     printf("minFriction             = %d\n", config.minFriction);
     printf("maxFriction             = %d\n", config.maxFriction);
-    printf("minTorque               = %d\n", config.minTorque);
-    printf("maxTorque               = %d\n", config.maxTorque);  
+    printf("minConstant             = %d\n", config.minConstant);
+    printf("maxConstant             = %d\n", config.maxConstant);  
     printf("minIntensity            = %d\n", config.minIntensity);
     printf("maxIntensity            = %d\n", config.maxIntensity);  
     printf("logitechSteeringRange   = %d\n", config.logitechSteeringRange);
@@ -146,10 +146,10 @@ FFBConfigStatus parseDrivingProfile(char *path)
             config.minFriction = atoi(getNextToken(NULL, " ", &saveptr));   
         else if (strcmp(command, "MAX_FRICTION") == 0)
             config.maxFriction = atoi(getNextToken(NULL, " ", &saveptr));   
-        else if (strcmp(command, "MIN_TORQUE") == 0)
-            config.minTorque = atoi(getNextToken(NULL, " ", &saveptr));                                       
-        else if (strcmp(command, "MAX_TORQUE") == 0)
-            config.maxTorque = atoi(getNextToken(NULL, " ", &saveptr));   
+        else if (strcmp(command, "MIN_CONSTANT") == 0)
+            config.minConstant = atoi(getNextToken(NULL, " ", &saveptr));                                       
+        else if (strcmp(command, "MAX_CONSTANT") == 0)
+            config.maxConstant = atoi(getNextToken(NULL, " ", &saveptr));   
         else if (strcmp(command, "MIN_INTENSITY") == 0)
             config.minIntensity = atoi(getNextToken(NULL, " ", &saveptr));   
         else if (strcmp(command, "MAX_INTENSITY") == 0)

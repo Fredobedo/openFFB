@@ -38,15 +38,15 @@ FFBCLIStatus printUsage()
     debug(3, "  -4,  --4BytesSegaFFBRawRequest=[PACKET]  Activate FFB Effects based on a 4 bytes raw request:\n");
     debug(3, "                                       - D0 => Spring     (00->7F)\n");
     debug(3, "                                       - D1 => Friction   (00->7F)\n");
-    debug(3, "                                       - D2 => Constant Torque Direction (Left=01, Right=00) \n");
-    debug(3, "                                       - D3 => Constant Torque Power (00->FF)\n");
+    debug(3, "                                       - D2 => Constant Direction (Left=01, Right=00) \n");
+    debug(3, "                                       - D3 => Constant Power (00->FF)\n");
     debug(3, "\n");
     debug(3, "  -7,  --7BytesSegaFFBRawRequest=[PACKET]  Activate FFB Effects based on a 7 bytes raw request:\n");
     debug(3, "                                       - D0 => Start byte (80)\n");
     debug(3, "                                       - D1 => Spring     (00->7F)\n");
     debug(3, "                                       - D2 => Friction   (00->7F)\n");
-    debug(3, "                                       - D3 => Constant Torque Direction (Left=01, Right=00) \n");
-    debug(3, "                                       - D4 => Constant Torque Power (00->7F)\n");
+    debug(3, "                                       - D3 => Constant Direction (Left=01, Right=00) \n");
+    debug(3, "                                       - D4 => Constant Power (00->7F)\n");
     debug(3, "                                       - D5 => Sine Frequency (00->7F)\n");
     debug(3, "                                       - D6 => Sine Intensity (00->7F)\n");
     debug(3, "\n");
@@ -54,8 +54,8 @@ FFBCLIStatus printUsage()
     debug(3, "                                       - D0 => Start byte (80)\n");
     debug(3, "                                       - D1 => Spring     (00->7F)\n");
     debug(3, "                                       - D2 => Friction   (00->7F)\n");
-    debug(3, "                                       - D3 => Constant Torque Direction (Left=01, Right=00) \n");
-    debug(3, "                                       - D4 => Constant Torque Power (00->7F)\n");
+    debug(3, "                                       - D3 => Constant Direction (Left=01, Right=00) \n");
+    debug(3, "                                       - D4 => Constant Power (00->7F)\n");
     debug(3, "                                       - D5 => Sine Frequency (00->7F)\n");
     debug(3, "                                       - D6 => Sine Intensity (00->7F)\n");
     debug(3, "                                       - D7 => CRC        (D1^D2^D3^D4^D5^D6)&7F\n");
@@ -291,7 +291,7 @@ FFBCLIStatus parseArguments(int argc, char **argv)
 
         token=strtok(NULL, "=");
         
-        //(Spring, Friction, ConstantTorqueDirection, ConstantTorquePower)
+        //(Spring, Friction, ConstantConstantDirection, ConstantConstantPower)
         unsigned char AsciiHexToBin[4]={ahex2bin(token[0],token[1]),  // D0 => MIDI_CMD
                                         ahex2bin(token[2],token[3]),  // D1 => Value1
                                         ahex2bin(token[4],token[5]),  // D2 => Value2
@@ -353,11 +353,11 @@ FFBCLIStatus parseArguments(int argc, char **argv)
                 arguments.keyvalue[cpKeyValue].mode=TRIGGER_SEGA_FFB_RAW_REQUEST;
                 token=strtok(NULL, "=");
                 
-                //(Spring, Friction, ConstantTorqueDirection, ConstantTorquePower)
+                //(Spring, Friction, ConstantConstantDirection, ConstantConstantPower)
                 unsigned char AsciiHexToBin[4]={ahex2bin(token[0],token[1]),  // D0 => Spring
                                                 ahex2bin(token[2],token[3]),  // D1 => Friction
-                                                ahex2bin(token[4],token[5]),  // D2 => Constant Torque Direction
-                                                ahex2bin(token[6],token[7])}; // D3 => Constant Torque Power
+                                                ahex2bin(token[4],token[5]),  // D2 => Constant Direction
+                                                ahex2bin(token[6],token[7])}; // D3 => Constant Power
 
                 sprintf(arguments.keyvalue[cpKeyValue].value, "%c%c%c%c%c%c",
                     OPENFFB_SET_BULK_EFFECTS_CMD,
@@ -377,8 +377,8 @@ FFBCLIStatus parseArguments(int argc, char **argv)
                 unsigned char AsciiHexToBin[7]={ahex2bin(token[0],token[1]),   // D0 => Start byte
                                                 ahex2bin(token[2],token[3]),   // D1 => Spring
                                                 ahex2bin(token[4],token[5]),   // D2 => Friction
-                                                ahex2bin(token[6],token[7]),   // D3 => Constant Torque Direction
-                                                ahex2bin(token[8],token[9]),   // D4 => Constant Torque Power
+                                                ahex2bin(token[6],token[7]),   // D3 => Constant Direction
+                                                ahex2bin(token[8],token[9]),   // D4 => Constant Power
                                                 ahex2bin(token[10],token[11]), // D5 => Sine Frequency
                                                 ahex2bin(token[12],token[13])};// D6 => Sine Intensity
  
@@ -402,8 +402,8 @@ FFBCLIStatus parseArguments(int argc, char **argv)
                                                 ahex2bin(token[0],token[1]),    // D0 => Start byte
                                                 ahex2bin(token[2],token[3]),    // D1 => Spring
                                                 ahex2bin(token[4],token[5]),    // D2 => Friction
-                                                ahex2bin(token[6],token[7]),    // D3 => Constant Torque Direction
-                                                ahex2bin(token[8],token[9]),    // D4 => Constant Torque Power
+                                                ahex2bin(token[6],token[7]),    // D3 => Constant Direction
+                                                ahex2bin(token[8],token[9]),    // D4 => Constant Power
                                                 ahex2bin(token[10],token[11]),  // D5 => Sine Frequency
                                                 ahex2bin(token[12],token[13]),  // D6 => Sine Intensity
                                                 ahex2bin(token[14],token[15])); // D7 => CRC

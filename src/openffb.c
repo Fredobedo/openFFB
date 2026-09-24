@@ -138,8 +138,6 @@ int main(int argc, char **argv)
   ftruncate(pid_fd, 0);
   dprintf(pid_fd, "%d\n", getpid());
 
-
-
   /* update config from arguments */
   strcpy(localConfig->hapticName, arguments.haptic_name);
 
@@ -178,7 +176,7 @@ int main(int argc, char **argv)
 
   //adjust the minimum values for the effects, to avoid the wheel to not react when the force is low
   localConfig->minFriction+= minimumStrength*100;
-  localConfig->minTorque+= minimumStrength*100;
+  localConfig->minConstant+= minimumStrength*100;
   localConfig->minIntensity+= minimumStrength*100;
 
   if(containArgument(TRIGGER_EFFECT)){

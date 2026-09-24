@@ -33,8 +33,8 @@ typedef struct
     int minFriction;
     int maxFriction;
 
-    int minTorque;
-    int maxTorque;
+    int minConstant;
+    int maxConstant;
 
     int minIntensity;
     int maxIntensity;

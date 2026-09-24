@@ -11,9 +11,9 @@ MAX_SPRING 100
 MIN_FRICTION 1
 MAX_FRICTION 100
 
-# adjust torque effect if necessary here
-MIN_TORQUE 1
-MAX_TORQUE 100
+# adjust constant effect if necessary here
+MIN_CONSTANT 1
+MAX_CONSTANT 100
 
 # adjust sine effect intensity if necessary here (default is 0-100)
 MIN_INTENSITY 1
