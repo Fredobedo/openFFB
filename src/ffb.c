@@ -172,6 +172,9 @@ FFBStatus processPacket(unsigned char *packet)
 		case OPENFFB_RESET_DEVICE_SUB_CMD:
 			FFBStopAllEffects();
 			break;
+		case OPENFFB_SHARE_ARDUINO_FIRMWARE_VERSION_CMD:
+			debug(0, "Sega FFB Controller Firmware Version: %d.%d.%d\n", packet[4], packet[5], packet[6]);
+			break;
 		default:
 			break;
 		}
