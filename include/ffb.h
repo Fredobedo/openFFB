@@ -91,6 +91,7 @@ FFBStatus readDebugPacket(int amount);
 FFBStatus readPacket();
 
 FFBStatus WriteReplyPacket();
+FFBStatus SendReplyPacket(const unsigned char *reply);
 
 /* --- dispatch Sega FFB Controller request --- */
 FFBStatus processPacket(unsigned char* packet);

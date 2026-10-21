@@ -59,7 +59,7 @@ unsigned int supportedFeatures;
 #define MAX_EFFECTS 16
 
 /* The haptic File descriptor Handle */
-int device_handle;
+extern int device_handle;
 
 struct device{
 	char path[256];
@@ -114,6 +114,8 @@ void initCOMSegaFFBController();
 
 int startWorkerAsync(WorkerFunc func, void* arg);
 void* WorkerSetCenter(void* arg);
+int FFBStartCalibration(WorkerFunc func, ThreadParams *params);
+void FFBCancelCalibration(void);
 void* WorkerUpdateCachedWheelPosition(void* arg);
 void* WorkerSetPosition(void* arg);
 

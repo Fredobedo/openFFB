@@ -1,18 +1,23 @@
-# Naomi 2 Initial-D FFB effect settings
+# Linear Sega-to-Linux bridge for comparing a Virtual Wheel with native G27.
+# Do not add the measured motor breakaway force to every nonzero command.
+AUTO_MIN_FORCE 0
+# Minimum request during Reset -> Ready only, so calibration can overcome stiction.
+# Once READY is received, normal commands are linear down to zero.
+CALIBRATION_CONSTANT 25
 
 # set the global strength of all effects here (0-100)
 GLOBAL_GAIN 100
 
 # adjust friction effect if necessary here
-MIN_FRICTION 1
+MIN_FRICTION 0
 MAX_FRICTION 100
 
 # adjust constant effect if necessary here
-MIN_CONSTANT 1
+MIN_CONSTANT 0
 MAX_CONSTANT 100
 
 # adjust sine effect intensity if necessary here (default is 0-100)
-MIN_INTENSITY 1
+MIN_INTENSITY 0
 MAX_INTENSITY 100
 
 # for those who want to use a Logitech racing wheel which is supported by new-lg4ff

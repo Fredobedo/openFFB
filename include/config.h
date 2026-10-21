@@ -36,6 +36,11 @@ typedef struct
     int minConstant;
     int maxConstant;
 
+    // Legacy breakaway compensation; disable for a linear development bridge.
+    int autoMinForce;
+    // Endpoint-search request and linear-profile pre-READY floor (0-100).
+    int calibrationConstant;
+
     int minIntensity;
     int maxIntensity;
     

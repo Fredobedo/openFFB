@@ -18,8 +18,13 @@
 
 #define CLAMP(x, lo, hi) ((x) > (hi) ? (hi) : ((x) < (lo) ? (lo) : (x)))
 
+int device_handle = -1;
 bool LogitechWheelDetected=false;
 atomic_int storedWheelPosition = 8192;
+static bool constantPlaying[2];
+static pthread_t calibrationThread;
+static bool calibrationActive;
+static atomic_bool calibrationCancelled;
 
 unsigned int WheelEffectiveMaxPosition=16383;
 	
@@ -60,78 +65,70 @@ int startWorkerAsync(WorkerFunc func, void* arg)
     return ret;
 }
 
+// Main-thread ownership: cancellation joins before another job or stop can
+// touch the calibration slots. Signal handlers only change `running`.
+void FFBCancelCalibration(void)
+{
+    atomic_store(&calibrationCancelled, true);
+    if (calibrationActive) {
+        pthread_join(calibrationThread, NULL);
+        calibrationActive = false;
+    }
+}
+
+int FFBStartCalibration(WorkerFunc func, ThreadParams *params)
+{
+    FFBCancelCalibration();
+    atomic_store(&calibrationCancelled, false);
+    int result = pthread_create(&calibrationThread, NULL, func, params);
+    calibrationActive = result == 0;
+    if (result) free(params);
+    return result;
+}
+
+static bool calibrationWait(int duration_ms)
+{
+    for (int elapsed = 0; elapsed < duration_ms && running && !atomic_load(&calibrationCancelled); ) {
+        int slice = duration_ms - elapsed < 20 ? duration_ms - elapsed : 20;
+        usleep(slice * 1000);
+        elapsed += slice;
+    }
+    return running && !atomic_load(&calibrationCancelled);
+}
+
 void* WorkerSetCenter(void* arg)
 {
-	ThreadParams* params = (ThreadParams*)arg;
-	if (!params) return NULL;
-
-	/* optional initial delay before starting to wait for position */
-	if (params->wait_before_start_ms > 0)
-		usleep(params->wait_before_start_ms * 1000);
-    
-	int totalDuration_ms=0;
-	int waitPerCycle_ms=20;
-	debug(2, "WorkerSetCenter: Starting center effect for duration %d ms with strength %d\n", params->duration_ms, params->strength);
-
-	FFBTriggerSpringEffect(true, params->strength, true);
-
-	while (params->duration_ms > totalDuration_ms)
-	{
-		usleep(waitPerCycle_ms * 1000); 
-		totalDuration_ms += waitPerCycle_ms;
-	}
-
-	debug(2, "WorkerSetCenter: Stopping center effect after %d ms\n", totalDuration_ms);
-	FFBStopEffect(ffb_effects[spring_effect_async_idx].id);
-
+    ThreadParams *params = arg;
+    if (!params) return NULL;
+    if (calibrationWait(params->wait_before_start_ms)) {
+        FFBTriggerSpringEffect(true, params->strength, true);
+        calibrationWait(params->duration_ms);
+        FFBStopEffect(ffb_effects[spring_effect_async_idx].id);
+    }
     free(params);
     return NULL;
 }
 
-
 void* WorkerSetPosition(void* arg)
 {
-	//pthread_t thread;
-
-	ThreadParams* params = (ThreadParams*)arg;
-	if (!params) return NULL;
-
-	/* optional initial delay before starting to wait for position */
-	if (params->wait_before_start_ms > 0)
-		usleep(params->wait_before_start_ms * 1000);
-
-	//search for direction of the effect based on the position
-
-	// => move to the left
-	if( params->position > GetCachedWheelPosition())
-		FFBTriggerConstantEffect(true, (fabs(params->strength)),true);
-	else 
-		FFBTriggerConstantEffect(true, -(fabs(params->strength)),true);
-
-
-	/* wait until cached wheel position matches requested position */
-	int totalDuration_ms=0;
-	int waitPerCycle_ms=20;
-	
-	while (GetCachedWheelPosition() != params->position && params->duration_ms > totalDuration_ms)
-	{
-		usleep(waitPerCycle_ms * 1000); 
-		totalDuration_ms += waitPerCycle_ms;
-	}
-
-	usleep(20 * 1000); 
-
-	FFBStopEffect(ffb_effects[constant_effect_async_idx].id);
-	
-	replyPacket[0] = (GetCachedWheelPosition()==0?OPENFFB_MAX_RIGHT_REPLY_CMD:OPENFFB_MAX_LEFT_REPLY_CMD);
-	replyPacket[1] = 0;
-	replyPacket[2] = 0;
-	replyPacket[3] = (replyPacket[0] ^ replyPacket[1] ^ replyPacket[2]) & 0x7f;
-
-	WriteReplyPacket();
-
-	free(params);
-	return NULL;
+    ThreadParams *params = arg;
+    if (!params) return NULL;
+    if (calibrationWait(params->wait_before_start_ms)) {
+        double strength = params->position > GetCachedWheelPosition()
+            ? fabs(params->strength) : -fabs(params->strength);
+        FFBTriggerConstantEffect(true, strength, true);
+        for (int elapsed = 0; elapsed < params->duration_ms && GetCachedWheelPosition() != params->position; elapsed += 20)
+            if (!calibrationWait(20)) break;
+        FFBStopEffect(ffb_effects[constant_effect_async_idx].id);
+        // Never report successful endpoint calibration after a timeout/cancel.
+        if (running && !atomic_load(&calibrationCancelled) && GetCachedWheelPosition() == params->position) {
+            unsigned char reply[4] = {params->position == 0 ? OPENFFB_MAX_RIGHT_REPLY_CMD : OPENFFB_MAX_LEFT_REPLY_CMD, 0, 0, 0};
+            reply[3] = reply[0] & 0x7f;
+            SendReplyPacket(reply);
+        }
+    }
+    free(params);
+    return NULL;
 }
 
   void initCOMSegaFFBController()
@@ -150,7 +147,7 @@ void* WorkerSetPosition(void* arg)
   
 void* WorkerUpdateCachedWheelPosition(void* arg)
 {
-	while (true)
+	while (running)
 	{
 
 		int FinalwheelPosition;
@@ -485,7 +482,7 @@ void GetWheelEffectiveMinStrength()
 	int wheelPosition = GetCachedWheelPosition();
 	double step = 0.02; // Adjust the step size as needed
 
-	while(!MoveDetected)
+	while(!MoveDetected && running && minimumStrength <= 0.5)
 	{
 		ThreadParams *maxRightParams = malloc(sizeof(ThreadParams));
 
@@ -905,8 +902,9 @@ void FFBCreateHapticSawDownEffect()
 
 void FFBCreateAllHapticEffects()
 {
+    for (int i = 0; i < MAX_EFFECTS; ++i) ffb_effects[i].id = -1;
 	FFBSetGlobalGain(getConfig()->globalGain);
-	FFBSetGlobalAutoCenter(40,2000); 
+	FFBSetGlobalAutoCenter(0, 0);
 
 	FFBCreateHapticConstantEffects();
 	FFBCreateHapticSineEffect();
@@ -925,11 +923,12 @@ void FFBCreateAllHapticEffects()
 
 void FFBAbortExecution(void)
 {
-    debug(1, "\nAborting program execution.\n");
-	if(device_handle){
-		FFBStopAllEffects();
-		close(device_handle);
-	}
+    running = 0;
+    FFBStopAllEffects();
+    if (device_handle >= 0) {
+        close(device_handle);
+        device_handle = -1;
+    }
 }
 
 char* FFBCheckEffect(unsigned int check)
@@ -1005,26 +1004,23 @@ void FFBDumpSupportedFeatures()
 
 void FFBStopEffect(int effect_id)
 {
-		memset(&event, 0, sizeof(event));
-		event.type = EV_FF;
-		event.code = effect_id;
-		event.value = 0;
-
-		bool rs=write(device_handle, &event, sizeof(event));
+    if (effect_id < 0 || device_handle < 0) return;
+    struct input_event command = {.type = EV_FF, .code = effect_id, .value = 0};
+    if (write(device_handle, &command, sizeof(command)) != sizeof(command))
+        debug(0, "ERROR: stopping effect %d failed (%s)\n", effect_id, strerror(errno));
+    if (effect_id == ffb_effects[constant_effect_idx].id) constantPlaying[0] = false;
+    if (effect_id == ffb_effects[constant_effect_async_idx].id) constantPlaying[1] = false;
 }
 
 void FFBStopAllEffects()
 {
-	if(device_handle > 0)
-	{
-		int num_effects = sizeof(ffb_effects)/sizeof(struct ff_effect);
-		for(int cp=0; cp < num_effects; cp++)
-		{
-			FFBStopEffect(ffb_effects[cp].id);
-		}
-		fflush(stdout);
-		sleep(1); // give some time for effects to stop before removing them
-	}
+    FFBCancelCalibration();
+    if (device_handle >= 0) {
+        for (int i = 0; i < MAX_EFFECTS; ++i) FFBStopEffect(ffb_effects[i].id);
+        FFBSetGlobalAutoCenter(0, 0);
+    }
+    // The next identical bulk packet must be able to restart stopped effects.
+    memset(previous_rawpacket, 0, sizeof(previous_rawpacket));
 }
 
 void FFBRemoveEffect(int effect_id)
@@ -1048,6 +1044,7 @@ void FFBRemoveAllEffects()
 // The function manages effect parameters, uploads them to the device, and handles starting or stopping the effect as needed.
 void FFBTriggerSineEffect(bool upload, float frequency, float intensity)
 {
+    struct input_event event;
 	debug(1, "FFBTriggerSineEffect");
 	if(FF_SINE_LOADED==(supportedFeatures & FF_SINE_LOADED)) 
 	{
@@ -1056,7 +1053,7 @@ void FFBTriggerSineEffect(bool upload, float frequency, float intensity)
 		struct ff_effect* sineEffect=&ffb_effects[sine_effect_idx];
 		if(upload)
 		{
-			sineEffect->u.periodic.period= (unsigned short)(1000.0f / (frequency/4.0f)); // period in milliseconds
+			sineEffect->u.periodic.period = frequency > 0 ? (unsigned short)CLAMP(4000.0f / frequency, 1, 65535) : 1; // period in milliseconds
 
 			debug(3, " -> frequency converted to period: %ums\n", sineEffect->u.periodic.period);
 
@@ -1114,6 +1111,7 @@ void FFBTriggerSineEffect(bool upload, float frequency, float intensity)
 // The function manages effect parameters, uploads them to the device, and handles starting or stopping the effect as needed.
 void FFBTriggerSpringEffect(bool upload, double strength, bool async)
 {
+    struct input_event event;
 	debug(1, "FFBTriggerSpringEffect\n");
 	if(FF_SPRING_LOADED==(supportedFeatures & FF_SPRING_LOADED)) 
 	{
@@ -1184,90 +1182,46 @@ void FFBTriggerSpringEffect(bool upload, double strength, bool async)
  *  Constant:
  *   @level:         strength of the effect; may be negative
  */
+/* A streamed constant is one continuously playing effect. EVIOCSFF updates it
+ * in place; restarting on every sample inserts gaps and resets driver timing. */
 void FFBTriggerConstantEffect(bool upload, double strength, bool async)
 {
-	debug(1, "FFBTriggerConstantEffect\n");
-	
-	if(FF_CONSTANT_LOADED==(supportedFeatures & FF_CONSTANT_LOADED)) 
-	{
-		debug(2, " -> arg_strength: %.2f\n async: %d", strength, async);
+    unsigned feature = async ? FF_CONSTANT_ASYNC_LOADED : FF_CONSTANT_LOADED;
+    if (!(supportedFeatures & feature)) return;
+    struct ff_effect *constant = &ffb_effects[async ? constant_effect_async_idx : constant_effect_idx];
+    int slot = async ? 1 : 0;
+    strength = isfinite(strength) ? CLAMP(strength, -1.0, 1.0) : 0.0;
 
-		struct ff_effect* constantEffect = async
-			? &ffb_effects[constant_effect_async_idx]
-			: &ffb_effects[constant_effect_idx];
+    // The board's initialization must overcome physical stiction. Keep that
+    // compensation out of the normal, already-rendered Virtual Wheel stream.
+    if (!getConfig()->autoMinForce && SegaFFBControllerState != OPENFFB_READY_SUB_CMD && strength != 0.0) {
+        double floor = CLAMP(getConfig()->calibrationConstant, 0, 100) / 100.0;
+        if (fabs(strength) < floor) strength = strength > 0 ? floor : -floor;
+    }
 
-//debug(0,"SegaFFBControllerState:  %d\n", SegaFFBControllerState);
-		if(upload)
-		{
-			if (strength > 1.0)
-				strength = 1.0;
-			else if (strength < -1.0)
-				strength = -1.0;
-
-			signed short level;
-			if (strength == 0.0) {
-				level = 0;
-			} 
-// 			else if(SegaFFBControllerState==OPENFFB_NOT_READY_SUB_CMD){
-// //debug(0," -> strength before applying initialization gain: %.2f\n", strength);				
-// //debug(0,"Applying initialization gain: %d%%\n", getConfig()->initializationGain);
-// 				strength*= (getConfig()->initializationGain/100.0);
-// //debug(0," -> strength after applying initialization gain: %.2f\n", strength);
-// 				level = (short)CLAMP(strength * 32767.0, -32767.0, 32767.0);
-// //debug(0," -> level after applying initialization gain: %d\n", level);
-// 			}
-// 			else {
-				short minForce = (short)((getConfig()->minConstant / 100.0) * 32767.0); 
-				short maxForce = (short)((getConfig()->maxConstant / 100.0) * 32767.0);
-
-				short range = maxForce - minForce;
-
-				double absStrength = fabs(strength);
-				short magnitude = (short)((absStrength * range) + minForce);
-				level = (strength > 0.0) ? magnitude : -magnitude;
-			//}
-
-			constantEffect->u.constant.level = level;	
-			debug(3, " -> strength: %.2f, level: %d\n", strength, constantEffect->u.constant.level);
-
-			/* Here we set the two values to the max as the arcade system 'manages" fades                */
-			constantEffect->u.constant.envelope.attack_level = 0;
-			constantEffect->u.constant.envelope.fade_level =   0;
-			constantEffect->u.constant.envelope.attack_length = 0;
-			constantEffect->u.constant.envelope.fade_length = 0;
-
-			debug(3, " -> attack_level: %d, fade_level: %d\n", constantEffect->u.constant.envelope.attack_level, constantEffect->u.constant.envelope.fade_level);
-
-			/* update effect */
-			if (ioctl(device_handle, EVIOCSFF, constantEffect) < 0)
-				debug(1, "ERROR: uploading effect failed (%s) [%s:%d]\n", strerror(errno), __FILE__, __LINE__);
-		}
-
-		
-		memset(&event, 0, sizeof(event));
-		event.type = EV_FF;
-		event.code = constantEffect->id;
-
-		//STOP PREVIOUS EFFECT
-		event.value = 0;
-		bool rs=write(device_handle, &event, sizeof(event));
-		fsync(device_handle);
-
-		if(strength!=0.0)
-		{
-			debug(1, ".");
-			//START EFFECT
-			event.value = 1;
-			if (write(device_handle, &event, sizeof(event)) != sizeof(event))
-				fprintf(stderr, "ERROR: starting FF_CONSTANT effect failed (%s) [%s:%d]\n",	strerror(errno), __FILE__, __LINE__);
-
-			fsync(device_handle);
-		}
-	}
-	else
-	{
-		debug(1, " -> constant effect not supported.\n");
-	}
+    // Stop before uploading zero: even a failed upload must release old force.
+    if (strength == 0.0) FFBStopEffect(constant->id);
+    if (upload || !constantPlaying[slot]) {
+        int minimum = CLAMP(getConfig()->minConstant, 0, 100);
+        int maximum = CLAMP(getConfig()->maxConstant, minimum, 100);
+        int minForce = minimum * 32767 / 100;
+        int maxForce = maximum * 32767 / 100;
+        int magnitude = (int)(fabs(strength) * (maxForce - minForce) + minForce);
+        constant->u.constant.level = strength == 0.0 ? 0 : (strength > 0 ? magnitude : -magnitude);
+        memset(&constant->u.constant.envelope, 0, sizeof(constant->u.constant.envelope));
+        if (ioctl(device_handle, EVIOCSFF, constant) < 0) {
+            debug(0, "ERROR: updating constant effect failed (%s)\n", strerror(errno));
+            FFBStopEffect(constant->id);
+            return;
+        }
+    }
+    if (strength != 0.0 && !constantPlaying[slot]) {
+        struct input_event command = {.type = EV_FF, .code = constant->id, .value = 1};
+        if (write(device_handle, &command, sizeof(command)) == sizeof(command))
+            constantPlaying[slot] = true;
+        else
+            debug(0, "ERROR: starting constant effect failed (%s)\n", strerror(errno));
+    }
 }
 
 /**
@@ -1283,6 +1237,7 @@ void FFBTriggerConstantEffect(bool upload, double strength, bool async)
  */
 void FFBTriggerFrictionEffect(bool upload, double strength)
 {
+    struct input_event event;
 	debug(1, "FFBTriggerFrictionEffect\n");
 	//debug(1, "FFBTriggerFrictionEffect upload=%d strength=%f\n", upload, strength);
 	if(FF_FRICTION_LOADED==(supportedFeatures & FF_FRICTION_LOADED)) 
@@ -1343,6 +1298,7 @@ void FFBTriggerRumbleEffectDefault(bool upload, double strength)
 
 void FFBTriggerRumbleEffect(bool upload, double strength, motor_select motor)
 {
+    struct input_event event;
 
 	debug(1, "FFBTriggerRumbleEffect\n");
 	if(FF_RUMBLE_LOADED==(supportedFeatures & FF_RUMBLE_LOADED)) 
@@ -1410,12 +1366,13 @@ void FFBTriggerRumbleEffect(bool upload, double strength, motor_select motor)
 /* --- set flobal gain for all effects (1-100) --- */
 void FFBSetGlobalGain(int level)
 {
+    struct input_event gain;
 	debug(1, "FFBSetGlobalGain\n");
 
 	memset(&gain, 0, sizeof(gain));
 	gain.type = EV_FF;
 	gain.code = FF_GAIN;
-	gain.value = 0xFFFF * (level / 100);
+	gain.value = 65535 * CLAMP(level, 0, 100) / 100;
 	debug(3, " -> level: %d, gain.value: %d\n", level, gain.value);
 
 	if (write(device_handle, &gain, sizeof(gain)) != sizeof(gain)) 
@@ -1428,12 +1385,13 @@ void FFBSetGlobalGain(int level)
 /* --- AutoCenter Global Setting (1-100) for 1 second only --- */
 void FFBSetGlobalAutoCenter(int strength, int duration_ms)
 {
+    struct input_event event;
 	debug(1, "FFBSetGlobalAutoCenter duration: %d ms\n", duration_ms);
 	
 	memset(&event, 0, sizeof(event));
 	event.type = EV_FF;
 	event.code = FF_AUTOCENTER;
-	event.value = 0xFFFFUL * strength / 100;	
+	event.value = 65535 * CLAMP(strength, 0, 100) / 100;
 
 	/* Enable autocalibration / auto-center */
 	if (write(device_handle, &event, sizeof(event)) != sizeof(event))
@@ -1443,7 +1401,8 @@ void FFBSetGlobalAutoCenter(int strength, int duration_ms)
 	}
 
 	/* Keep auto-center for 1 second */
-	usleep(duration_ms*1000);
+	for (int elapsed = 0; running && elapsed < duration_ms; elapsed += 20)
+        usleep((duration_ms - elapsed < 20 ? duration_ms - elapsed : 20) * 1000);
 
 	event.value = 0;
 	if (write(device_handle, &event, sizeof(event)) != sizeof(event))
@@ -1469,7 +1428,7 @@ void FFBTriggerTestEffect(unsigned int effect, double strength)
         case FF_AUTOCENTER:
 			testParams = malloc(sizeof(ThreadParams));
 			*testParams = (ThreadParams){0, 0.84, 0, 50000};
-			startWorkerAsync(WorkerSetCenter, testParams);
+			FFBStartCalibration(WorkerSetCenter, testParams);
             break;              
         case FF_RUMBLE:
             FFBTriggerRumbleEffectDefault(true, strength);

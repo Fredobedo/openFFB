@@ -102,3 +102,41 @@ https://youtube.com/shorts/_WRH8y1oFbs?si=pga3aIkp4NRZnSt3
 
 ## Disclaimer
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+## Linear Virtual Wheel development profile (2.0.4)
+
+`sudo openffb -h=0 -gp=generic-driving-tester` uses zero minimum normal force
+and disables automatic breakaway-force compensation (`AUTO_MIN_FORCE 0`).
+After every restart, run SegaIOStudio's full Reset -> Ready initialization.
+The SegaG27 backend performs the same `SegaFFB::initializeBoard` sequence when
+started with JVS available and `auto_center=true`. Wait for READY before testing.
+Only one openFFB process may own the device.
+
+`CALIBRATION_CONSTANT 25` provides an explicit 25% minimum during initialization
+and a 25% endpoint-search request. The floor ends at the Arduino READY message;
+normal signed seven-bit commands map linearly to signed Linux constant force
+(1 -> 258, 127 -> 32767). `GLOBAL_GAIN` scales every percentage correctly,
+including values between zero and 100. Profiles without the new settings retain
+automatic minimum-force compensation and their legacy 10% endpoint request.
+
+Constant updates use EVIOCSFF on the playing effect without stop/play cycles.
+Zero uploads an actual zero and stops it. Zero bulk packets and reset cancel
+calibration workers; calibration has an eight-second maximum and only reports
+success when the requested limit is reached. Serial timeout releases effects
+and autocenter without a disconnect/reconnect jolt. SIGINT, SIGTERM and SIGHUP
+perform cleanup outside the signal handler. A killed process is not a substitute
+for a hardware power cutoff.
+
+Build and hardware-free regression checks:
+
+```sh
+cmake -S . -B build
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
+The evdev contract test intercepts uploads and events: gain scaling, exact zero,
+legacy and linear force mapping, updating a running effect, upload failure,
+replay after reset, fragmented serial packets, and cancellation before/during
+calibration. It does not measure physical torque or hand feel.

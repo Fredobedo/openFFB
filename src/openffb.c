@@ -64,7 +64,9 @@ void setupSignalHandler(void) {
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;  // Critical: do NOT set SA_RESTART
 
-    if (sigaction(SIGINT, &sa, NULL) == -1) {
+    if (sigaction(SIGINT, &sa, NULL) == -1 ||
+        sigaction(SIGTERM, &sa, NULL) == -1 ||
+        sigaction(SIGHUP, &sa, NULL) == -1) {
         perror("sigaction");
         exit(EXIT_FAILURE);
     }
@@ -158,6 +160,8 @@ int main(int argc, char **argv)
     sleep(2);
   }
 
+  atexit(FFBAbortExecution);
+
   if(!running)
     return EXIT_FAILURE;
 
@@ -172,12 +176,12 @@ int main(int argc, char **argv)
   startWorkerAsync(WorkerUpdateCachedWheelPosition, NULL);
 
   //Search for minimum strength for the wheel, this is used to avoid the wheel to not react when the force is low
-  GetWheelEffectiveMinStrength();
-
-  //adjust the minimum values for the effects, to avoid the wheel to not react when the force is low
-  localConfig->minFriction+= minimumStrength*100;
-  localConfig->minConstant+= minimumStrength*100;
-  localConfig->minIntensity+= minimumStrength*100;
+  if (localConfig->autoMinForce) {
+    GetWheelEffectiveMinStrength();
+    localConfig->minFriction += minimumStrength * 100;
+    localConfig->minConstant += minimumStrength * 100;
+    localConfig->minIntensity += minimumStrength * 100;
+  }
 
   if(containArgument(TRIGGER_EFFECT)){
     double Strength = 0.25;
@@ -265,8 +269,9 @@ int main(int argc, char **argv)
       case FFB_STATUS_ERROR_TIMEOUT:
         debug(2, "Error: timout occoured, nbrOfTimeOut=%d\n", nbrOfTimeOut);      
         nbrOfSuccess=0;
+        FFBStopAllEffects();
         if (nbrOfTimeOut==MAX_TIMOUT_COUNT){
-            playCOMEndEffect();
+            // Communication loss releases force; no disconnect jolt.
             closeDevice();
             initCOMSegaFFBController();
             nbrOfTimeOut=0;
@@ -280,7 +285,7 @@ int main(int argc, char **argv)
         nbrOfTimeOut=0;
         if(current_state==STATE_INIT_FINISHED) {
             if(nbrOfSuccess==MAX_SUCCESS){
-              playCOMInitEffect();
+              // Resume only effects received from the controller.
               nbrOfSuccess=0;
               current_state=STATE_RUNNING;
             }
@@ -297,6 +302,8 @@ int main(int argc, char **argv)
     FFBStatusMinus      = processingStatus;
   }
   
+  FFBStopAllEffects();
+
   /* Close the file pointer */
   if (!disconnectFFB())
   {
@@ -309,24 +316,8 @@ int main(int argc, char **argv)
 
 void handleSignal(int signal)
 {
-  if (signal == 2)
-  {
-    /*
-    end_time = clock();
-    double time_taken = (double)(end_time - start_time) / CLOCKS_PER_SEC;
-    debug(1, "\nTime taken: %.2f seconds\n", time_taken);
-    debug(1, "Number of cycles: %lu\n", executed_cycles);
-    */
-   (void)signal;
-   running = 0;
-
-   //debug(2, "\nClosing down OpenFFB...\n");
-    FFBAbortExecution();
-    disconnectFFB();
-    
-    close(pid_fd);
-    unlink(PID_FILE);
-
-
-  }
+    (void)signal;
+    // Only async-signal-safe state here; normal shutdown joins workers,
+    // stops effects and clears autocenter before closing the device.
+    running = 0;
 }

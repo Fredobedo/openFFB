@@ -72,7 +72,15 @@ FFBStatus readDebugPacket(int amount)
 
 FFBStatus WriteReplyPacket()
 {
-	int bytesWritten = writeBytes(replyPacket, SEGA_FFB_CONTROLLER_REPLY_PACKET_SIZE);
+    return SendReplyPacket(replyPacket);
+}
+
+FFBStatus SendReplyPacket(const unsigned char *reply)
+{
+    static pthread_mutex_t replyMutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex_lock(&replyMutex);
+    int bytesWritten = writeBytes(reply, SEGA_FFB_CONTROLLER_REPLY_PACKET_SIZE);
+    pthread_mutex_unlock(&replyMutex);
 
 	if (bytesWritten < 0)
 	{
@@ -90,17 +98,31 @@ FFBStatus WriteReplyPacket()
 
 FFBStatus readPacket()
 {
-	int bytesRead = readBytes(rawPacket, SEGA_FFB_CONTROLLER_PACKET_SIZE);
-	if (bytesRead < 0)
-	{
-		return FFB_STATUS_ERROR_TIMEOUT;
-	}
-	else if (bytesRead < SEGA_FFB_CONTROLLER_PACKET_SIZE)
-	{
-		return FFB_STATUS_ERROR;
-	}
-
-	return processPacket(rawPacket);
+    // A serial read may end anywhere in an eight-byte packet. Retain the
+    // partial frame instead of treating a normal split as communication loss.
+    static int received;
+    while (running) {
+        unsigned char bytes[SEGA_FFB_CONTROLLER_PACKET_SIZE];
+        int count = readBytes(bytes, SEGA_FFB_CONTROLLER_PACKET_SIZE - received);
+        if (count <= 0) {
+            received = 0;
+            return FFB_STATUS_ERROR_TIMEOUT;
+        }
+        for (int i = 0; i < count; ++i) {
+            if (bytes[i] & 0x80) {
+                received = 0;
+                if (bytes[i] != OPENFFB_GENERIC_CMD && bytes[i] != OPENFFB_SET_BULK_EFFECTS_CMD)
+                    continue;
+            } else if (!received) continue;
+            rawPacket[received++] = bytes[i];
+        }
+        if (received == SEGA_FFB_CONTROLLER_PACKET_SIZE) {
+            received = 0;
+            return processPacket(rawPacket);
+        }
+    }
+    received = 0;
+    return FFB_STATUS_ERROR_TIMEOUT;
 }
 
 FFBStatus processPacket(unsigned char *packet)
@@ -141,19 +163,19 @@ FFBStatus processPacket(unsigned char *packet)
 		case OPENFFB_SET_CENTER_SUB_CMD: 	// Asynchronous command, reply will be sent by Worker thread
 			ThreadParams *centerParams = malloc(sizeof(ThreadParams));
 			*centerParams = (ThreadParams){0, 0.90, 20, 3500};
-			startWorkerAsync(WorkerSetCenter, centerParams);
+			FFBStartCalibration(WorkerSetCenter, centerParams);
 			break;
 		// 0xA1
 		case OPENFFB_SET_MAX_RIGHT_SUB_CMD: // Asynchronous command, reply will be sent by Worker thread
 			ThreadParams *maxRightParams = malloc(sizeof(ThreadParams));
-			*maxRightParams = (ThreadParams){0, 0.10, 0, 60000};
-			startWorkerAsync(WorkerSetPosition, maxRightParams);
+			*maxRightParams = (ThreadParams){0, getConfig()->calibrationConstant / 100.0, 0, 8000};
+			FFBStartCalibration(WorkerSetPosition, maxRightParams);
 			break;
 		// 0xA2
 		case OPENFFB_SET_MAX_LEFT_SUB_CMD: 	// Asynchronous command, reply will be sent by Worker thread
 			ThreadParams *maxLeftParams = malloc(sizeof(ThreadParams));
-			*maxLeftParams = (ThreadParams){16383, 0.10, 0, 60000};
-			startWorkerAsync(WorkerSetPosition, maxLeftParams);
+			*maxLeftParams = (ThreadParams){16383, getConfig()->calibrationConstant / 100.0, 0, 8000};
+			FFBStartCalibration(WorkerSetPosition, maxLeftParams);
 			break;
 		// 0x02
 		case OPENFFB_GET_POWER_LINE_SUB_CMD:
@@ -182,12 +204,17 @@ FFBStatus processPacket(unsigned char *packet)
 	// NORMAL COMMAND PACKET FOR BULCK FORCE FEEDBACK EFFECTS FROM AGANYTE
 	// No reply from openFFB, the Sega FFB Controller will take care of it (Send reply to Sega System).
 	else
-	{
-		inputPacket.startByte = packet[0];
+    {
+        if (packet[0] != OPENFFB_SET_BULK_EFFECTS_CMD) return FFB_STATUS_ERROR_UNSUPPORTED_COMMAND;
+        // Arduino RESET/force-off arrives as an all-zero bulk packet. It must
+        // also cancel a delayed or currently running calibration effect.
+        if (!packet[1] && !packet[2] && !packet[4] && !packet[6])
+            FFBCancelCalibration();
+        inputPacket.startByte = packet[0];
 		inputPacket.spring = ((double)packet[1])        / 128;
 		inputPacket.friction = ((double)packet[2])      / 128;
 		inputPacket.ConstantDirection = packet[3];
-		inputPacket.ConstantPower = ((double)packet[4]) / 128;
+		inputPacket.ConstantPower = ((double)packet[4]) / 127;
 		inputPacket.sineFrequency = ((double)packet[5]) / 2;
 		inputPacket.sineIntensity = ((double)packet[6]) / 128;
 

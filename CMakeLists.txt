@@ -48,7 +48,7 @@ include_directories(${THREAD_INLCUDE_DIRS} ${PROJECT_SOURCE_DIR}/src ${PROJECT_S
 FILE( GLOB_RECURSE Sources src/*.c )
 add_executable( ${PROJECT_NAME} ${Sources} )
 
-target_link_libraries(openffb udev)
+target_link_libraries(openffb udev pthread m)
 
 install(TARGETS ${PROJECT_NAME}
 		COMPONENT ${PROJECT_NAME}
@@ -68,6 +68,15 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/docs/openffb
 
 SET(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 SET(CPACK_GENERATOR "DEB")
-set(CPACK_PACKAGE_VERSION "1.2.0")
+set(CPACK_PACKAGE_VERSION "2.0.4")
 SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "fbernard1@hotmail.com") #required
 INCLUDE(CPack)
+
+include(CTest)
+if(BUILD_TESTING)
+  add_executable(test_ffb tests/test_ffb.c src/ffbhelper.c src/ffb.c src/config.c src/device.c src/debug.c)
+  target_compile_options(test_ffb PRIVATE -UNDEBUG -ffunction-sections -fdata-sections)
+  target_link_options(test_ffb PRIVATE -Wl,--gc-sections -Wl,--wrap=ioctl -Wl,--wrap=write -Wl,--wrap=readBytes)
+  target_link_libraries(test_ffb udev pthread m)
+  add_test(NAME evdev_contract COMMAND test_ffb)
+endif()

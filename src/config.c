@@ -38,6 +38,8 @@ FFBConfig config = {
     .maxFriction = 100,
     .minConstant = 0,
     .maxConstant = 100,
+    .autoMinForce = 1,
+    .calibrationConstant = 10,
     .minIntensity = 0,
     .maxIntensity = 100,
     .logitechSteeringRange = 900,
@@ -61,6 +63,8 @@ void DumpConfig()
     printf("maxFriction             = %d\n", config.maxFriction);
     printf("minConstant             = %d\n", config.minConstant);
     printf("maxConstant             = %d\n", config.maxConstant);  
+    printf("autoMinForce            = %d\n", config.autoMinForce);
+    printf("calibrationConstant     = %d\n", config.calibrationConstant);
     printf("minIntensity            = %d\n", config.minIntensity);
     printf("maxIntensity            = %d\n", config.maxIntensity);  
     printf("logitechSteeringRange   = %d\n", config.logitechSteeringRange);
@@ -150,6 +154,10 @@ FFBConfigStatus parseDrivingProfile(char *path)
             config.minConstant = atoi(getNextToken(NULL, " ", &saveptr));                                       
         else if (strcmp(command, "MAX_CONSTANT") == 0)
             config.maxConstant = atoi(getNextToken(NULL, " ", &saveptr));   
+        else if (strcmp(command, "AUTO_MIN_FORCE") == 0)
+            config.autoMinForce = atoi(getNextToken(NULL, " ", &saveptr)) != 0;
+        else if (strcmp(command, "CALIBRATION_CONSTANT") == 0)
+            config.calibrationConstant = atoi(getNextToken(NULL, " ", &saveptr));
         else if (strcmp(command, "MIN_INTENSITY") == 0)
             config.minIntensity = atoi(getNextToken(NULL, " ", &saveptr));   
         else if (strcmp(command, "MAX_INTENSITY") == 0)
