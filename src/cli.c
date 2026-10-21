@@ -288,18 +288,18 @@ FFBCLIStatus parseArguments(int argc, char **argv)
         runInteractiveMode();
         return FFB_CLI_STATUS_SUCCESS_CLOSE;
     }
-    else if ((strcmp(argv[1], "--segaFFBControllerVersion") == 0)    || (strcmp(argv[1], "-vc") == 0)) {
-        initCOMSegaFFBController();
+    // else if ((strcmp(argv[1], "--segaFFBControllerVersion") == 0)    || (strcmp(argv[1], "-vc") == 0)) {
+    //     initCOMSegaFFBController();
         
-        replyPacket[0] = OPENFFB_GET_ARDUINO_FIRMWARE_VERSION_CMD;
-        replyPacket[1] = AsciiHexToBin[1];
-        replyPacket[2] = AsciiHexToBin[2];
-        replyPacket[3] = AsciiHexToBin[3];
+    //     replyPacket[0] = OPENFFB_GET_ARDUINO_FIRMWARE_VERSION_CMD;
+    //     replyPacket[1] = AsciiHexToBin[1];
+    //     replyPacket[2] = AsciiHexToBin[2];
+    //     replyPacket[3] = AsciiHexToBin[3];
         
-        WriteReplyPacket();
+    //     WriteReplyPacket();
         
-        return FFB_CLI_STATUS_SUCCESS_CONTINUE;
-    }
+    //     return FFB_CLI_STATUS_SUCCESS_CONTINUE;
+    // }
     else if ((strcmp(argv[1], "--4BytesSegaMIDICommand") == 0)  || (strcmp(argv[1], "-4s") == 0)) {
 
         token=strtok(NULL, "=");
