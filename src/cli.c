@@ -25,6 +25,7 @@ FFBCLIStatus printUsage()
     debug(0, "  -?,  --help                                Displays this text\n");
     debug(0, "  -v,  --version                             Displays OpenFFB Version\n");
     debug(0, "  -c,  --configuration                       Displays OpenFFB Configuration\n");
+    debug(0, "  -vc,  --segaFFBControllerVersion           Displays Sega FFB Controller Version\n");
     debug(0, "  -a,  --availableHaptics                    Displays list of haptics\n");
     debug(0, "  -h,  --haptic=[NAME/IDX]                   Haptic Name or index\n");
     debug(0, "  -gp, --gameProfile=[NAME]                  Load game specific settings\n");    
@@ -286,6 +287,18 @@ FFBCLIStatus parseArguments(int argc, char **argv)
     else if ((strcmp(argv[1], "--interactiveSegaMIDICommand") == 0)    || (strcmp(argv[1], "-is") == 0)) {
         runInteractiveMode();
         return FFB_CLI_STATUS_SUCCESS_CLOSE;
+    }
+    else if ((strcmp(argv[1], "--segaFFBControllerVersion") == 0)    || (strcmp(argv[1], "-vc") == 0)) {
+        initCOMSegaFFBController();
+        
+        replyPacket[0] = OPENFFB_GET_ARDUINO_FIRMWARE_VERSION_CMD;
+        replyPacket[1] = AsciiHexToBin[1];
+        replyPacket[2] = AsciiHexToBin[2];
+        replyPacket[3] = AsciiHexToBin[3];
+        
+        WriteReplyPacket();
+        
+        return FFB_CLI_STATUS_SUCCESS_CONTINUE;
     }
     else if ((strcmp(argv[1], "--4BytesSegaMIDICommand") == 0)  || (strcmp(argv[1], "-4s") == 0)) {
 
