@@ -12,7 +12,7 @@ MIN_CONSTANT 1
 MAX_CONSTANT 100
 
 # adjust sine effect intensity if necessary here (default is 0-100)
-MIN_INTENSITY 5
+MIN_INTENSITY 1
 MAX_INTENSITY 100
 
 # for those who want to use a Logitech racing wheel which is supported by new-lg4ff
