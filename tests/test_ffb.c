@@ -78,6 +78,13 @@ int main(void)
     cfg->autoMinForce=0; cfg->minConstant=0; cfg->maxConstant=100; cfg->calibrationConstant=25;
     SegaFFBControllerState=OPENFFB_READY_SUB_CMD;
 
+    // Disabled gain cannot calibrate breakaway; a wheel that never moves must
+    // not turn the finite search ceiling into an unmeasured minimum-force boost.
+    cfg->globalGain=0;
+    GetWheelEffectiveMinStrength(); assert(minimumStrength==0 && uploads==0);
+    cfg->globalGain=100;
+    GetWheelEffectiveMinStrength(); assert(minimumStrength==0 && reply_count==0);
+
     FFBSetGlobalGain(50); assert(last_gain==32767);
     FFBSetGlobalGain(1); assert(last_gain==655);
     FFBSetGlobalGain(-1); assert(last_gain==0);

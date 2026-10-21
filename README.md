@@ -104,7 +104,7 @@ https://youtube.com/shorts/_WRH8y1oFbs?si=pga3aIkp4NRZnSt3
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-## Linear Virtual Wheel development profile (2.0.4)
+## Linear Virtual Wheel development profile (2.0.5)
 
 `sudo openffb -h=0 -gp=generic-driving-tester` uses zero minimum normal force
 and disables automatic breakaway-force compensation (`AUTO_MIN_FORCE 0`).
@@ -140,3 +140,8 @@ The evdev contract test intercepts uploads and events: gain scaling, exact zero,
 legacy and linear force mapping, updating a running effect, upload failure,
 replay after reset, fragmented serial packets, and cancellation before/during
 calibration. It does not measure physical torque or hand feel.
+
+In 2.0.5, zero global gain skips the legacy breakaway calibration. If the finite
+search detects no movement, it applies no automatic boost. The search ceiling
+must never become a measured minimum force. This does not change the linear
+tester path introduced in 2.0.4 (`AUTO_MIN_FORCE 0`).

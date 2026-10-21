@@ -471,6 +471,7 @@ void GetWheelEffectiveMinStrength()
 {
 	debug(3, "Starting GetWheelEffectiveMinStrength()...\n");
 	minimumStrength = 0.0;
+	if (!running || getConfig()->globalGain <= 0) return;
 
 	bool MoveDetected=false;
 
@@ -495,6 +496,11 @@ void GetWheelEffectiveMinStrength()
 			MoveDetected=true;
 			debug(3, "Wheel Effective Min Strength: %f\n", minimumStrength);
 		}
+	}
+	if (!MoveDetected) {
+		minimumStrength = 0.0;
+		if (running)
+			debug(0, "Minimum-force calibration found no movement; automatic boost disabled.\n");
 	}
 }
 
